@@ -357,6 +357,11 @@ def generate_html(domain_bounds, manifest):
                 this._image.src = url;
             }},
             
+            setCorners: function(corners) {{
+                this._corners = corners;
+                this._reset();
+            }},
+            
             _animateZoom: function(e) {{
                 const scale = this._map.getZoomScale(e.zoom);
                 const offset = this._map._latLngBoundsToNewLayerBounds(
@@ -1026,6 +1031,8 @@ def generate_html(domain_bounds, manifest):
             const opacity = document.getElementById('opacitySlider').value / 100;
             
             if (imageOverlay) {{
+                // Update both URL and corners when domain changes
+                imageOverlay.setCorners(corners);
                 imageOverlay.setUrl(imageUrl);
             }} else {{
                 imageOverlay = L.distortableImageOverlay(imageUrl, corners, {{
