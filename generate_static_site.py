@@ -339,7 +339,7 @@ def generate_html(domain_bounds, manifest):
                 this._image.src = this._url;
                 
                 map.on('zoomanim', this._animateZoom, this);
-                map.on('zoomend viewreset', this._reset, this);
+                map.on('zoomend viewreset moveend', this._reset, this);
             }},
             
             onRemove: function(map) {{
@@ -364,11 +364,25 @@ def generate_html(domain_bounds, manifest):
             
             _animateZoom: function(e) {{
                 const scale = this._map.getZoomScale(e.zoom);
-                const offset = this._map._latLngBoundsToNewLayerBounds(
-                    L.latLngBounds(this._corners[3], this._corners[1]), 
-                    e.zoom, 
+                // Calculate center of all 4 corners for better animation pivot
+                const corners = this._corners;
+                const centerLat = (corners[0][0] + corners[1][0] + corners[2][0] + corners[3][0]) / 4;
+                const centerLng = (corners[0][1] + corners[1][1] + corners[2][1] + corners[3][1]) / 4;
+                
+                // Get current canvas position
+                const currentPos = this._map.latLngToNewLayerPoint(
+                    L.latLng(centerLat, centerLng),
+                    e.zoom,
                     e.center
-                ).min;
+                );
+                
+                // Calculate offset from canvas center
+                const canvasCenter = L.point(
+                    this._canvas.width / 2,
+                    this._canvas.height / 2
+                );
+                
+                const offset = currentPos.subtract(canvasCenter.multiplyBy(scale));
                 L.DomUtil.setTransform(this._canvas, offset, scale);
             }},
             
@@ -777,19 +791,26 @@ def generate_html(domain_bounds, manifest):
             }}
             .header-box {{
                 top: auto;
-                bottom: 50px;
-                left: 10px;
-                right: 10px;
+                bottom: 70px;
+                left: 5px;
+                right: 5px;
                 transform: none;
                 max-width: none;
                 padding: 4px;
             }}
             .legend-box {{
                 bottom: 5px;
-                padding: 4px;
+                left: 5px;
+                right: 5px;
+                transform: none;
+                padding: 6px;
+                max-width: none;
             }}
             .legend-box img {{
-                max-height: 40px;
+                max-height: none;
+                width: 100%;
+                height: auto;
+                min-height: 50px;
             }}
             .info-box {{
                 display: none;
@@ -826,7 +847,7 @@ def generate_html(domain_bounds, manifest):
                 display: none;
             }}
             .legend-box img {{
-                max-height: 35px;
+                min-height: 45px;
             }}
             .sounding-marker {{
                 width: 32px;
