@@ -40,8 +40,8 @@ WRF_CONFIG = {
     },
     'd2': {
         'dx': 2000, 'dy': 2000,
-        'e_we': 70, 'e_sn': 70,
-        'i_parent_start': 25, 'j_parent_start': 52,
+        'e_we': 127, 'e_sn': 127,
+        'i_parent_start': 16, 'j_parent_start': 42,
         'parent_grid_ratio': 3,
     }
 }
@@ -244,6 +244,9 @@ PARAMETER_INFO = {
     'xcspeed': 'XC Speed',
     'pfd_tot': 'Potential Flight Distance (Total)',
 }
+
+# Basic parameters shown in non-expert mode
+BASIC_PARAMS = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars']
 
 # Sounding locations (from sitedata.ncl)
 SOUNDING_SITES = {
@@ -540,6 +543,23 @@ HTML_TEMPLATE = '''
         .speed-select {
             width: 80px;
         }
+        .expert-toggle {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .toggle-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
         .opacity-control {
             margin-top: 10px;
         }
@@ -723,6 +743,13 @@ HTML_TEMPLATE = '''
             </select>
         </div>
         
+        <div class="control-group expert-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" id="expertMode">
+                <span>Expert Mode</span>
+            </label>
+        </div>
+        
         <div class="control-group opacity-control">
             <label>Overlay Opacity: <span id="opacityValue">70%</span></label>
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
@@ -758,9 +785,13 @@ HTML_TEMPLATE = '''
         let soundingMarkers = [];
         let availableSoundings = [];
         let currentSoundingSite = null; // Track which sounding is currently shown
+        let expertMode = false;
         
         // Parameter descriptions
         const paramInfo = {{ param_info | tojson }};
+        
+        // Basic parameters shown in non-expert mode
+        const basicParams = {{ basic_params | tojson }};
         
         // Domain bounds from server (proper Lambert projection)
         const domainData = {{ domain_bounds | tojson }};
@@ -945,6 +976,35 @@ HTML_TEMPLATE = '''
             });
         }
         
+        // Update parameter dropdown based on expert mode
+        function updateParameterDropdown() {
+            const paramSelect = document.getElementById('paramSelect');
+            const currentParam = paramSelect.value;
+            paramSelect.innerHTML = '';
+            
+            // Filter parameters based on expert mode
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {
+                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+            }
+            
+            paramsToShow.forEach(param => {
+                const option = document.createElement('option');
+                option.value = param;
+                option.textContent = paramInfo[param] || param;
+                paramSelect.appendChild(option);
+            });
+            
+            // Restore selection if still available, otherwise default to first
+            if (paramsToShow.includes(currentParam)) {
+                paramSelect.value = currentParam;
+            } else if (paramsToShow.includes('pfd_tot')) {
+                paramSelect.value = 'pfd_tot';
+            } else if (paramsToShow.length > 0) {
+                paramSelect.value = paramsToShow[0];
+            }
+        }
+        
         async function loadDateData(date) {
             // Save current selections before updating
             const paramSelect = document.getElementById('paramSelect');
@@ -963,20 +1023,13 @@ HTML_TEMPLATE = '''
             const soundingsResponse = await fetch(`/api/soundings/${date}`);
             availableSoundings = await soundingsResponse.json();
             
-            // Update parameter dropdown
-            paramSelect.innerHTML = '';
-            currentData.parameters.forEach(param => {
-                const option = document.createElement('option');
-                option.value = param;
-                option.textContent = paramInfo[param] || param;
-                paramSelect.appendChild(option);
-            });
+            // Update parameter dropdown based on expert mode
+            updateParameterDropdown();
             
-            // Restore previous parameter if available, otherwise default to wstar
-            if (prevParam && currentData.parameters.includes(prevParam)) {
+            // Restore previous parameter if available
+            const currentParams = [...document.getElementById('paramSelect').options].map(o => o.value);
+            if (prevParam && currentParams.includes(prevParam)) {
                 paramSelect.value = prevParam;
-            } else if (currentData.parameters.includes('wstar')) {
-                paramSelect.value = 'wstar';
             }
             
             // Update domain dropdown
@@ -1070,7 +1123,7 @@ HTML_TEMPLATE = '''
             // Update info box
             const paramName = paramInfo[param] || param;
             document.getElementById('infoBox').textContent = 
-                `${paramName} | ${time.substring(0,2)}:${time.substring(2,4)} NZST | ${domain === 'd1' ? '6km' : '2km'}`;
+                `${paramName} | ${time.substring(0,2)}:${time.substring(2,4)} NZDT | ${domain === 'd1' ? '6km' : '2km'}`;
             
             // Update legend image
             const legendUrl = `/api/legend/${date}/${param}/${time}/${domain}`;
@@ -1129,6 +1182,11 @@ HTML_TEMPLATE = '''
             updateImage();
             updateSoundingIfOpen();
         });
+        document.getElementById('expertMode').addEventListener('change', (e) => {
+            expertMode = e.target.checked;
+            updateParameterDropdown();
+            updateImage();
+        });
         document.getElementById('timeSlider').addEventListener('input', () => {
             updateTimeDisplay();
             updateImage();
@@ -1172,6 +1230,7 @@ def index():
     return render_template_string(
         HTML_TEMPLATE, 
         param_info=PARAMETER_INFO,
+        basic_params=BASIC_PARAMS,
         domain_bounds=DOMAIN_BOUNDS,
         sounding_sites=SOUNDING_SITES
     )

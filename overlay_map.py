@@ -175,10 +175,10 @@ WRF_CONFIG = {
     'd2': {
         'dx': 2000,
         'dy': 2000,
-        'e_we': 70,
-        'e_sn': 70,
-        'i_parent_start': 25,
-        'j_parent_start': 52,
+        'e_we': 127,
+        'e_sn': 127,
+        'i_parent_start': 16,
+        'j_parent_start': 42,
         'parent_grid_ratio': 3,
     }
 }

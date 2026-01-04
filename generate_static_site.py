@@ -43,8 +43,8 @@ WRF_CONFIG = {
     },
     'd2': {
         'dx': 2000, 'dy': 2000,
-        'e_we': 70, 'e_sn': 70,
-        'i_parent_start': 25, 'j_parent_start': 52,
+        'e_we': 127, 'e_sn': 127,
+        'i_parent_start': 16, 'j_parent_start': 42,
         'parent_grid_ratio': 3,
     }
 }
@@ -605,6 +605,23 @@ def generate_html(domain_bounds, manifest):
         .speed-select {{
             width: 80px;
         }}
+        .expert-toggle {{
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }}
+        .toggle-label {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }}
+        .toggle-label input {{
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }}
         .opacity-control {{
             margin-top: 10px;
         }}
@@ -910,6 +927,13 @@ def generate_html(domain_bounds, manifest):
             </select>
         </div>
         
+        <div class="control-group expert-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" id="expertMode">
+                <span>Expert Mode</span>
+            </label>
+        </div>
+        
         <div class="control-group opacity-control">
             <label>Opacity: <span id="opacityValue">70%</span></label>
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
@@ -940,6 +964,9 @@ def generate_html(domain_bounds, manifest):
         // Parameter descriptions
         const paramInfo = {json.dumps(PARAMETER_INFO)};
         
+        // Basic parameters shown in non-expert mode
+        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars'];
+        
         // Domain bounds (pre-calculated Lambert projection)
         const domainData = {json.dumps(domain_bounds)};
         
@@ -965,6 +992,7 @@ def generate_html(domain_bounds, manifest):
         let soundingMarkers = [];
         let availableSoundings = [];
         let currentSoundingSite = null;
+        let expertMode = false;
         
         // Get base path for images (works for both local and GitHub Pages)
         function getBasePath() {{
@@ -1036,26 +1064,40 @@ def generate_html(domain_bounds, manifest):
             }}
         }}
         
-        // Load data for a specific date
-        function loadDateData(date) {{
-            currentData = manifest[date] || {{ parameters: [], times: [], domains: [], soundings: [] }};
-            availableSoundings = currentData.soundings || [];
-            
-            // Update parameter dropdown
+        // Update parameter dropdown based on expert mode
+        function updateParameterDropdown() {{
             const paramSelect = document.getElementById('paramSelect');
             const currentParam = paramSelect.value;
             paramSelect.innerHTML = '';
             
-            currentData.parameters.forEach(p => {{
+            // Filter parameters based on expert mode
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {{
+                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+            }}
+            
+            paramsToShow.forEach(p => {{
                 const option = document.createElement('option');
                 option.value = p;
                 option.textContent = paramInfo[p] || p;
                 paramSelect.appendChild(option);
             }});
             
-            if (currentData.parameters.includes(currentParam)) {{
+            // Restore selection if still available, otherwise default to first
+            if (paramsToShow.includes(currentParam)) {{
                 paramSelect.value = currentParam;
+            }} else if (paramsToShow.length > 0) {{
+                paramSelect.value = paramsToShow[0];
             }}
+        }}
+        
+        // Load data for a specific date
+        function loadDateData(date) {{
+            currentData = manifest[date] || {{ parameters: [], times: [], domains: [], soundings: [] }};
+            availableSoundings = currentData.soundings || [];
+            
+            // Update parameter dropdown based on expert mode
+            updateParameterDropdown();
             
             // Update domain dropdown
             const domainSelect = document.getElementById('domainSelect');
@@ -1283,6 +1325,11 @@ def generate_html(domain_bounds, manifest):
         document.getElementById('domainSelect').addEventListener('change', () => {{
             updateImage();
             updateSoundingIfOpen();
+        }});
+        document.getElementById('expertMode').addEventListener('change', (e) => {{
+            expertMode = e.target.checked;
+            updateParameterDropdown();
+            updateImage();
         }});
         document.getElementById('timeSlider').addEventListener('input', () => {{
             updateTimeDisplay();

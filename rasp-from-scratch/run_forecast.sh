@@ -20,7 +20,7 @@ format_time() {
 
 total_start_time=$(date +%s)
 
-for day in 0 1 2 3 4; do
+for day in 0 1 2 3; do
     echo "=========================================="
     echo "Running forecast for START_DAY=${day}"
     echo "Started at: $(date '+%Y-%m-%d %H:%M:%S')"

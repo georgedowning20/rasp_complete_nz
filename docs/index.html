@@ -302,6 +302,23 @@
         .speed-select {
             width: 80px;
         }
+        .expert-toggle {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .toggle-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
         .opacity-control {
             margin-top: 10px;
         }
@@ -607,6 +624,13 @@
             </select>
         </div>
         
+        <div class="control-group expert-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" id="expertMode">
+                <span>Expert Mode</span>
+            </label>
+        </div>
+        
         <div class="control-group opacity-control">
             <label>Opacity: <span id="opacityValue">70%</span></label>
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
@@ -637,14 +661,17 @@
         // Parameter descriptions
         const paramInfo = {"wstar": "Thermal Updraft Velocity (W*)", "bsratio": "Buoyancy/Shear Ratio", "wstar_bsratio": "W* with B/S Ratio", "hglider": "Glider Height (MSL)", "dglider": "Glider Height (AGL)", "hwcrit": "Height of Critical Updraft (MSL)", "dwcrit": "Height of Critical Updraft (AGL)", "hbl": "BL Top Height (MSL)", "dbl": "BL Depth (AGL)", "bltopvariab": "BL Top Variability", "wblmaxmin": "BL Max Up/Down Motion", "zwblmaxmin": "Height of Max BL Up/Down", "sfcsunpct": "Surface Sun %", "sfcshf": "Surface Heat Flux", "sfctemp": "Surface Temperature", "sfcdewpt": "Surface Dewpoint", "sfcwind0": "Surface Wind", "blwind": "BL Average Wind", "bltopwind": "BL Top Wind", "blwindshear": "BL Wind Shear", "zsfclcl": "Sfc LCL Height", "zsfclcldif": "Sfc Cu Cloudbase (AGL)", "zsfclclmask": "Sfc Cu Potential", "zblcl": "BL Top LCL Height", "zblcldif": "OD Cu Cloudbase (AGL)", "zblclmask": "OD Cu Potential", "blicw": "BL Cloud Ice+Water", "blcwbase": "BL Cloud Base", "blcloudpct": "BL Cloud %", "cfracl": "Low Cloud Fraction", "cfracm": "Mid Cloud Fraction", "cfrach": "High Cloud Fraction", "rain1": "1hr Rain", "cape": "CAPE", "press950": "950mb Wind", "press850": "850mb Wind", "press700": "700mb Wind", "press500": "500mb Wind", "stars": "Star Rating", "xcspeed": "XC Speed", "pfd_tot": "Potential Flight Distance (Total)"};
         
+        // Basic parameters shown in non-expert mode
+        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars'];
+        
         // Domain bounds (pre-calculated Lambert projection)
-        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "polygon": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292], [-41.12742432392281, 172.45936264797353]]}, "d2": {"bounds": [[-38.41390407769055, 174.93314919510547], [-37.17213656827966, 176.50750113614163]], "polygon": [[-38.41390407769055, 174.93314919510547], [-38.41763212370667, 176.5162358607518], [-37.17213656827966, 176.50750113614163], [-37.168471832959526, 174.9511991307884], [-38.41390407769055, 174.93314919510547]]}};
+        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "polygon": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292], [-41.12742432392281, 172.45936264797353]]}, "d2": {"bounds": [[-38.94801634989695, 174.30109012977698], [-36.679891485223784, 177.17632828631017]], "polygon": [[-38.94801634989695, 174.30109012977698], [-38.95401680591385, 177.21357464206238], [-36.679891485223784, 177.17632828631017], [-36.674075759079116, 174.3532265803379], [-38.94801634989695, 174.30109012977698]]}};
         
         // Sounding site locations
         const soundingSites = {"3": {"name": "Hamilton", "lat": -37.787, "lon": 175.2793}, "4": {"name": "Taupo", "lat": -38.6857, "lon": 176.0702}, "5": {"name": "Rotorua", "lat": -38.1368, "lon": 176.2497}, "6": {"name": "Napier", "lat": -39.4928, "lon": 176.912}, "7": {"name": "NewPlymouth", "lat": -39.0556, "lon": 174.0752}, "8": {"name": "Matamata", "lat": -37.81, "lon": 175.77}};
         
         // Available data manifest
-        const manifest = {"2026-01-04": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["3", "4", "5", "6", "7", "8"]}, "2026-01-05": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["3", "4", "5", "6", "7", "8"]}, "2026-01-06": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["3", "4", "5", "6", "7", "8"]}, "2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": [], "times": [], "domains": [], "soundings": []}};
+        const manifest = {"2026-01-04": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-05": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-06": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
         
         // =====================================================
         // APPLICATION CODE
@@ -662,6 +689,7 @@
         let soundingMarkers = [];
         let availableSoundings = [];
         let currentSoundingSite = null;
+        let expertMode = false;
         
         // Get base path for images (works for both local and GitHub Pages)
         function getBasePath() {
@@ -733,26 +761,40 @@
             }
         }
         
-        // Load data for a specific date
-        function loadDateData(date) {
-            currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
-            availableSoundings = currentData.soundings || [];
-            
-            // Update parameter dropdown
+        // Update parameter dropdown based on expert mode
+        function updateParameterDropdown() {
             const paramSelect = document.getElementById('paramSelect');
             const currentParam = paramSelect.value;
             paramSelect.innerHTML = '';
             
-            currentData.parameters.forEach(p => {
+            // Filter parameters based on expert mode
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {
+                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+            }
+            
+            paramsToShow.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p;
                 option.textContent = paramInfo[p] || p;
                 paramSelect.appendChild(option);
             });
             
-            if (currentData.parameters.includes(currentParam)) {
+            // Restore selection if still available, otherwise default to first
+            if (paramsToShow.includes(currentParam)) {
                 paramSelect.value = currentParam;
+            } else if (paramsToShow.length > 0) {
+                paramSelect.value = paramsToShow[0];
             }
+        }
+        
+        // Load data for a specific date
+        function loadDateData(date) {
+            currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
+            availableSoundings = currentData.soundings || [];
+            
+            // Update parameter dropdown based on expert mode
+            updateParameterDropdown();
             
             // Update domain dropdown
             const domainSelect = document.getElementById('domainSelect');
@@ -980,6 +1022,11 @@
         document.getElementById('domainSelect').addEventListener('change', () => {
             updateImage();
             updateSoundingIfOpen();
+        });
+        document.getElementById('expertMode').addEventListener('change', (e) => {
+            expertMode = e.target.checked;
+            updateParameterDropdown();
+            updateImage();
         });
         document.getElementById('timeSlider').addEventListener('input', () => {
             updateTimeDisplay();
