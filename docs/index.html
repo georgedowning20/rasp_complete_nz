@@ -156,7 +156,10 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a2e;
             color: #eee;
+            overflow: hidden;
         }
+        
+        /* Controls Panel */
         .controls {
             position: fixed;
             top: 10px;
@@ -167,12 +170,55 @@
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             max-width: 320px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .controls.collapsed {
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
         }
         .controls h2 {
             color: #e94560;
             margin-bottom: 15px;
             font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .controls-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+            background: rgba(233, 69, 96, 0.95);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+        .controls-toggle.active {
+            transform: translateX(0);
+        }
+        .close-controls {
+            display: none;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .close-controls:hover { color: #fff; }
+        
         .control-group {
             margin-bottom: 12px;
         }
@@ -188,10 +234,12 @@
             background: #0f3460;
             color: #fff;
             border: 1px solid #e94560;
-            padding: 8px;
+            padding: 10px 8px;
             border-radius: 5px;
-            font-size: 0.9em;
+            font-size: 16px; /* Prevents zoom on iOS */
             cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
         }
         select:focus { outline: none; border-color: #fff; }
         select option { background: #16213e; }
@@ -201,23 +249,23 @@
         }
         input[type="range"] {
             width: 100%;
-            height: 6px;
+            height: 8px;
             -webkit-appearance: none;
             background: #0f3460;
-            border-radius: 3px;
-            margin: 8px 0;
+            border-radius: 4px;
+            margin: 10px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 24px;
+            height: 24px;
             background: #e94560;
             border-radius: 50%;
             cursor: pointer;
         }
         .time-display {
             text-align: center;
-            font-size: 1.4em;
+            font-size: 1.6em;
             color: #e94560;
             font-weight: bold;
         }
@@ -231,12 +279,12 @@
             background: #e94560;
             color: white;
             border: none;
-            padding: 8px;
+            padding: 12px 8px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
         }
-        .play-btn:hover { background: #ff6b6b; }
+        .play-btn:hover, .play-btn:active { background: #ff6b6b; }
         .speed-select {
             width: 80px;
         }
@@ -259,25 +307,30 @@
             left: 10px;
             z-index: 1000;
             background: rgba(22, 33, 62, 0.9);
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
-            font-size: 0.85em;
+            font-size: 0.8em;
             color: #aaa;
+            max-width: calc(100vw - 20px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .header-box {
             position: fixed;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 999;
             background: rgba(22, 33, 62, 0.95);
-            padding: 8px;
+            padding: 6px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 80px);
         }
         .header-box img {
             display: block;
-            max-width: 600px;
+            max-width: 100%;
             height: auto;
         }
         .legend-box {
@@ -285,15 +338,16 @@
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 999;
             background: rgba(22, 33, 62, 0.95);
-            padding: 8px;
+            padding: 6px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 20px);
         }
         .legend-box img {
             display: block;
-            max-width: 600px;
+            max-width: 100%;
             height: auto;
         }
         .time-nav {
@@ -306,16 +360,16 @@
             background: #e94560;
             color: white;
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1.2em;
+            font-size: 1.3em;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .time-nav-btn:hover { background: #ff6b6b; }
+        .time-nav-btn:hover, .time-nav-btn:active { background: #ff6b6b; }
         .time-nav-btn:disabled { background: #555; cursor: not-allowed; }
         .leaflet-control-attribution { display: none; }
         
@@ -326,46 +380,50 @@
             transform: translate(-50%, -50%);
             z-index: 2000;
             background: rgba(22, 33, 62, 0.98);
-            padding: 15px;
+            padding: 10px;
             border-radius: 10px;
             box-shadow: 0 4px 30px rgba(0,0,0,0.7);
             display: none;
+            max-width: calc(100vw - 20px);
+            max-height: calc(100vh - 20px);
+            overflow: auto;
         }
         .sounding-popup.active {
             display: block;
         }
         .sounding-popup img {
-            max-width: 90vw;
-            max-height: 80vh;
+            max-width: 100%;
+            max-height: calc(100vh - 80px);
             display: block;
         }
         .sounding-popup .close-btn {
             position: absolute;
             top: 5px;
-            right: 10px;
+            right: 5px;
             background: #e94560;
             color: white;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.2em;
+            font-size: 1.4em;
         }
-        .sounding-popup .close-btn:hover {
+        .sounding-popup .close-btn:hover, .sounding-popup .close-btn:active {
             background: #ff6b6b;
         }
         .sounding-popup h3 {
             color: #e94560;
             margin: 0 0 10px 0;
-            padding-right: 30px;
+            padding-right: 40px;
+            font-size: 1em;
         }
         .sounding-marker {
             background: #e94560;
             border: 2px solid white;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -374,6 +432,104 @@
             font-size: 12px;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .controls {
+                top: 0;
+                left: 0;
+                right: 0;
+                max-width: 100%;
+                border-radius: 0 0 10px 10px;
+                padding: 12px 15px;
+                max-height: 70vh;
+            }
+            .controls.collapsed {
+                transform: translateY(-100%);
+            }
+            .controls-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .controls.collapsed + .controls-toggle {
+                transform: translateY(0);
+            }
+            .close-controls {
+                display: block;
+            }
+            .controls h2 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            .control-group {
+                margin-bottom: 10px;
+            }
+            .control-group label {
+                font-size: 0.7em;
+            }
+            select {
+                padding: 10px 8px;
+            }
+            .header-box {
+                top: auto;
+                bottom: 50px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                max-width: none;
+                padding: 4px;
+            }
+            .legend-box {
+                bottom: 5px;
+                padding: 4px;
+            }
+            .legend-box img {
+                max-height: 40px;
+            }
+            .info-box {
+                display: none;
+            }
+            .time-display {
+                font-size: 1.4em;
+            }
+            .play-controls {
+                gap: 6px;
+            }
+            .time-nav {
+                gap: 6px;
+            }
+            .time-nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+            /* Two column layout for dropdowns on mobile */
+            .mobile-row {
+                display: flex;
+                gap: 10px;
+            }
+            .mobile-row .control-group {
+                flex: 1;
+                margin-bottom: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                padding: 10px 12px;
+            }
+            .header-box {
+                display: none;
+            }
+            .legend-box img {
+                max-height: 35px;
+            }
+            .sounding-marker {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
         }
         .sounding-marker:hover {
             background: #ff6b6b;
@@ -384,12 +540,24 @@
 <body>
     <div id="map"></div>
     
-    <div class="controls">
-        <h2>🌤️ RASP NZ Forecast</h2>
+    <button class="controls-toggle" id="controlsToggle" aria-label="Open controls">☰</button>
+    
+    <div class="controls" id="controlsPanel">
+        <h2>
+            <span>🌤️ RASP NZ</span>
+            <button class="close-controls" id="closeControls" aria-label="Close controls">×</button>
+        </h2>
         
-        <div class="control-group">
-            <label>Date</label>
-            <select id="dateSelect"></select>
+        <div class="mobile-row">
+            <div class="control-group">
+                <label>Date</label>
+                <select id="dateSelect"></select>
+            </div>
+            
+            <div class="control-group">
+                <label>Domain</label>
+                <select id="domainSelect"></select>
+            </div>
         </div>
         
         <div class="control-group">
@@ -398,18 +566,13 @@
         </div>
         
         <div class="control-group">
-            <label>Domain</label>
-            <select id="domainSelect"></select>
-        </div>
-        
-        <div class="control-group">
             <label>Time (Local)</label>
             <div class="time-slider-container">
                 <input type="range" id="timeSlider" min="0" max="9" value="4">
                 <div class="time-nav">
-                    <button class="time-nav-btn" id="timePrev" title="Previous">◀</button>
+                    <button class="time-nav-btn" id="timePrev" title="Previous" aria-label="Previous time">◀</button>
                     <div class="time-display" id="timeDisplay" style="flex:1">--:--</div>
-                    <button class="time-nav-btn" id="timeNext" title="Next">▶</button>
+                    <button class="time-nav-btn" id="timeNext" title="Next" aria-label="Next time">▶</button>
                 </div>
             </div>
         </div>
@@ -424,7 +587,7 @@
         </div>
         
         <div class="control-group opacity-control">
-            <label>Overlay Opacity: <span id="opacityValue">70%</span></label>
+            <label>Opacity: <span id="opacityValue">70%</span></label>
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
         </div>
     </div>
@@ -821,6 +984,37 @@
                 updateTimeDisplay();
                 updateImage();
                 updateSoundingIfOpen();
+            }
+        });
+        
+        // Mobile controls toggle
+        const controlsPanel = document.getElementById('controlsPanel');
+        const controlsToggle = document.getElementById('controlsToggle');
+        const closeControls = document.getElementById('closeControls');
+        
+        controlsToggle.addEventListener('click', () => {
+            controlsPanel.classList.remove('collapsed');
+            controlsToggle.style.display = 'none';
+        });
+        
+        closeControls.addEventListener('click', () => {
+            controlsPanel.classList.add('collapsed');
+            controlsToggle.style.display = 'flex';
+        });
+        
+        // Close controls when clicking on map (mobile)
+        document.getElementById('map').addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && !controlsPanel.classList.contains('collapsed')) {
+                controlsPanel.classList.add('collapsed');
+                controlsToggle.style.display = 'flex';
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                controlsPanel.classList.remove('collapsed');
+                controlsToggle.style.display = 'none';
             }
         });
         
