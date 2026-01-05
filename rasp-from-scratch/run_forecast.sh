@@ -9,6 +9,26 @@ echo "RASP Multi-Day Forecast Runner"
 echo "=========================================="
 echo ""
 
+# Clean up old date folders (keep only today and future dates)
+echo "Cleaning up old date folders..."
+DOCS_DATA_DIR="../docs/data"
+if [ -d "$DOCS_DATA_DIR" ]; then
+    TODAY=$(date +%Y-%m-%d)
+    for folder in "$DOCS_DATA_DIR"/*/; do
+        if [ -d "$folder" ]; then
+            folder_name=$(basename "$folder")
+            # Check if folder name matches date format YYYY-MM-DD
+            if [[ "$folder_name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                if [[ "$folder_name" < "$TODAY" ]]; then
+                    echo "  Removing old folder: $folder_name"
+                    rm -rf "$folder"
+                fi
+            fi
+        fi
+    done
+fi
+echo ""
+
 # Function to format seconds into hours:minutes:seconds
 format_time() {
     local seconds=$1

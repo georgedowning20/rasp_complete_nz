@@ -26,6 +26,8 @@ $ docker-compose build wrf_build
 $ docker-compose build wrf_prod
 ```
 
+docker-compose build base && docker-compose build wrf_build && docker-compose build wrf_prod && docker-compose build rasp
+
 The version of WRF and WPS you have specified in `.env` are fetched from GitHub and compiled from source.
 This can take a long time, so be patient and do not worry about the verbose output!
 

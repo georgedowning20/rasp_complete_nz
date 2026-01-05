@@ -1322,7 +1322,7 @@ $PROXY = "";
 ####### START CYCLE LOOP OVER TIME #######
   my $max_dom;
   $runstartsec = time();
-  $runstarttime = `date +%H:%M` ; jchomp($runstarttime);
+  $runstarttime = `date -u +%H:%M` ; jchomp($runstarttime);
   $elapsed_runhrs = 0.;
   $icycle = 0;
   $foundfilecount = 0;
@@ -3120,7 +3120,10 @@ sub output_wrffile_results (@)
     $ENV{'ENV_NCL_DATIME'} = sprintf "Day= %d %d %d %s ValidLST= %d%02d %s ValidZ= %d%02d Fcst= %s Init= %d ", 
                                  $localyyyy,$localmm,$localdd,$localdow,
                                  $localhh,$localmin,$LOCALTIME_ID{$regionkey},
-                                 $filehh,$filemin, $fcstperiod, $gribfcstperiod ; 
+                                 $filehh,$filemin, $fcstperiod, $gribfcstperiod ;
+    ### run info for header display - RASP run time and GFS init time
+    $ENV{'ENV_NCL_RUNINFO'} = sprintf "RASP run @ %sZ | %s init @ %02dZ",
+                                 $runstarttime, $GRIBFILE_MODEL, $gribanaltime ; 
 
     ### Set parameter list sent to wrf2gm.ncl
 	# Complication with pfd_tot & avg_stars

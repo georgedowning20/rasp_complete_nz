@@ -9,7 +9,7 @@
 ### IF RUN REGION IS NOT IN THIS FILE, THEN DEFAULT UNITS USED AND NO SOUNDINGS ARE PLOTTED
 #############################################################################################
 ===NZ
-metric
+celsius
 sounding1
 ~F34~7~F21~Auckland
 -36.8485

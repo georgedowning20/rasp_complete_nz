@@ -43,8 +43,8 @@ WRF_CONFIG = {
     },
     'd2': {
         'dx': 2000, 'dy': 2000,
-        'e_we': 127, 'e_sn': 127,
-        'i_parent_start': 16, 'j_parent_start': 42,
+        'e_we': 151, 'e_sn': 151,
+        'i_parent_start': 12, 'j_parent_start': 38,
         'parent_grid_ratio': 3,
     }
 }
@@ -305,7 +305,9 @@ def generate_html(domain_bounds, manifest):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>RASP Weather Viewer - NZ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -323,6 +325,7 @@ def generate_html(domain_bounds, manifest):
                 
                 if (!this._canvas) {{
                     this._canvas = L.DomUtil.create('canvas', 'leaflet-image-layer leaflet-zoom-animated');
+                    this._canvas.style.willChange = 'transform';
                 }}
                 
                 if (this.options.opacity) {{
@@ -339,13 +342,13 @@ def generate_html(domain_bounds, manifest):
                 this._image.src = this._url;
                 
                 map.on('zoomanim', this._animateZoom, this);
-                map.on('zoomend viewreset moveend', this._reset, this);
+                map.on('zoomend viewreset moveend resize', this._reset, this);
             }},
             
             onRemove: function(map) {{
                 L.DomUtil.remove(this._canvas);
                 map.off('zoomanim', this._animateZoom, this);
-                map.off('zoomend viewreset', this._reset, this);
+                map.off('zoomend viewreset moveend resize', this._reset, this);
             }},
             
             setOpacity: function(opacity) {{
@@ -363,31 +366,19 @@ def generate_html(domain_bounds, manifest):
             }},
             
             _animateZoom: function(e) {{
+                if (!this._map || !this._canvas || !this._bounds) return;
+                
                 const scale = this._map.getZoomScale(e.zoom);
-                // Calculate center of all 4 corners for better animation pivot
-                const corners = this._corners;
-                const centerLat = (corners[0][0] + corners[1][0] + corners[2][0] + corners[3][0]) / 4;
-                const centerLng = (corners[0][1] + corners[1][1] + corners[2][1] + corners[3][1]) / 4;
+                const offset = this._map._latLngBoundsToNewLayerBounds(this._bounds, e.zoom, e.center).min;
                 
-                // Get current canvas position
-                const currentPos = this._map.latLngToNewLayerPoint(
-                    L.latLng(centerLat, centerLng),
-                    e.zoom,
-                    e.center
-                );
-                
-                // Calculate offset from canvas center
-                const canvasCenter = L.point(
-                    this._canvas.width / 2,
-                    this._canvas.height / 2
-                );
-                
-                const offset = currentPos.subtract(canvasCenter.multiplyBy(scale));
                 L.DomUtil.setTransform(this._canvas, offset, scale);
             }},
             
             _reset: function() {{
                 if (!this._map || !this._image.complete) return;
+                
+                // Clear any transform from zoom animation
+                L.DomUtil.setTransform(this._canvas, L.point(0, 0), 1);
                 
                 const map = this._map;
                 const canvas = this._canvas;
@@ -413,6 +404,14 @@ def generate_html(domain_bounds, manifest):
                 canvas.style.height = height + 'px';
                 
                 L.DomUtil.setPosition(canvas, L.point(minX, minY));
+                
+                // Store bounds for zoom animation - this is the key!
+                // Convert pixel bounds back to lat/lng bounds
+                const swPoint = L.point(minX, maxY);
+                const nePoint = L.point(maxX, minY);
+                const sw = map.layerPointToLatLng(swPoint);
+                const ne = map.layerPointToLatLng(nePoint);
+                this._bounds = L.latLngBounds(sw, ne);
                 
                 const tlAdj = {{x: tl.x - minX, y: tl.y - minY}};
                 const trAdj = {{x: tr.x - minX, y: tr.y - minY}};
@@ -469,11 +468,16 @@ def generate_html(domain_bounds, manifest):
     </script>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{
+        html, body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a2e;
             color: #eee;
             overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
         }}
         
         /* Controls Panel */
@@ -634,6 +638,21 @@ def generate_html(domain_bounds, manifest):
             left: 0;
             right: 0;
             bottom: 0;
+            touch-action: none;
+        }}
+        
+        /* Smooth canvas animations */
+        .leaflet-image-layer {{
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }}
+        
+        .leaflet-zoom-animated {{
+            will-change: transform;
         }}
         .info-box {{
             position: fixed;
@@ -1010,7 +1029,13 @@ def generate_html(domain_bounds, manifest):
             map = L.map('map', {{
                 center: [-37.81, 175.77],
                 zoom: 9,
-                zoomControl: true
+                zoomControl: true,
+                zoomSnap: 0.5,
+                zoomDelta: 0.5,
+                wheelPxPerZoomLevel: 120,
+                bounceAtZoomLimits: false,
+                tap: true,
+                tapTolerance: 15
             }});
             
             const osm = L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{

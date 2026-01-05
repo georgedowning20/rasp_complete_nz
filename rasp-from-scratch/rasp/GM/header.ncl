@@ -10,9 +10,18 @@ begin
 		titleline3 = "DrJack BLIPMAP from RASP "+gridspacingkm+"km "+initmodel+"-initiated WRF-ARW model"
 	end if
 
+	;;; Get run info for 4th title line
+	runinfo = getenv("ENV_NCL_RUNINFO")
+	if(ismissing(runinfo)) then
+		runinfo = ""
+	end if
+
 	print("    *  " + title)
 	print("    *  " + getenv("ENV_NCL_ID"))
 	print("    *  " + titleline3)
+	if(runinfo .ne. "") then
+		print("    *  " + runinfo)
+	end if
 
 	;;; More opts!
 	opts_ti                       = True
@@ -81,7 +90,7 @@ begin
 		"amOrthogonalPosF" : -(1 - 0.89) + 0.018 + 0.015 ; Top - ht(txt0) - ht(txt1)
 	end setvalues
 
-	txt2 = create "line2" textItemClass wksHd
+	txt2 = create "line3" textItemClass wksHd
 		"txFuncCode"	   : "~"
 		"txString"	   : titleline3
 		"txFontHeightF"	   : 0.010
@@ -97,6 +106,25 @@ begin
 		                   ; Leave gap between 2nd & 3rd lines
 	end setvalues
 
+	;;; Add 4th line for run info (RASP run time and GFS init time)
+	if(runinfo .ne. "") then
+		txt3 = create "line4" textItemClass wksHd
+			"txFuncCode"	   : "~"
+			"txString"	   : runinfo
+			"txFontHeightF"	   : 0.009
+			"txFont"	   : "helvetica"
+		end create
+		anno = NhlAddAnnotation(tmp, txt3)
+		setvalues anno
+			"amZone"           : 1
+			"amJust"           : "TopCenter"
+			"amSide"           : "Top"
+			"amParallelPosF"   : 0.5
+			"amOrthogonalPosF" : -(1 - 0.89) + 0.018 + 0.015 + 0.010 + 0.015 + 0.009 + 0.005
+			                   ; Position below 3rd line
+		end setvalues
+	end if
+
 	draw(tmp)
 	frame(wksHd)
 
@@ -108,7 +136,12 @@ begin
 		end getvalues
 
 		Wd = wkWidth
-		Ht = wkHeight * (1 - opts_ti@vpYF - tm )  ; Allow for Tick Marks
+		;;; Add extra height for 4th line (run info)
+		extraHt = 0.0
+		if(runinfo .ne. "") then
+			extraHt = 0.02  ; Extra space for 4th line
+		end if
+		Ht = wkHeight * (1 - opts_ti@vpYF - tm + extraHt)  ; Allow for Tick Marks + 4th line
 		Xo = 0
 		Yo = 0
 		cmd = CONVERT + " -crop " + Wd + "x" + Ht + "+" + Xo + "+" + Yo + " " + fName + " " + fName + " &"

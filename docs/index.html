@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>RASP Weather Viewer - NZ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,6 +22,7 @@
                 
                 if (!this._canvas) {
                     this._canvas = L.DomUtil.create('canvas', 'leaflet-image-layer leaflet-zoom-animated');
+                    this._canvas.style.willChange = 'transform';
                 }
                 
                 if (this.options.opacity) {
@@ -36,13 +39,13 @@
                 this._image.src = this._url;
                 
                 map.on('zoomanim', this._animateZoom, this);
-                map.on('zoomend viewreset moveend', this._reset, this);
+                map.on('zoomend viewreset moveend resize', this._reset, this);
             },
             
             onRemove: function(map) {
                 L.DomUtil.remove(this._canvas);
                 map.off('zoomanim', this._animateZoom, this);
-                map.off('zoomend viewreset', this._reset, this);
+                map.off('zoomend viewreset moveend resize', this._reset, this);
             },
             
             setOpacity: function(opacity) {
@@ -60,31 +63,19 @@
             },
             
             _animateZoom: function(e) {
+                if (!this._map || !this._canvas || !this._bounds) return;
+                
                 const scale = this._map.getZoomScale(e.zoom);
-                // Calculate center of all 4 corners for better animation pivot
-                const corners = this._corners;
-                const centerLat = (corners[0][0] + corners[1][0] + corners[2][0] + corners[3][0]) / 4;
-                const centerLng = (corners[0][1] + corners[1][1] + corners[2][1] + corners[3][1]) / 4;
+                const offset = this._map._latLngBoundsToNewLayerBounds(this._bounds, e.zoom, e.center).min;
                 
-                // Get current canvas position
-                const currentPos = this._map.latLngToNewLayerPoint(
-                    L.latLng(centerLat, centerLng),
-                    e.zoom,
-                    e.center
-                );
-                
-                // Calculate offset from canvas center
-                const canvasCenter = L.point(
-                    this._canvas.width / 2,
-                    this._canvas.height / 2
-                );
-                
-                const offset = currentPos.subtract(canvasCenter.multiplyBy(scale));
                 L.DomUtil.setTransform(this._canvas, offset, scale);
             },
             
             _reset: function() {
                 if (!this._map || !this._image.complete) return;
+                
+                // Clear any transform from zoom animation
+                L.DomUtil.setTransform(this._canvas, L.point(0, 0), 1);
                 
                 const map = this._map;
                 const canvas = this._canvas;
@@ -110,6 +101,14 @@
                 canvas.style.height = height + 'px';
                 
                 L.DomUtil.setPosition(canvas, L.point(minX, minY));
+                
+                // Store bounds for zoom animation - this is the key!
+                // Convert pixel bounds back to lat/lng bounds
+                const swPoint = L.point(minX, maxY);
+                const nePoint = L.point(maxX, minY);
+                const sw = map.layerPointToLatLng(swPoint);
+                const ne = map.layerPointToLatLng(nePoint);
+                this._bounds = L.latLngBounds(sw, ne);
                 
                 const tlAdj = {x: tl.x - minX, y: tl.y - minY};
                 const trAdj = {x: tr.x - minX, y: tr.y - minY};
@@ -166,11 +165,16 @@
     </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        html, body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1a1a2e;
             color: #eee;
             overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
         }
         
         /* Controls Panel */
@@ -331,6 +335,21 @@
             left: 0;
             right: 0;
             bottom: 0;
+            touch-action: none;
+        }
+        
+        /* Smooth canvas animations */
+        .leaflet-image-layer {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        .leaflet-zoom-animated {
+            will-change: transform;
         }
         .info-box {
             position: fixed;
@@ -665,13 +684,13 @@
         const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars'];
         
         // Domain bounds (pre-calculated Lambert projection)
-        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "polygon": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292], [-41.12742432392281, 172.45936264797353]]}, "d2": {"bounds": [[-38.94801634989695, 174.30109012977698], [-36.679891485223784, 177.17632828631017]], "polygon": [[-38.94801634989695, 174.30109012977698], [-38.95401680591385, 177.21357464206238], [-36.679891485223784, 177.17632828631017], [-36.674075759079116, 174.3532265803379], [-38.94801634989695, 174.30109012977698]]}};
+        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "polygon": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292], [-41.12742432392281, 172.45936264797353]]}, "d2": {"bounds": [[-39.16021707675689, 174.01782025731345], [-36.46027936139781, 177.4409515243398]], "polygon": [[-39.16021707675689, 174.01782025731345], [-39.16738119568803, 177.49542832380757], [-36.46027936139781, 177.4409515243398], [-36.453377027852916, 174.09001976059483], [-39.16021707675689, 174.01782025731345]]}};
         
         // Sounding site locations
         const soundingSites = {"3": {"name": "Hamilton", "lat": -37.787, "lon": 175.2793}, "4": {"name": "Taupo", "lat": -38.6857, "lon": 176.0702}, "5": {"name": "Rotorua", "lat": -38.1368, "lon": 176.2497}, "6": {"name": "Napier", "lat": -39.4928, "lon": 176.912}, "7": {"name": "NewPlymouth", "lat": -39.0556, "lon": 174.0752}, "8": {"name": "Matamata", "lat": -37.81, "lon": 175.77}};
         
         // Available data manifest
-        const manifest = {"2026-01-04": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-05": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-06": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
+        const manifest = {"2026-01-05": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-06": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
         
         // =====================================================
         // APPLICATION CODE
@@ -707,7 +726,13 @@
             map = L.map('map', {
                 center: [-37.81, 175.77],
                 zoom: 9,
-                zoomControl: true
+                zoomControl: true,
+                zoomSnap: 0.5,
+                zoomDelta: 0.5,
+                wheelPxPerZoomLevel: 120,
+                bounceAtZoomLimits: false,
+                tap: true,
+                tapTolerance: 15
             });
             
             const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
