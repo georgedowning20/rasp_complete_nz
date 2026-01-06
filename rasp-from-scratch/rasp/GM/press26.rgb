@@ -1,43 +1,41 @@
-# Stepped sequential scheme, 5 steps
-#
-# Taken from Department of Geography, University of Oregon
+# Smooth diverging colormap for convergence
+# Blue (negative/sink) -> White (neutral) -> Red/Orange (positive/lift)
+# Linear perceptually uniform transitions
 
 ncolors = 26
 
 # r       g       b
- 32      32      32
- 64      64      64
- 96      96      96
-128     128     128
- 66      44     178
-101      81     204
-143     126     229
-191     178     255
- 15     107     153
- 44     133     178
- 81     163     204
-126     195     229
-178     229     255
-255     216     178
-229     177     126
-204     142      81
-178     111      44
-153      84      15
-255     178     178
-229     126     126
-204      81      81
-178      44      44
-253     157      24
-253     189      16
-253     224       8
-253     253       0
-
-#255     255     204
-#255     255     102
-#255     255       0
-#204     204       0
-
-#255     250      20
-#255     209      33
-#255     163      10
-#255      76       0
+# Deep blue (strong sink)
+  33      63     143
+  50      87     162
+  67     111     181
+  84     135     200
+# Medium blue
+ 101     156     215
+ 118     175     225
+ 135     192     235
+ 152     207     242
+# Light blue approaching neutral
+ 170     218     248
+ 188     227     251
+ 206     235     253
+ 224     242     254
+# Neutral white/light gray
+ 245     245     245
+# Light warm approaching positive
+ 254     235     218
+ 253     219     193
+ 252     202     168
+# Light orange
+ 250     184     143
+ 248     164     118
+ 245     143      93
+ 242     120      68
+# Medium orange to red
+ 238      96      45
+ 230      75      30
+ 220      55      20
+ 200      35      15
+# Deep red (strong lift)
+ 175      20      10
+ 150       5       5

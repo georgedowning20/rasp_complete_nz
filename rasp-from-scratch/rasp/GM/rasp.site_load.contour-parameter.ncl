@@ -42,10 +42,10 @@ end if
 
 ;;; Thermiek sterkte en B/S ratio
 if( plot_param .eq. "wstar" ) then
-    opts_bparam@ContourParameters = (/ 25., 500., 25. /)    
+    opts_bparam@ContourParameters = (/ 25., 800., 25. /)    
 end if
 if( plot_param .eq. "wstar_bsratio" ) then
-    opts_bparam@ContourParameters = (/ 25., 500., 25. /)
+    opts_bparam@ContourParameters = (/ 25., 800., 25. /)
 end if
 if( plot_param .eq. "bsratio" ) then
     opts_bparam@ContourParameters = (/ 1., 9., 1. /)
@@ -150,7 +150,7 @@ if( plot_param .eq. "ter" ) then
     opts_bparam@ContourParameters = (/ 0., 0., 10. /)    
 end if
 if( plot_param .eq. "wstar175" ) then
-    opts_bparam@ContourParameters = (/ 25., 500., 25. /)    
+    opts_bparam@ContourParameters = (/ 25., 600., 25. /)    
 end if
 if( plot_param .eq. "wrf=HGT" ) then
     opts_bparam@ContourParameters = (/ 0., 0., 10. /)
