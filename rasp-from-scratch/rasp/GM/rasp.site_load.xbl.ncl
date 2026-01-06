@@ -10,7 +10,6 @@
 if( Region .eq. "UK2+1" ) then
     opts_w@ContourParameters = (/ -450., 450., 50. /)
 else
-    opts_bparam@colorMap = "press26"
     opts_bparam@ContourParameters = (/ -300., 300., 25. /)
 end if
 

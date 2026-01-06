@@ -10,7 +10,6 @@
 ;else
 ;    opts_bparam@colorMap = "steprev18"
 ;    opts_bparam@ContourParameters = (/ -200., 200., 25. /)
-    opts_bparam@colorMap = "press26"
     opts_bparam@ContourParameters = (/ -300., 300., 25. /)
 ;end if
 

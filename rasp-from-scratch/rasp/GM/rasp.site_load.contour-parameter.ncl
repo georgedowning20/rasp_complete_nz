@@ -99,7 +99,6 @@ end if
 
 ;;; Convergentie
 if( plot_param .eq. "wblmaxmin" ) then
-    opts_bparam@colorMap = "press26"
     opts_bparam@ContourParameters = (/ -300., 300., 25. /)
 end if
 if( plot_param .eq. "zwblmaxmin" ) then
