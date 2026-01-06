@@ -1203,7 +1203,11 @@ def generate_html(domain_bounds, manifest, help_text):
             }});
             
             if (dates.length > 0) {{
-                loadDateData(dates[0]);
+                // Try to select today's date, otherwise use the most recent
+                const today = new Date().toISOString().split('T')[0];
+                const defaultDate = dates.includes(today) ? today : dates[0];
+                select.value = defaultDate;
+                loadDateData(defaultDate);
             }}
         }}
         
