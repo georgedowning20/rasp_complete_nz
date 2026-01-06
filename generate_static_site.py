@@ -299,8 +299,9 @@ def copy_images(date, dest_dir):
     return count
 
 
-def generate_html(domain_bounds, manifest):
+def generate_html(domain_bounds, manifest, help_text):
     """Generate the static HTML viewer."""
+    help_text_json = json.dumps(help_text)
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -895,6 +896,109 @@ def generate_html(domain_bounds, manifest):
             background: #ff6b6b;
             transform: scale(1.1);
         }}
+        
+        /* Help Button */
+        .help-btn {{
+            background: #0f3460;
+            color: #e94560;
+            border: 1px solid #e94560;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+        }}
+        .help-btn:hover {{
+            background: #e94560;
+            color: white;
+        }}
+        
+        /* Help Modal */
+        .help-modal {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 3000;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }}
+        .help-modal.active {{
+            display: flex;
+        }}
+        .help-content {{
+            background: #16213e;
+            border-radius: 10px;
+            max-width: 800px;
+            max-height: 90vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+        }}
+        .help-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            background: #0f3460;
+        }}
+        .help-header h2 {{
+            color: #e94560;
+            margin: 0;
+            font-size: 1.2em;
+        }}
+        .help-close-btn {{
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .help-close-btn:hover {{
+            background: #ff6b6b;
+        }}
+        .help-body {{
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }}
+        .help-text {{
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            color: #ddd;
+        }}
+        .help-text a {{
+            color: #4ecdc4;
+        }}
+        
+        @media (max-width: 768px) {{
+            .help-content {{
+                max-height: 95vh;
+            }}
+            .help-body {{
+                padding: 15px;
+            }}
+            .help-text {{
+                font-size: 0.75em;
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -957,6 +1061,8 @@ def generate_html(domain_bounds, manifest):
             <label>Opacity: <span id="opacityValue">70%</span></label>
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
         </div>
+        
+        <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
     </div>
     
     <div class="info-box" id="infoBox">Loading...</div>
@@ -973,6 +1079,18 @@ def generate_html(domain_bounds, manifest):
         <button class="close-btn" id="closeSounding">×</button>
         <h3 id="soundingTitle">Sounding</h3>
         <img id="soundingImg" src="" alt="Sounding">
+    </div>
+    
+    <div class="help-modal" id="helpModal">
+        <div class="help-content">
+            <div class="help-header">
+                <h2>📖 RASP Parameter Reference</h2>
+                <button class="help-close-btn" id="helpCloseBtn">×</button>
+            </div>
+            <div class="help-body">
+                <pre class="help-text" id="helpText"></pre>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -1414,6 +1532,34 @@ def generate_html(domain_bounds, manifest):
             }}
         }});
         
+        // Help modal functionality
+        const helpText = {help_text_json};
+        
+        document.getElementById('helpText').textContent = helpText;
+        
+        document.getElementById('helpBtn').addEventListener('click', () => {{
+            document.getElementById('helpModal').classList.add('active');
+        }});
+        
+        document.getElementById('helpCloseBtn').addEventListener('click', () => {{
+            document.getElementById('helpModal').classList.remove('active');
+        }});
+        
+        document.getElementById('helpModal').addEventListener('click', (e) => {{
+            if (e.target.id === 'helpModal') {{
+                document.getElementById('helpModal').classList.remove('active');
+            }}
+        }});
+        
+        // Close help modal with Escape key
+        document.addEventListener('keydown', (e) => {{
+            if (e.key === 'Escape') {{
+                document.getElementById('helpModal').classList.remove('active');
+                document.getElementById('soundingPopup').classList.remove('active');
+                currentSoundingSite = null;
+            }}
+        }});
+        
         // Initialize
         initMap();
         loadDates();
@@ -1468,9 +1614,19 @@ def generate_static_site():
         total_images += count
         print(f"      Copied {count} images")
     
+    # Read help.txt content
+    print("📖 Loading help text...")
+    help_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'help.txt')
+    help_text = ""
+    if os.path.exists(help_file_path):
+        with open(help_file_path, 'r') as f:
+            help_text = f.read()
+    else:
+        help_text = "Help file not found."
+    
     # Generate HTML
     print("📝 Generating index.html...")
-    html = generate_html(domain_bounds, manifest)
+    html = generate_html(domain_bounds, manifest, help_text)
     
     with open(os.path.join(DOCS_DIR, 'index.html'), 'w') as f:
         f.write(html)
