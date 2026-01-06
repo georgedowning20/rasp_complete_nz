@@ -53,39 +53,39 @@ end if
 
 ;;; Grenslaag hoogte/dikte en variatie
 if( plot_param .eq. "hwcrit" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "dwcrit" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "hglider" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "hbl" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "dbl" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "bltopvariab" ) then
-    opts_bparam@ContourParameters = (/ 100., 2000., 100. /)
+    opts_bparam@ContourParameters = (/ 100., 3000., 100. /)
 end if
 
 ;;; Wolk hoogte/potentieel
 if( plot_param .eq. "zsfclcl" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "zsfclclmask" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "zblcl" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "zblclmask" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "blcwbase" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 
 ;;; Nog nagaan of deze wel positief kunnen zijn, anders legenda aanpassen
@@ -103,7 +103,7 @@ if( plot_param .eq. "wblmaxmin" ) then
     opts_bparam@ContourParameters = (/ -300., 300., 25. /)
 end if
 if( plot_param .eq. "zwblmaxmin" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 
 ;;; Percentages
@@ -138,7 +138,7 @@ end if
 
 
 if( plot_param .eq. "experimental1" ) then
-    opts_bparam@ContourParameters = (/ 200., 3000., 200. /)
+    opts_bparam@ContourParameters = (/ 200., 10000., 200. /)
 end if
 if( plot_param .eq. "simpletest" ) then
     opts_bparam@ContourParameters = (/ 0., 5., 0.5 /)
