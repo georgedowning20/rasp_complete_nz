@@ -4,6 +4,9 @@
 
 cd "$(dirname "$0")"
 
+# Log file for tracking successful runs
+LOG_FILE="run_forecast.log.txt"
+
 echo "=========================================="
 echo "RASP Multi-Day Forecast Runner"
 echo "=========================================="
@@ -56,8 +59,10 @@ for day in 0 1 2 3; do
     
     if [ $exit_code -eq 0 ]; then
         echo "✓ Day ${day} forecast completed successfully"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] SUCCESS - Day ${day} forecast completed (Duration: $(format_time $run_duration))" >> "$LOG_FILE"
     else
         echo "✗ Day ${day} forecast failed with exit code ${exit_code}"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] FAILED - Day ${day} forecast failed with exit code ${exit_code}" >> "$LOG_FILE"
     fi
     
     echo "  Duration: $(format_time $run_duration)"
@@ -77,3 +82,7 @@ echo "All forecasts complete!"
 echo "Total time: $(format_time $total_duration)"
 echo "Finished at: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "=========================================="
+
+# Log the completion of the full run
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] RUN COMPLETE - Total time: $(format_time $total_duration)" >> "$LOG_FILE"
+echo "---" >> "$LOG_FILE"
