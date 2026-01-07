@@ -2415,6 +2415,30 @@ begin
 			continue
 		end if
 
+; RIDGELIFT
+		if( params(p) .eq. "ridgelift" ) then
+			opts_bparam@MainTitle = "Vertical Velocity at ~300ft AGL"
+			if(UNITS .ne. "metric") then
+				opts_bparam@ContourParameters = (/ -400., 400., 50. /)
+				opts_bparam@mult = 196.85
+				opts_bparam@unitString = "ft/min"
+				qparaminfo = "Param= "+params(p)+" Unit= ft/min Mult= 1"
+			else
+				opts_bparam@ContourParameters = (/ -200., 200., 25. /)
+				opts_bparam@mult = 100.0
+				opts_bparam@unitString = "cm/sec"
+				qparaminfo = "Param= "+params(p)+" Unit= cm/s Mult= 1"
+			end if
+
+			ridgelift_mag = ridgelift(wa, nx, ny)
+			ldatafmt = plot_contour(wks, bg, ridgelift_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+			bparam = ridgelift_mag
+			copy_VarAtts(atts, bparam)
+			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
+
+			continue
+		end if
+
 ; BSRATIO
 		if( params(p) .eq. "bsratio" .or. params(p) .eq. "bsratio_bsratio") then
 			opts_bparam@unitString = "~K~Truncated at 10~P~"

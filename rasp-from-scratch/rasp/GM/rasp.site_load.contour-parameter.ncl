@@ -122,6 +122,10 @@ if( plot_param .eq. "blwindshear" ) then
     opts_bparam@ContourParameters = (/ 2., 30., 2. /)
 end if
 
+;;; Ridge Lift
+if( plot_param .eq. "ridgelift" ) then
+    opts_bparam@ContourParameters = (/ -500., 500., 50. /)
+end if
 
 if( plot_param .eq. "mslpress" ) then
     ;;; alleen interval bepaald, geen min/max

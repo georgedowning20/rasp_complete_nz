@@ -921,6 +921,20 @@ end
 
 
 ;
+; RIDGELIFT - Vertical velocity at approximately 300ft AGL
+; Extracts the model-computed vertical velocity at a level close to 300ft (91m) AGL
+; This includes all lift sources: ridge lift, convergence, wave, etc.
+;
+function ridgelift(wa, isize, jsize)
+begin
+	; Model level 3 is approximately 100m AGL, close to 300ft (91m)
+	; This extracts the actual WRF-computed vertical velocity at that level
+	bparam = wa(5,:,:)
+	
+	return(bparam)
+end
+
+;
 ; XCSPEED - Cross-country speed based on hourly performance calculation
 ;
 function xcspeed(wstar_mag, dglider_mag, zsfclcldif_mag, bsratio_mag, wa, z, ter, pblh, isize, jsize, ksize)
