@@ -26,6 +26,11 @@ hbl (BL Top / Thermal Height)
     Height of the top of the mixing layer (boundary layer). This represents the
     expected maximum height of dry thermals. NOT the cloudbase height.
 
+dbl (BL Depth)
+    Unit: ft
+    Depth/thickness of the boundary layer. Represents the vertical extent
+    of the convective mixing layer from the surface to the BL top.
+
 hglider (Thermalling Height)
     Unit: ft AGL
     Max thermalling height, which is the minimum of the BL top and the
@@ -174,12 +179,12 @@ blwindshear (BL Wind Shear)
 ================================================================================
 
 sfctemp (Surface Temperature)
-    Unit: °F
+    Unit: °C
     Air temperature at 2m above ground level. Important for thermal
     triggering and pilot comfort.
 
 sfcdewpt (Surface Dew Point)
-    Unit: °F
+    Unit: °C
     Dew point temperature at 2m AGL. Indicates moisture content.
     Closer to sfctemp = higher humidity = lower cloudbase potential.
 
@@ -224,10 +229,41 @@ press500 (500 hPa Level)
                          CONVERGENCE PARAMETERS
 ================================================================================
 
+wblmaxmin (BL Max Upward/Downward Motion)
+    Unit: ft/min
+    Maximum upward or downward vertical motion within the boundary layer,
+    indicating areas of wind convergence (positive/lifting) or divergence
+    (negative/sinking). Convergence zones can enhance thermal lift and mark
+    areas where thermals are more likely to form or strengthen.
+    Positive values = convergence/lift, negative = divergence/sink.
+
+zwblmaxmin (Height of BL Max W)
+    Unit: ft AGL
+    Height at which the maximum boundary layer vertical motion (wblmaxmin)
+    occurs. Helps understand where in the boundary layer the convergence
+    or divergence is strongest.
+
+================================================================================
+                      CROSS-COUNTRY PERFORMANCE PARAMETERS
+================================================================================
+
 pfd_tot (Potential Flight Distance Total)
     Unit: km
     Estimated achievable cross-country flight distance based on thermal
     conditions, averaged over the forecast period. Higher = better soaring day.
+
+xcspeed (Cross-Country Speed)
+    Unit: km/h
+    Expected achievable cross-country speed based on thermal strength and
+    spacing. Accounts for time spent climbing and gliding between thermals.
+    Higher values indicate faster XC potential and better soaring conditions.
+    Is based on a Discus glider polar.
+
+stars (Star Rating)
+    Unit: 0-5 stars
+    Overall soaring quality rating combining thermal strength, height, and 
+    conditions. Quick visual indicator of expected soaring conditions:
+    0-1 = poor/unsoarable, 2 = marginal, 3 = moderate, 4 = good, 5 = excellent.
 
 ================================================================================
                          SOUNDING PARAMETERS
@@ -279,7 +315,7 @@ IMPLEMENTED UNITS:
 • Heights: feet (ft) AGL
 • Vertical Speed: feet/minute (ft/min)
 • Wind Speed: knots (kt)
-• Temperature: Fahrenheit (°F)
+• Temperature: Celsius (°C)
 • Precipitation: inches
 • Distance: km
 • Energy: J/kg
