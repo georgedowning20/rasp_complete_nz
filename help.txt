@@ -139,15 +139,15 @@ blcwbase (BL Cloud Water Base)
 
 cfracl / wrf=CFRACL (Low Cloud Fraction)
     Unit: %
-    Fraction of sky covered by low-level clouds (below ~2km).
+    Fraction of sky covered by low-level clouds (below ~3.5km).
 
 cfracm / wrf=CFRACM (Mid Cloud Fraction)
     Unit: %
-    Fraction of sky covered by mid-level clouds (~2-6km).
+    Fraction of sky covered by mid-level clouds (~3.5-8km).
 
 cfrach / wrf=CFRACH (High Cloud Fraction)
     Unit: %
-    Fraction of sky covered by high-level clouds (above ~6km).
+    Fraction of sky covered by high-level clouds (above ~8km).
     High cirrus can reduce surface heating and weaken thermals.
 
 ================================================================================
