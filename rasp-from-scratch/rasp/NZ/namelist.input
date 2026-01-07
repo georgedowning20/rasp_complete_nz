@@ -97,7 +97,6 @@
  surface_input_source                = 1,
  num_land_cat                        = 24,
  num_soil_layers                     = 4,
- sst_update                          = 1,
  /
 
 &noah_mp
