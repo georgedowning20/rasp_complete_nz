@@ -28,6 +28,12 @@ $ docker-compose build wrf_prod
 
 docker-compose build base && docker-compose build wrf_build && docker-compose build wrf_prod && docker-compose build rasp
 
+
+curl -s "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/" | grep gfs | sort | tail -10
+
+curl -s "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20260107/" 2>/dev/null || curl -s "ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20260106/"
+
+
 The version of WRF and WPS you have specified in `.env` are fetched from GitHub and compiled from source.
 This can take a long time, so be patient and do not worry about the verbose output!
 
