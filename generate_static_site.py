@@ -92,6 +92,7 @@ PARAMETER_INFO = {
     'stars': 'Star Rating',
     'xcspeed': 'XC Speed',
     'pfd_tot': 'Potential Flight Distance (Total)',
+    'ridgelift': 'Ridge Lift (Vertical Velocity ~300ft AGL)',
 }
 
 # Sounding locations

@@ -275,6 +275,29 @@ sounding1, sounding2, etc.
     Essential for detailed analysis of atmospheric stability.
 
 ================================================================================
+                         RIDGE LIFT PARAMETERS
+================================================================================
+
+ridgelift (Ridge Lift / Orographic Lift)
+    Unit: ft/min (or cm/s depending on display)
+    Vertical velocity of air at approximately 300ft (100m) above ground level.
+    This is extracted directly from the WRF model's computed vertical velocity
+    field, which accounts for airflow over and around terrain features.
+    
+    Positive values indicate rising air (useful for ridge soaring), while
+    negative values indicate sinking air. Best used in conjunction with
+    surface wind direction to identify ridges that are "working".
+    
+    Interpretation:
+    • > 200 ft/min = Good ridge lift potential
+    • 100-200 ft/min = Marginal ridge lift
+    • < 100 ft/min = Weak or no ridge lift
+    • Negative values = Sink / lee side turbulence
+    
+    Note: Actual ridge lift experienced will depend on local terrain features
+    that may be smaller than the model grid resolution (~2km).
+
+================================================================================
                     EXPERIMENTAL/ADVANCED PARAMETERS
 ================================================================================
 
