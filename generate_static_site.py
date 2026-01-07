@@ -54,14 +54,14 @@ PARAMETER_INFO = {
     'wstar': 'Thermal Updraft Velocity (W*)',
     'bsratio': 'Buoyancy/Shear Ratio',
     'wstar_bsratio': 'W* with B/S Ratio',
-    'hglider': 'Glider Height (MSL)',
-    'dglider': 'Glider Height (AGL)',
+    'hglider': 'Thermalling Height (MSL)',
+    'dglider': 'Thermalling Height (AGL)',
     'hwcrit': 'Height of Critical Updraft (MSL)',
     'dwcrit': 'Height of Critical Updraft (AGL)',
     'hbl': 'BL Top Height (MSL)',
     'dbl': 'BL Depth (AGL)',
     'bltopvariab': 'BL Top Variability',
-    'wblmaxmin': 'BL Max Up/Down Motion',
+    'wblmaxmin': 'Convergence',
     'zwblmaxmin': 'Height of Max BL Up/Down',
     'sfcsunpct': 'Surface Sun %',
     'sfcshf': 'Surface Heat Flux',
@@ -1102,7 +1102,7 @@ def generate_html(domain_bounds, manifest, help_text):
         const paramInfo = {json.dumps(PARAMETER_INFO)};
         
         // Basic parameters shown in non-expert mode
-        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars'];
+        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin'];
         
         // Domain bounds (pre-calculated Lambert projection)
         const domainData = {json.dumps(domain_bounds)};
