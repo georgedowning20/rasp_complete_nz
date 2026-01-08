@@ -5,6 +5,22 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Prevent Mac from sleeping during the entire forecast run
+# caffeinate -i prevents idle sleep, -s prevents sleep when on AC power
+# The & runs it in background, and we'll kill it at the end
+caffeinate -i -s -w $$ &
+CAFFEINATE_PID=$!
+echo "Preventing sleep during forecast (caffeinate PID: $CAFFEINATE_PID)"
+
+# Cleanup function to stop caffeinate when script exits
+cleanup() {
+    if [ -n "$CAFFEINATE_PID" ]; then
+        kill $CAFFEINATE_PID 2>/dev/null
+        echo "Sleep prevention disabled"
+    fi
+}
+trap cleanup EXIT
+
 # Parse command line arguments
 RUN_NOW=false
 while getopts "f" opt; do
@@ -50,6 +66,16 @@ else
 fi
 
 echo "Starting at $(date)"
+
+# Clean up results/OUT folder to avoid contamination
+echo "Cleaning results/OUT folder..."
+if [ -d "$SCRIPT_DIR/results/OUT" ]; then
+    rm -rf "$SCRIPT_DIR/results/OUT"/*
+    echo "  Removed all files from results/OUT"
+else
+    mkdir -p "$SCRIPT_DIR/results/OUT"
+    echo "  Created results/OUT folder"
+fi
 
 # Run the forecast script
 echo "Running run_forecast.sh..."

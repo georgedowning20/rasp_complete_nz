@@ -93,3 +93,185 @@ To test locally:
   python -m http.server 8080
   Open http://localhost:8080
 Pushing to git...
+[main afe945d85] update current data
+ 7 files changed, 101 insertions(+), 4 deletions(-)
+ mode change 100644 => 100755 generate_static_site.py
+ mode change 100644 => 100755 generate_static_site_mapbox_gl.py
+ mode change 100644 => 100755 overlay_map.py
+ mode change 100644 => 100755 rasp_viewer.py
+ mode change 100644 => 100755 workingsvg_viewer.py
+To https://github.com/GeorgeDowning20/Rasp_complete_nz.git
+   03dcae1f8..afe945d85  main -> main
+Completed successfully at Thu Jan  8 23:39:01 NZDT 2026
+Running immediately (forced mode)...
+Starting at Thu Jan  8 23:40:57 NZDT 2026
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-07
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-08 23:40:58
+==========================================
+time="2026-01-08T23:40:58+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-e4c3d99201a2 rasp-from-scratch-rasp-run-c591e03a330e rasp-from-scratch-rasp-run-1941e0ce7e3b rasp-from-scratch-rasp-run-c2ce8aabb1b0]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-08
+Checking for existing results for forecast day 2026-01-08
+Removing previous results for 2026-01-08 so current run is not contaminated
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+Running meteogram on Fri Jan  9 03:12:34 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-08
+Started running rasp for forecast 2026-01-08 at 23-40, ended at 2026-01-09_03-15
+✓ Day 0 forecast completed successfully
+  Duration: 03:34:15
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-09 03:15:14
+==========================================
+time="2026-01-09T03:15:14+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-e4c3d99201a2 rasp-from-scratch-rasp-run-c591e03a330e rasp-from-scratch-rasp-run-1941e0ce7e3b rasp-from-scratch-rasp-run-c2ce8aabb1b0]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-10
+Checking for existing results for forecast day 2026-01-10
+Removing previous results for 2026-01-10 so current run is not contaminated
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Fri Jan  9 07:14:07 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-10
+Started running rasp for forecast 2026-01-10 at 03-15, ended at 2026-01-09_07-16
+✓ Day 1 forecast completed successfully
+  Duration: 04:01:34
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-09 07:16:48
+==========================================
+time="2026-01-09T07:16:48+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-e4c3d99201a2 rasp-from-scratch-rasp-run-c591e03a330e rasp-from-scratch-rasp-run-1941e0ce7e3b rasp-from-scratch-rasp-run-c2ce8aabb1b0]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-11
+Checking for existing results for forecast day 2026-01-11
+Removing previous results for 2026-01-11 so current run is not contaminated
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+
+✗ Day 2 forecast failed with exit code 137
+  Duration: 00:31:53
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-09 07:48:41
+==========================================
+time="2026-01-09T07:48:41+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-e4c3d99201a2 rasp-from-scratch-rasp-run-c591e03a330e rasp-from-scratch-rasp-run-1941e0ce7e3b rasp-from-scratch-rasp-run-c2ce8aabb1b0]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-12
+Checking for existing results for forecast day 2026-01-12
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+
+✗ Day 3 forecast failed with exit code 137
+  Duration: 00:01:02
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 08:08:45
+Finished at: 2026-01-09 07:49:43
+==========================================
+/Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: line 58: ime: command not found
+Running immediately (forced mode)...
+Starting at Fri Jan  9 07:49:43 NZDT 2026
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-08
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-09 07:49:43
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-09
+Checking for existing results for forecast day 2026-01-09
+Removing previous results for 2026-01-09 so current run is not contaminated
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+
+✗ Day 0 forecast failed with exit code 137
+  Duration: 00:00:15
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-09 07:49:58
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-10
+Checking for existing results for forecast day 2026-01-10
+Removing previous results for 2026-01-10 so current run is not contaminated
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Fri Jan  9 08:22:23 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-10
+Started running rasp for forecast 2026-01-10 at 07-49, ended at 2026-01-09_08-26
+✓ Day 1 forecast completed successfully
+  Duration: 00:36:08
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-09 08:26:06
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-11
+Checking for existing results for forecast day 2026-01-11
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+Running meteogram on Fri Jan  9 08:55:15 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-11
+Started running rasp for forecast 2026-01-11 at 08-26, ended at 2026-01-09_08-59
+✓ Day 2 forecast completed successfully
+  Duration: 00:32:58
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-09 08:59:04
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-12
+Checking for existing results for forecast day 2026-01-12
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+Running meteogram on Fri Jan  9 09:27:59 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-12
+Started running rasp for forecast 2026-01-12 at 08-59, ended at 2026-01-09_09-31
+✓ Day 3 forecast completed successfully
+  Duration: 00:32:21
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 01:41:42
+Finished at: 2026-01-09 09:31:25
+==========================================
+/Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: line 119: unexpected EOF while looking for matching `"'
+/Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: line 120: syntax error: unexpected end of file
