@@ -1,4 +1,95 @@
-shell-init: error retrieving current directory: getcwd: cannot access parent directories: Operation not permitted
-/bin/bash: /Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: Operation not permitted
-shell-init: error retrieving current directory: getcwd: cannot access parent directories: Operation not permitted
-/bin/bash: /Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: Operation not permitted
+
+/bin/zsh: can't open input file: /Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh
+Running immediately (forced mode)...
+Starting at Thu Jan  8 23:38:18 NZDT 2026
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-07
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-08 23:38:19
+==========================================
+open /Users/georgedowning/Desktop/Rasp_complete/rasp-from-scratch/.env: operation not permitted
+✗ Day 0 forecast failed with exit code 1
+  Duration: 00:00:01
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-08 23:38:20
+==========================================
+open /Users/georgedowning/Desktop/Rasp_complete/rasp-from-scratch/.env: operation not permitted
+✗ Day 1 forecast failed with exit code 1
+  Duration: 00:00:00
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-08 23:38:20
+==========================================
+open /Users/georgedowning/Desktop/Rasp_complete/rasp-from-scratch/.env: operation not permitted
+✗ Day 2 forecast failed with exit code 1
+  Duration: 00:00:00
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-08 23:38:20
+==========================================
+open /Users/georgedowning/Desktop/Rasp_complete/rasp-from-scratch/.env: operation not permitted
+✗ Day 3 forecast failed with exit code 1
+  Duration: 00:00:00
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 00:00:01
+Finished at: 2026-01-08 23:38:20
+==========================================
+Running generate_static_site_mapbox_gl.py...
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+   Processing 2026-01-07...
+      Copied 4225 images
+   Processing 2026-01-08...
+      Copied 0 images
+   Processing 2026-01-09...
+      Copied 4225 images
+   Processing 2026-01-10...
+      Copied 4225 images
+   Processing 2026-01-11...
+      Copied 4225 images
+📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 5
+   🖼️  Images: 16900
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
