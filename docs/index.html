@@ -6,163 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>RASP Weather Viewer - NZ</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Leaflet Distortable Image Overlay - renders image to 4 corner points
-        L.DistortableImageOverlay = L.Layer.extend({
-            initialize: function(url, corners, options) {
-                this._url = url;
-                this._corners = corners;
-                L.setOptions(this, options);
-            },
-            
-            onAdd: function(map) {
-                this._map = map;
-                
-                if (!this._canvas) {
-                    this._canvas = L.DomUtil.create('canvas', 'leaflet-image-layer leaflet-zoom-animated');
-                    this._canvas.style.willChange = 'transform';
-                }
-                
-                if (this.options.opacity) {
-                    this._canvas.style.opacity = this.options.opacity;
-                }
-                
-                this.getPane().appendChild(this._canvas);
-                
-                this._image = new Image();
-                this._image.crossOrigin = '';
-                this._image.onload = () => {
-                    this._reset();
-                };
-                this._image.src = this._url;
-                
-                map.on('zoomanim', this._animateZoom, this);
-                map.on('zoomend viewreset moveend resize', this._reset, this);
-            },
-            
-            onRemove: function(map) {
-                L.DomUtil.remove(this._canvas);
-                map.off('zoomanim', this._animateZoom, this);
-                map.off('zoomend viewreset moveend resize', this._reset, this);
-            },
-            
-            setOpacity: function(opacity) {
-                this._canvas.style.opacity = opacity;
-            },
-            
-            setUrl: function(url) {
-                this._url = url;
-                this._image.src = url;
-            },
-            
-            setCorners: function(corners) {
-                this._corners = corners;
-                this._reset();
-            },
-            
-            _animateZoom: function(e) {
-                if (!this._map || !this._canvas || !this._bounds) return;
-                
-                const scale = this._map.getZoomScale(e.zoom);
-                const offset = this._map._latLngBoundsToNewLayerBounds(this._bounds, e.zoom, e.center).min;
-                
-                L.DomUtil.setTransform(this._canvas, offset, scale);
-            },
-            
-            _reset: function() {
-                if (!this._map || !this._image.complete) return;
-                
-                // Clear any transform from zoom animation
-                L.DomUtil.setTransform(this._canvas, L.point(0, 0), 1);
-                
-                const map = this._map;
-                const canvas = this._canvas;
-                const ctx = canvas.getContext('2d');
-                
-                const corners = this._corners;
-                const tl = map.latLngToLayerPoint(L.latLng(corners[0]));
-                const tr = map.latLngToLayerPoint(L.latLng(corners[1]));
-                const br = map.latLngToLayerPoint(L.latLng(corners[2]));
-                const bl = map.latLngToLayerPoint(L.latLng(corners[3]));
-                
-                const minX = Math.min(tl.x, tr.x, br.x, bl.x);
-                const maxX = Math.max(tl.x, tr.x, br.x, bl.x);
-                const minY = Math.min(tl.y, tr.y, br.y, bl.y);
-                const maxY = Math.max(tl.y, tr.y, br.y, bl.y);
-                
-                const width = Math.ceil(maxX - minX);
-                const height = Math.ceil(maxY - minY);
-                
-                canvas.width = width;
-                canvas.height = height;
-                canvas.style.width = width + 'px';
-                canvas.style.height = height + 'px';
-                
-                L.DomUtil.setPosition(canvas, L.point(minX, minY));
-                
-                // Store bounds for zoom animation - this is the key!
-                // Convert pixel bounds back to lat/lng bounds
-                const swPoint = L.point(minX, maxY);
-                const nePoint = L.point(maxX, minY);
-                const sw = map.layerPointToLatLng(swPoint);
-                const ne = map.layerPointToLatLng(nePoint);
-                this._bounds = L.latLngBounds(sw, ne);
-                
-                const tlAdj = {x: tl.x - minX, y: tl.y - minY};
-                const trAdj = {x: tr.x - minX, y: tr.y - minY};
-                const brAdj = {x: br.x - minX, y: br.y - minY};
-                const blAdj = {x: bl.x - minX, y: bl.y - minY};
-                
-                ctx.clearRect(0, 0, width, height);
-                
-                const img = this._image;
-                const w = img.width;
-                const h = img.height;
-                
-                this._drawTriangle(ctx, img,
-                    0, 0, w, 0, 0, h,
-                    tlAdj.x, tlAdj.y, trAdj.x, trAdj.y, blAdj.x, blAdj.y
-                );
-                this._drawTriangle(ctx, img,
-                    w, 0, w, h, 0, h,
-                    trAdj.x, trAdj.y, brAdj.x, brAdj.y, blAdj.x, blAdj.y
-                );
-            },
-            
-            _drawTriangle: function(ctx, img, x0, y0, x1, y1, x2, y2, sx0, sy0, sx1, sy1, sx2, sy2) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(sx0, sy0);
-                ctx.lineTo(sx1, sy1);
-                ctx.lineTo(sx2, sy2);
-                ctx.closePath();
-                ctx.clip();
-                
-                const denom = x0 * (y2 - y1) - x1 * y2 + x2 * y1 + (x1 - x2) * y0;
-                if (Math.abs(denom) < 0.01) {
-                    ctx.restore();
-                    return;
-                }
-                
-                const m11 = -(y0 * (sx2 - sx1) - y1 * sx2 + y2 * sx1 + (y1 - y2) * sx0) / denom;
-                const m12 = (y1 * sy2 + y0 * (sy1 - sy2) - y2 * sy1 + (y2 - y1) * sy0) / denom;
-                const m21 = (x0 * (sx2 - sx1) - x1 * sx2 + x2 * sx1 + (x1 - x2) * sx0) / denom;
-                const m22 = -(x1 * sy2 + x0 * (sy1 - sy2) - x2 * sy1 + (x2 - x1) * sy0) / denom;
-                const dx = (x0 * (y2 * sx1 - y1 * sx2) + y0 * (x1 * sx2 - x2 * sx1) + (x2 * y1 - x1 * y2) * sx0) / denom;
-                const dy = (x0 * (y2 * sy1 - y1 * sy2) + y0 * (x1 * sy2 - x2 * sy1) + (x2 * y1 - x1 * y2) * sy0) / denom;
-                
-                ctx.transform(m11, m12, m21, m22, dx, dy);
-                ctx.drawImage(img, 0, 0);
-                ctx.restore();
-            }
-        });
-        
-        L.distortableImageOverlay = function(url, corners, options) {
-            return new L.DistortableImageOverlay(url, corners, options);
-        };
-    </script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -177,12 +22,24 @@
             -webkit-overflow-scrolling: touch;
         }
         
+        #map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            z-index: 1;
+        }
+        
         /* Controls Panel */
         .controls {
             position: fixed;
             top: 10px;
             left: 10px;
-            z-index: 1000;
+            z-index: 1100;
             background: rgba(22, 33, 62, 0.95);
             padding: 15px;
             border-radius: 10px;
@@ -190,12 +47,52 @@
             max-width: 320px;
             max-height: calc(100vh - 20px);
             overflow-y: auto;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease, max-width 0.3s ease, padding 0.3s ease;
         }
         .controls.collapsed {
             transform: translateX(-100%);
             opacity: 0;
             pointer-events: none;
+        }
+        .controls.small {
+            max-width: none;
+            width: calc(100% - 80px);
+            left: 10px;
+            right: 70px;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+        .controls.small h2,
+        .controls.small .mobile-row,
+        .controls.small .expert-toggle,
+        .controls.small .opacity-control,
+        .controls.small .play-controls,
+        .controls.small .help-btn {
+            display: none;
+        }
+        .controls.small .control-group {
+            display: none;
+        }
+        .controls.small .control-group.time-control {
+            display: block;
+            margin-bottom: 0;
+        }
+        .controls.small .control-group.time-control label {
+            display: none;
+        }
+        .controls.small .time-slider-container {
+            margin-top: 0;
+        }
+        .controls.small .time-nav-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1em;
+        }
+        .controls.small .time-display {
+            font-size: 1.3em;
+        }
+        .controls.small input[type="range"] {
+            margin: 6px 0;
         }
         .controls h2 {
             color: #e94560;
@@ -209,21 +106,29 @@
             display: none;
             position: fixed;
             top: 10px;
-            left: 10px;
-            z-index: 1001;
+            right: 10px;
+            z-index: 1101;
             background: rgba(233, 69, 96, 0.95);
             color: white;
             border: none;
             width: 44px;
             height: 44px;
             border-radius: 10px;
-            font-size: 1.5em;
+            font-size: 1.2em;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             transition: transform 0.3s ease;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .controls-toggle.active {
             transform: translateX(0);
+        }
+        .state-indicator {
+            font-size: 0.7em;
+            color: #aaa;
+            margin-top: 2px;
         }
         .close-controls {
             display: none;
@@ -254,13 +159,12 @@
             border: 1px solid #e94560;
             padding: 10px 8px;
             border-radius: 5px;
-            font-size: 16px; /* Prevents zoom on iOS */
+            font-size: 16px;
             cursor: pointer;
             -webkit-appearance: none;
             appearance: none;
         }
         select:focus { outline: none; border-color: #fff; }
-        select option { background: #16213e; }
         
         .time-slider-container {
             margin-top: 5px;
@@ -329,28 +233,7 @@
         .opacity-control input {
             width: 100%;
         }
-        #map {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            touch-action: none;
-        }
         
-        /* Smooth canvas animations */
-        .leaflet-image-layer {
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-        }
-        
-        .leaflet-zoom-animated {
-            will-change: transform;
-        }
         .info-box {
             position: fixed;
             bottom: 10px;
@@ -366,23 +249,25 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
         .header-box {
             position: fixed;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 999;
+            z-index: 1099;
             background: rgba(22, 33, 62, 0.95);
             padding: 6px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            max-width: calc(100vw - 80px);
+            max-width: calc(100vw - 20px);
         }
         .header-box img {
             display: block;
             max-width: 100%;
             height: auto;
         }
+        
         .legend-box {
             position: fixed;
             bottom: 10px;
@@ -400,6 +285,7 @@
             max-width: 100%;
             height: auto;
         }
+        
         .time-nav {
             display: flex;
             align-items: center;
@@ -421,179 +307,7 @@
         }
         .time-nav-btn:hover, .time-nav-btn:active { background: #ff6b6b; }
         .time-nav-btn:disabled { background: #555; cursor: not-allowed; }
-        .leaflet-control-attribution { display: none; }
         
-        .sounding-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2000;
-            background: rgba(22, 33, 62, 0.98);
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
-            display: none;
-            max-width: calc(100vw - 20px);
-            max-height: calc(100vh - 20px);
-            overflow: auto;
-        }
-        .sounding-popup.active {
-            display: block;
-        }
-        .sounding-popup img {
-            max-width: 100%;
-            max-height: calc(100vh - 80px);
-            display: block;
-        }
-        .sounding-popup .close-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #e94560;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.4em;
-        }
-        .sounding-popup .close-btn:hover, .sounding-popup .close-btn:active {
-            background: #ff6b6b;
-        }
-        .sounding-popup h3 {
-            color: #e94560;
-            margin: 0 0 10px 0;
-            padding-right: 40px;
-            font-size: 1em;
-        }
-        .sounding-marker {
-            background: #e94560;
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-            .controls {
-                top: 0;
-                left: 0;
-                right: 0;
-                max-width: 100%;
-                border-radius: 0 0 10px 10px;
-                padding: 12px 15px;
-                max-height: 70vh;
-            }
-            .controls.collapsed {
-                transform: translateY(-100%);
-            }
-            .controls-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .controls.collapsed + .controls-toggle {
-                transform: translateY(0);
-            }
-            .close-controls {
-                display: block;
-            }
-            .controls h2 {
-                font-size: 1em;
-                margin-bottom: 10px;
-            }
-            .control-group {
-                margin-bottom: 10px;
-            }
-            .control-group label {
-                font-size: 0.7em;
-            }
-            select {
-                padding: 10px 8px;
-            }
-            .header-box {
-                top: auto;
-                bottom: 70px;
-                left: 5px;
-                right: 5px;
-                transform: none;
-                max-width: none;
-                padding: 4px;
-            }
-            .legend-box {
-                bottom: 5px;
-                left: 5px;
-                right: 5px;
-                transform: none;
-                padding: 6px;
-                max-width: none;
-            }
-            .legend-box img {
-                max-height: none;
-                width: 100%;
-                height: auto;
-                min-height: 50px;
-            }
-            .info-box {
-                display: none;
-            }
-            .time-display {
-                font-size: 1.4em;
-            }
-            .play-controls {
-                gap: 6px;
-            }
-            .time-nav {
-                gap: 6px;
-            }
-            .time-nav-btn {
-                width: 40px;
-                height: 40px;
-            }
-            /* Two column layout for dropdowns on mobile */
-            .mobile-row {
-                display: flex;
-                gap: 10px;
-            }
-            .mobile-row .control-group {
-                flex: 1;
-                margin-bottom: 8px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .controls {
-                padding: 10px 12px;
-            }
-            .header-box {
-                display: none;
-            }
-            .legend-box img {
-                min-height: 45px;
-            }
-            .sounding-marker {
-                width: 32px;
-                height: 32px;
-                font-size: 14px;
-            }
-        }
-        .sounding-marker:hover {
-            background: #ff6b6b;
-            transform: scale(1.1);
-        }
-        
-        /* Help Button */
         .help-btn {
             background: #0f3460;
             color: #e94560;
@@ -611,7 +325,6 @@
             color: white;
         }
         
-        /* Help Modal */
         .help-modal {
             position: fixed;
             top: 0;
@@ -680,19 +393,134 @@
             white-space: pre-wrap;
             color: #ddd;
         }
-        .help-text a {
-            color: #4ecdc4;
+        
+        .sounding-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(22, 33, 62, 0.98);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+            display: none;
+            max-width: calc(100vw - 20px);
+            max-height: calc(100vh - 20px);
+            overflow: auto;
+        }
+        .sounding-popup.active {
+            display: block;
+        }
+        .sounding-popup img {
+            max-width: 100%;
+            max-height: calc(100vh - 80px);
+            display: block;
+        }
+        .sounding-popup .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4em;
+        }
+        .sounding-popup h3 {
+            color: #e94560;
+            margin: 0 0 10px 0;
+            padding-right: 40px;
+            font-size: 1em;
         }
         
+        /* Mobile Styles */
         @media (max-width: 768px) {
-            .help-content {
-                max-height: 95vh;
+            .controls {
+                top: 0;
+                left: 0;
+                right: 0;
+                max-width: 100%;
+                border-radius: 0 0 10px 10px;
+                padding: 12px 15px;
+                max-height: 70vh;
             }
-            .help-body {
-                padding: 15px;
+            .controls.collapsed {
+                transform: translateY(-100%);
             }
-            .help-text {
-                font-size: 0.75em;
+            .controls-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .close-controls {
+                display: block;
+            }
+            .controls h2 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            .header-box {
+                top: auto;
+                bottom: 70px;
+                left: 5px;
+                right: 5px;
+                transform: none;
+                max-width: none;
+                padding: 4px;
+            }
+            .legend-box {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                transform: none;
+                padding: 6px;
+                max-width: none;
+            }
+            .legend-box img {
+                max-height: none;
+                width: 100%;
+                height: auto;
+                min-height: 50px;
+            }
+            .info-box {
+                display: none;
+            }
+            .time-display {
+                font-size: 1.4em;
+            }
+            .play-controls {
+                gap: 6px;
+            }
+            .time-nav {
+                gap: 6px;
+            }
+            .time-nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+            .mobile-row {
+                display: flex;
+                gap: 10px;
+            }
+            .mobile-row .control-group {
+                flex: 1;
+                margin-bottom: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                padding: 10px 12px;
+            }
+            .header-box {
+                display: none;
+            }
+            .legend-box img {
+                min-height: 45px;
             }
         }
     </style>
@@ -700,7 +528,7 @@
 <body>
     <div id="map"></div>
     
-    <button class="controls-toggle" id="controlsToggle" aria-label="Open controls">☰</button>
+    <button class="controls-toggle" id="controlsToggle" aria-label="Open controls">☰<span class="state-indicator" id="stateIndicator"></span></button>
     
     <div class="controls" id="controlsPanel">
         <h2>
@@ -709,6 +537,17 @@
         </h2>
         
         <div class="mobile-row">
+            <div class="control-group">
+                <label>Map Style</label>
+                <select id="styleSelect">
+                    <option value="mapbox://styles/mapbox/streets-v12">Streets</option>
+                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite</option>
+                    <option value="mapbox://styles/mapbox/outdoors-v12">Outdoors</option>
+                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
+                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+                </select>
+            </div>
+            
             <div class="control-group">
                 <label>Date</label>
                 <select id="dateSelect"></select>
@@ -725,7 +564,7 @@
             <select id="paramSelect"></select>
         </div>
         
-        <div class="control-group">
+        <div class="control-group time-control">
             <label>Time (Local)</label>
             <div class="time-slider-container">
                 <input type="range" id="timeSlider" min="0" max="9" value="4">
@@ -794,40 +633,30 @@
         // EMBEDDED DATA - Generated by static site generator
         // =====================================================
         
-        // Parameter descriptions
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvcmdlZG93bmluZyIsImEiOiJjbWZlMzBndzYwMmhxMmpyNWFqcnkzdjJmIn0.L9RHEN7ySukYIhsKKu4-Rw';
+        
         const paramInfo = {"wstar": "Thermal Updraft Velocity (W*)", "bsratio": "Buoyancy/Shear Ratio", "wstar_bsratio": "W* with B/S Ratio", "hglider": "Thermalling Height (MSL)", "dglider": "Thermalling Height (AGL)", "hwcrit": "Height of Critical Updraft (MSL)", "dwcrit": "Height of Critical Updraft (AGL)", "hbl": "BL Top Height (MSL)", "dbl": "BL Depth (AGL)", "bltopvariab": "BL Top Variability", "wblmaxmin": "Convergence", "zwblmaxmin": "Height of Max BL Up/Down", "sfcsunpct": "Surface Sun %", "sfcshf": "Surface Heat Flux", "sfctemp": "Surface Temperature", "sfcdewpt": "Surface Dewpoint", "sfcwind0": "Surface Wind", "blwind": "BL Average Wind", "bltopwind": "BL Top Wind", "blwindshear": "BL Wind Shear", "zsfclcl": "Sfc LCL Height", "zsfclcldif": "Sfc Cu Cloudbase (AGL)", "zsfclclmask": "Sfc Cu Potential", "zblcl": "BL Top LCL Height", "zblcldif": "OD Cu Cloudbase (AGL)", "zblclmask": "OD Cu Potential", "blicw": "BL Cloud Ice+Water", "blcwbase": "BL Cloud Base", "blcloudpct": "BL Cloud %", "cfracl": "Low Cloud Fraction", "cfracm": "Mid Cloud Fraction", "cfrach": "High Cloud Fraction", "rain1": "1hr Rain", "cape": "CAPE", "press950": "950mb Wind", "press850": "850mb Wind", "press700": "700mb Wind", "press500": "500mb Wind", "stars": "Star Rating", "xcspeed": "XC Speed", "pfd_tot": "Potential Flight Distance (Total)", "ridgelift": "Ridge Lift (Vertical Velocity ~300ft AGL)"};
-        
-        // Basic parameters shown in non-expert mode
         const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin'];
-        
-        // Domain bounds (pre-calculated Lambert projection)
-        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "polygon": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292], [-41.12742432392281, 172.45936264797353]]}, "d2": {"bounds": [[-39.16021707675689, 174.01782025731345], [-36.46027936139781, 177.4409515243398]], "polygon": [[-39.16021707675689, 174.01782025731345], [-39.16738119568803, 177.49542832380757], [-36.46027936139781, 177.4409515243398], [-36.453377027852916, 174.09001976059483], [-39.16021707675689, 174.01782025731345]]}};
-        
-        // Sounding site locations
+        const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "corners": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292]]}, "d2": {"bounds": [[-39.16021707675689, 174.01782025731345], [-36.46027936139781, 177.4409515243398]], "corners": [[-39.16021707675689, 174.01782025731345], [-39.16738119568803, 177.49542832380757], [-36.46027936139781, 177.4409515243398], [-36.453377027852916, 174.09001976059483]]}};
         const soundingSites = {"3": {"name": "Hamilton", "lat": -37.787, "lon": 175.2793}, "4": {"name": "Taupo", "lat": -38.6857, "lon": 176.0702}, "5": {"name": "Rotorua", "lat": -38.1368, "lon": 176.2497}, "6": {"name": "Napier", "lat": -39.4928, "lon": 176.912}, "7": {"name": "NewPlymouth", "lat": -39.0556, "lon": 174.0752}, "8": {"name": "Matamata", "lat": -37.81, "lon": 175.77}};
-        
-        // Available data manifest
-        const manifest = {"2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-09": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-10": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
+        const manifest = {"2026-01-07": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-08": {"parameters": [], "times": [], "domains": [], "soundings": []}, "2026-01-09": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-10": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-11": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
+        const helpText = "Pleas note this site is in beta stages. I will try and run forcasts every day.\nAny Issues/Bugs/Suggestions please email me: george.downing20@icloud.com.\n\n\n\n================================================================================\n                    RASP (Randomly Accurate Soaring Predictions)\n                              PARAMETER REFERENCE GUIDE\n================================================================================\n\nThis document describes the meteorological parameters available in RASP forecasts,\nprimarily used for soaring flight planning (gliding, paragliding, hang gliding).\n\n================================================================================\n                           THERMAL PARAMETERS\n================================================================================\n\nwstar (Thermal Updraft Velocity)\n    Unit: ft/min\n    The average dry thermal updraft strength near the top of the usable boundary\n    layer. Subtract 200 ft/min to get a more realistic in-flight climb rate.\n    Values < 200 ft/min = weak/no thermals, 400-600 ft/min = moderate, > 800 ft/min = strong.\n\nhbl (BL Top / Thermal Height)\n    Unit: ft AGL\n    Height of the top of the mixing layer (boundary layer). This represents the\n    expected maximum height of dry thermals. NOT the cloudbase height.\n\ndbl (BL Depth)\n    Unit: ft\n    Depth/thickness of the boundary layer. Represents the vertical extent\n    of the convective mixing layer from the surface to the BL top.\n\nhglider (Thermalling Height)\n    Unit: ft AGL\n    Max thermalling height, which is the minimum of the BL top and the\n    overdevelopment cloudbase. This is the practical ceiling for glider pilots.\n\ndglider (Thermalling Depth)\n    Unit: ft\n    The expected depth/thickness of usable thermals for soaring. Calculated as\n    hglider minus the height where thermals become too weak to use.\n\nhwcrit (Critical Height)\n    Unit: ft AGL\n    Height at which the thermal updraft strength falls below a critical threshold\n    (typically 220 ft/min). Useful for determining minimum working altitude.\n\ndwcrit (Critical Depth)\n    Unit: ft\n    Depth of thermals above the critical updraft threshold. The altitude band\n    where thermals are strong enough to be usable for climbing.\n\nbltopvariab (BL Top Variability)\n    Unit: ft\n    Spatial variability of the boundary layer top height. High values indicate\n    inconsistent thermal heights across the region.\n\nwblmaxmin (BL Max/Min W)\n    Unit: ft/min\n    Maximum grid-area-loss updraft strength at BL top. A negative value indicates\n    overall sinking motion. Positive values suggest stronger thermals possible.\n\nzwblmaxmin (Height of BL Max/Min W)\n    Unit: ft AGL\n    Height at which the wblmaxmin value occurs. Useful for understanding the\n    vertical structure of thermals.\n\n================================================================================\n                         THERMAL QUALITY PARAMETERS\n================================================================================\n\nbsratio (Buoyancy/Shear Ratio)\n    Unit: dimensionless\n    Ratio of thermal strength to wind shear. Indicates thermal quality:\n    < 5 = broken/sheared thermals, 5-7 = moderate, > 7 = good organized thermals.\n    Low values mean thermals will be tilted and harder to work.\n\nwstar_bsratio (Combined Thermal Index)\n    Combined display of wstar and bsratio for quick assessment of both thermal\n    strength and quality in one parameter.\n\nsfcshf (Surface Heat Flux)\n    Unit: W/m\u00b2\n    Surface sensible heat flux - the rate at which heat is transferred from the\n    surface to the atmosphere. Higher values indicate stronger thermal generation.\n    Negative values indicate heat transfer to the ground (cooling).\n\nsfcsunpct (Surface Sun Percentage)\n    Unit: %\n    Percentage of full sunshine reaching the surface. Reduced by clouds.\n    100% = clear sky, lower values indicate cloud shadowing.\n\n================================================================================\n                         CLOUD PARAMETERS\n================================================================================\n\nzsfclcl (Surface LCL Height)\n    Unit: ft AGL\n    Lifting Condensation Level based on surface conditions. The height where\n    cumulus clouds would form if air is lifted from the surface.\n\nzsfclclmask (Surface LCL Masked)\n    Unit: ft AGL\n    Same as zsfclcl but masked (not shown) where cumulus are not expected to form.\n\nzsfclcldif (Cu Potential)\n    Unit: ft\n    Difference between the BL top and the surface LCL. Positive values indicate\n    good potential for cumulus cloud formation (Cu overdevelopment possible).\n\nzblcl (BL Cloud Height)\n    Unit: ft AGL\n    Height of cloud base from BL-mean values. More representative of actual\n    cloudbase than surface-based LCL during well-mixed conditions.\n\nzblclmask (BL Cloud Height Masked)\n    Unit: ft AGL\n    Same as zblcl but masked where cumulus clouds are not expected.\n\nzblcldif (BL Cu Potential)\n    Unit: ft\n    BL-based cumulus potential. Positive values indicate cumulus expected.\n\nblcloudpct (BL Cloud Cover)\n    Unit: %\n    Percentage of the sky expected to be covered by cumulus clouds forming\n    at the top of the thermals. High values may indicate overdevelopment.\n\nblicw (BL Integrated Cloud Water)\n    Unit: kg/m\u00b2\n    Integrated cloud water content within the boundary layer. Indicates\n    the total amount of condensed water in BL clouds.\n\nblcwbase (BL Cloud Water Base)\n    Unit: ft AGL\n    Height of the base of clouds containing significant cloud water.\n    Can indicate where actual visible cloudbase will be.\n\ncfracl / wrf=CFRACL (Low Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by low-level clouds (below ~3.5km).\n\ncfracm / wrf=CFRACM (Mid Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by mid-level clouds (~3.5-8km).\n\ncfrach / wrf=CFRACH (High Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by high-level clouds (above ~8km).\n    High cirrus can reduce surface heating and weaken thermals.\n\n================================================================================\n                           WIND PARAMETERS\n================================================================================\n\nsfcwind0 (Surface Wind)\n    Unit: knots\n    Wind speed and direction at the surface (10m AGL). Important for\n    takeoff/landing assessment and ridge soaring potential.\n\nblwind (BL Average Wind)\n    Unit: knots\n    Average wind speed and direction through the boundary layer.\n    Represents the overall wind affecting thermal drift.\n\nbltopwind (BL Top Wind)\n    Unit: knots\n    Wind at the top of the boundary layer. Important for assessing\n    thermal drift at cloudbase and high-altitude conditions.\n\nblwindshear (BL Wind Shear)\n    Unit: knots per 1000ft\n    Vertical wind shear through the boundary layer. High shear tilts\n    thermals and makes them harder to work. Affects thermal quality.\n\n================================================================================\n                         SURFACE PARAMETERS\n================================================================================\n\nsfctemp (Surface Temperature)\n    Unit: \u00b0C\n    Air temperature at 2m above ground level. Important for thermal\n    triggering and pilot comfort.\n\nsfcdewpt (Surface Dew Point)\n    Unit: \u00b0C\n    Dew point temperature at 2m AGL. Indicates moisture content.\n    Closer to sfctemp = higher humidity = lower cloudbase potential.\n\nrain1 (1-hour Precipitation)\n    Unit: inches\n    Accumulated precipitation over the previous hour. Indicates\n    shower/storm activity that will suppress thermal activity.\n\ncape (Convective Available Potential Energy)\n    Unit: J/kg\n    Energy available for convection. High CAPE (>500 J/kg) indicates\n    potential for strong thunderstorm development. Be cautious!\n    0-500 = weak, 500-1500 = moderate, >1500 = strong instability.\n\n================================================================================\n                      PRESSURE LEVEL PARAMETERS\n================================================================================\n\npress950 / press955 (950/955 hPa Level)\n    Conditions at approximately 500m/450m ASL. Shows wind, temperature\n    at low levels above ground.\n\npress850 / press899 / press846 (850 hPa Level)\n    Conditions at approximately 1500m ASL. Standard level for synoptic\n    analysis of lower troposphere.\n\npress795 (795 hPa Level)\n    Conditions at approximately 2000m ASL.\n\npress700 / press701 (700 hPa Level)\n    Conditions at approximately 3000m ASL. Important for mountain flying\n    and assessing mid-level conditions.\n\npress616 / press540 (600-500 hPa Level)\n    Conditions at approximately 4000-5500m ASL. Upper-level analysis.\n\npress500 (500 hPa Level)\n    Conditions at approximately 5500m ASL. Standard level for synoptic\n    analysis of mid-troposphere.\n\n================================================================================\n                         CONVERGENCE PARAMETERS\n================================================================================\n\nwblmaxmin (BL Max Upward/Downward Motion)\n    Unit: ft/min\n    Maximum upward or downward vertical motion within the boundary layer,\n    indicating areas of wind convergence (positive/lifting) or divergence\n    (negative/sinking). Convergence zones can enhance thermal lift and mark\n    areas where thermals are more likely to form or strengthen.\n    Positive values = convergence/lift, negative = divergence/sink.\n\nzwblmaxmin (Height of BL Max W)\n    Unit: ft AGL\n    Height at which the maximum boundary layer vertical motion (wblmaxmin)\n    occurs. Helps understand where in the boundary layer the convergence\n    or divergence is strongest.\n\n================================================================================\n                      CROSS-COUNTRY PERFORMANCE PARAMETERS\n================================================================================\n\npfd_tot (Potential Flight Distance Total)\n    Unit: km\n    Estimated achievable cross-country flight distance based on thermal\n    conditions, averaged over the forecast period. Higher = better soaring day.\n\nxcspeed (Cross-Country Speed)\n    Unit: km/h\n    Expected achievable cross-country speed based on thermal strength and\n    spacing. Accounts for time spent climbing and gliding between thermals.\n    Higher values indicate faster XC potential and better soaring conditions.\n    Is based on a Discus glider polar.\n\nstars (Star Rating)\n    Unit: 0-5 stars\n    Overall soaring quality rating combining thermal strength, height, and \n    conditions. Quick visual indicator of expected soaring conditions:\n    0-1 = poor/unsoarable, 2 = marginal, 3 = moderate, 4 = good, 5 = excellent.\n\n================================================================================\n                         SOUNDING PARAMETERS\n================================================================================\n\nsounding1, sounding2, etc.\n    Atmospheric soundings (skew-T diagrams) at specified locations.\n    Shows vertical profile of temperature, dew point, and wind.\n    Essential for detailed analysis of atmospheric stability.\n\n================================================================================\n                         RIDGE LIFT PARAMETERS\n================================================================================\n\nridgelift (Ridge Lift / Orographic Lift)\n    Unit: ft/min (or cm/s depending on display)\n    Vertical velocity of air at approximately 300ft (100m) above ground level.\n    This is extracted directly from the WRF model's computed vertical velocity\n    field, which accounts for airflow over and around terrain features.\n    \n    Positive values indicate rising air (useful for ridge soaring), while\n    negative values indicate sinking air. Best used in conjunction with\n    surface wind direction to identify ridges that are \"working\".\n    \n    Interpretation:\n    \u2022 > 200 ft/min = Good ridge lift potential\n    \u2022 100-200 ft/min = Marginal ridge lift\n    \u2022 < 100 ft/min = Weak or no ridge lift\n    \u2022 Negative values = Sink / lee side turbulence\n    \n    Note: Actual ridge lift experienced will depend on local terrain features\n    that may be smaller than the model grid resolution (~2km).\n\n================================================================================\n                    EXPERIMENTAL/ADVANCED PARAMETERS\n================================================================================\n\nexperimental1\n    Custom or experimental parameter. Check documentation for specific\n    implementation details.\n\n================================================================================\n                         PARAMETER INTERPRETATION TIPS\n================================================================================\n\nGOOD SOARING CONDITIONS:\n\u2022 wstar > 500 ft/min\n\u2022 hbl > 5000 ft AGL\n\u2022 bsratio > 5\n\u2022 blcloudpct 10-40% (scattered Cu)\n\u2022 Low wind shear\n\u2022 cape < 500 J/kg (avoid thunderstorms)\n\nMARGINAL CONDITIONS:\n\u2022 wstar 200-400 ft/min\n\u2022 bsratio 3-5\n\u2022 High wind shear\n\u2022 Very low or very high cloudbase\n\nPOOR/DANGEROUS CONDITIONS:\n\u2022 wstar < 200 ft/min\n\u2022 bsratio < 3\n\u2022 blcloudpct > 60% (overdevelopment)\n\u2022 cape > 1500 J/kg (thunderstorm risk)\n\u2022 rain1 > 0 in forecast area\n\n================================================================================\n                         UNITS REFERENCE\n================================================================================\n\nIMPLEMENTED UNITS:\n\u2022 Heights: feet (ft) AGL\n\u2022 Vertical Speed: feet/minute (ft/min)\n\u2022 Wind Speed: knots (kt)\n\u2022 Temperature: Celsius (\u00b0C)\n\u2022 Precipitation: inches\n\u2022 Distance: km\n\u2022 Energy: J/kg\n\n================================================================================\n                         ADDITIONAL RESOURCES\n================================================================================\n\nDrJack's RASP Documentation:\nhttp://www.drjack.info/twiki/bin/view/RASPop/RunParametersDescription\n\nRASP Interpretation Guide:\nhttp://www.drjack.info/BLIP/INFO/\n\n================================================================================\n                              END OF DOCUMENT\n================================================================================\n\n\nNote this is AI generated. ";
         
         // =====================================================
         // APPLICATION CODE
         // =====================================================
         
-        // State
         let currentData = { parameters: [], times: [], domains: [], soundings: [] };
         let map = null;
-        let imageOverlay = null;
-        let domainPolygons = {};
         let isPlaying = false;
         let playInterval = null;
         let viewInitialized = false;
         let currentDomain = null;
-        let soundingMarkers = [];
-        let availableSoundings = [];
         let currentSoundingSite = null;
         let expertMode = false;
+        let preloadedImages = {};
+        let activeLayer = 'A'; // Toggle between 'A' and 'B' for double buffering
         
-        // Get base path for images (works for both local and GitHub Pages)
         function getBasePath() {
             const path = window.location.pathname;
             if (path.includes('/docs/')) {
@@ -838,223 +667,150 @@
         
         const basePath = getBasePath();
         
-        // Initialize map
+        // Initialize map with Lambert Conformal projection
         function initMap() {
-            map = L.map('map', {
-                center: [-37.81, 175.77],
-                zoom: 9,
-                zoomControl: true,
-                zoomSnap: 0.5,
-                zoomDelta: 0.5,
-                wheelPxPerZoomLevel: 120,
-                bounceAtZoomLimits: false,
-                tap: true,
-                tapTolerance: 15
-            });
-            
-            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            });
-            
-            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 19
-            });
-            
-            const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-                maxZoom: 17
-            });
-            
-            osm.addTo(map);
-            
-            L.control.layers({
-                'OpenStreetMap': osm,
-                'Satellite': satellite,
-                'Topographic': topo
-            }, {}, {position: 'topright'}).addTo(map);
-            
-            // Add domain boundary polygons
-            for (const [domainId, data] of Object.entries(domainData)) {
-                const polygon = L.polygon(data.polygon, {
-                    color: domainId === 'd1' ? '#e94560' : '#4ecdc4',
-                    weight: 2,
-                    fillOpacity: 0,
-                    dashArray: domainId === 'd1' ? '10, 5' : null
+            console.log('Initializing map...');
+            try {
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [176.0, -38.5],
+                    zoom: 8,
+                    pitch: 45,
+                    bearing: 0,
+                    attributionControl: true
                 });
-                domainPolygons[domainId] = polygon;
-            }
-        }
-        
-        // Load dates into selector
-        function loadDates() {
-            const select = document.getElementById('dateSelect');
-            select.innerHTML = '';
-            
-            const dates = Object.keys(manifest).sort().reverse();
-            
-            dates.forEach(date => {
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = date;
-                select.appendChild(option);
-            });
-            
-            if (dates.length > 0) {
-                // Try to select today's date, otherwise use the most recent
-                const today = new Date().toISOString().split('T')[0];
-                const defaultDate = dates.includes(today) ? today : dates[0];
-                select.value = defaultDate;
-                loadDateData(defaultDate);
-            }
-        }
-        
-        // Update parameter dropdown based on expert mode
-        function updateParameterDropdown() {
-            const paramSelect = document.getElementById('paramSelect');
-            const currentParam = paramSelect.value;
-            paramSelect.innerHTML = '';
-            
-            // Filter parameters based on expert mode
-            let paramsToShow = currentData.parameters;
-            if (!expertMode) {
-                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
-            }
-            
-            paramsToShow.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p;
-                option.textContent = paramInfo[p] || p;
-                paramSelect.appendChild(option);
-            });
-            
-            // Restore selection if still available, otherwise default to first
-            if (paramsToShow.includes(currentParam)) {
-                paramSelect.value = currentParam;
-            } else if (paramsToShow.length > 0) {
-                paramSelect.value = paramsToShow[0];
-            }
-        }
-        
-        // Load data for a specific date
-        function loadDateData(date) {
-            currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
-            availableSoundings = currentData.soundings || [];
-            
-            // Update parameter dropdown based on expert mode
-            updateParameterDropdown();
-            
-            // Update domain dropdown
-            const domainSelect = document.getElementById('domainSelect');
-            const currentDomainVal = domainSelect.value;
-            domainSelect.innerHTML = '';
-            
-            currentData.domains.forEach(d => {
-                const option = document.createElement('option');
-                option.value = d;
-                option.textContent = d === 'd1' ? 'Domain 1 (6km)' : 'Domain 2 (2km)';
-                domainSelect.appendChild(option);
-            });
-            
-            if (currentData.domains.includes(currentDomainVal)) {
-                domainSelect.value = currentDomainVal;
-            } else if (currentData.domains.includes('d2')) {
-                domainSelect.value = 'd2';
-            }
-            
-            // Update time slider
-            const timeSlider = document.getElementById('timeSlider');
-            timeSlider.max = currentData.times.length - 1;
-            
-            updateTimeDisplay();
-            updateImage();
-            updateSoundingMarkers();
-        }
-        
-        // Update sounding markers on map
-        function updateSoundingMarkers() {
-            soundingMarkers.forEach(m => map.removeLayer(m));
-            soundingMarkers = [];
-            
-            availableSoundings.forEach(siteId => {
-                const site = soundingSites[siteId];
-                if (site) {
-                    const icon = L.divIcon({
-                        className: 'sounding-marker',
-                        html: siteId,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
+                
+                console.log('Map created, waiting for style.load...');
+                
+                map.on('style.load', () => {
+                    console.log('Map style loaded, adding layers...');
+                    
+                    // Add terrain source and layer for 3D
+                    map.addSource('mapbox-dem', {
+                        'type': 'raster-dem',
+                        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                        'tileSize': 512,
+                        'maxzoom': 14
                     });
                     
-                    const marker = L.marker([site.lat, site.lon], { icon })
-                        .addTo(map)
-                        .on('click', () => showSounding(siteId));
+                    // Set terrain with zoom-based exaggeration
+                    map.setTerrain({
+                        'source': 'mapbox-dem',
+                        'exaggeration': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0, 20,
+                            8, 5,
+                            12, 2,
+                            16, 1
+                        ]
+                    });
                     
-                    marker.bindTooltip(site.name, { direction: 'top', offset: [0, -10] });
-                    soundingMarkers.push(marker);
-                }
-            });
+                    addMapLayers();
+                    
+                    // Only load dates on initial load, not on style change
+                    if (!viewInitialized) {
+                        setTimeout(() => {
+                            console.log('Loading dates...');
+                            loadDates();
+                        }, 100);
+                    } else {
+                        // Re-add the forecast layer after style change
+                        setTimeout(() => {
+                            updateImageSource();
+                        }, 100);
+                    }
+                });
+                
+                map.on('error', (e) => {
+                    console.error('Map error:', e);
+                });
+            } catch (e) {
+                console.error('Error initializing map:', e);
+            }
         }
         
-        // Show sounding popup
-        function showSounding(siteId) {
-            const site = soundingSites[siteId];
-            if (!site) return;
+        function addMapLayers() {
+            // Add two image sources for double-buffering (no flash on time change)
+            const defaultCoords = [
+                [172.5, -35.77],  // NW (top-left)
+                [179.5, -35.77],  // NE (top-right)
+                [179.5, -41.13],  // SE (bottom-right)
+                [172.5, -41.13]   // SW (bottom-left)
+            ];
+            const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
             
-            currentSoundingSite = siteId;
+            if (!map.getSource('forecast-image-A')) {
+                map.addSource('forecast-image-A', {
+                    type: 'image',
+                    url: transparentPixel,
+                    coordinates: defaultCoords
+                });
+                map.addLayer({
+                    id: 'forecast-layer-A',
+                    type: 'raster',
+                    source: 'forecast-image-A',
+                    paint: { 'raster-opacity': 0.7 }
+                });
+            }
+            
+            if (!map.getSource('forecast-image-B')) {
+                map.addSource('forecast-image-B', {
+                    type: 'image',
+                    url: transparentPixel,
+                    coordinates: defaultCoords
+                });
+                map.addLayer({
+                    id: 'forecast-layer-B',
+                    type: 'raster',
+                    source: 'forecast-image-B',
+                    paint: { 'raster-opacity': 0 }
+                });
+            }
+        }
+        
+        // Preload all time images for current selection
+        function preloadImages() {
             const date = document.getElementById('dateSelect').value;
-            const timeIdx = document.getElementById('timeSlider').value;
-            const time = currentData.times[timeIdx];
+            const param = document.getElementById('paramSelect').value;
             const domain = document.getElementById('domainSelect').value;
             
-            const popup = document.getElementById('soundingPopup');
-            const title = document.getElementById('soundingTitle');
-            const img = document.getElementById('soundingImg');
+            if (!date || !param || !domain) return;
             
-            title.textContent = `${site.name} Sounding - ${time.substring(0,2)}:${time.substring(2)}`;
-            img.src = `${basePath}data/${date}/sounding${siteId}.curr.${time}lst.${domain}.png`;
+            const key = `${date}-${param}-${domain}`;
+            if (preloadedImages[key]) return; // Already preloaded
             
-            img.onerror = () => {
-                img.alt = 'Sounding not available for this time/domain';
-                img.style.minHeight = '100px';
-            };
+            preloadedImages[key] = {};
             
-            popup.classList.add('active');
+            currentData.times.forEach(time => {
+                const img = new Image();
+                let url;
+                if (param === 'pfd_tot') {
+                    url = `${basePath}data/${date}/pfd_tot.body.png`;
+                } else {
+                    url = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.body.png`;
+                }
+                img.src = url;
+                preloadedImages[key][time] = img;
+            });
+            
+            console.log(`Preloaded ${currentData.times.length} images for ${key}`);
         }
         
-        // Update sounding if popup is open
-        function updateSoundingIfOpen() {
-            if (currentSoundingSite && document.getElementById('soundingPopup').classList.contains('active')) {
-                showSounding(currentSoundingSite);
-            }
-        }
-        
-        // Close sounding popup
-        document.getElementById('closeSounding').addEventListener('click', () => {
-            document.getElementById('soundingPopup').classList.remove('active');
-            currentSoundingSite = null;
-        });
-        
-        // Update time display
-        function updateTimeDisplay() {
-            const slider = document.getElementById('timeSlider');
-            const display = document.getElementById('timeDisplay');
-            const time = currentData.times[slider.value];
-            
-            if (time) {
-                display.textContent = time.substring(0, 2) + ':' + time.substring(2);
-            }
-        }
-        
-        // Update the forecast image overlay
-        function updateImage() {
+        function updateImageSource() {
             const date = document.getElementById('dateSelect').value;
             const param = document.getElementById('paramSelect').value;
             const domain = document.getElementById('domainSelect').value;
             const timeIdx = document.getElementById('timeSlider').value;
             const time = currentData.times[timeIdx];
             
-            if (!date || !param || !domain || !time) return;
+            if (!date || !param || !domain || !time) {
+                console.warn('Missing required data:', { date, param, domain, time });
+                return;
+            }
             
-            // Build image URL for static files
             let imageUrl;
             if (param === 'pfd_tot') {
                 imageUrl = `${basePath}data/${date}/pfd_tot.body.png`;
@@ -1075,67 +831,174 @@
             document.getElementById('headerImg').src = headerUrl;
             document.getElementById('legendImg').src = legendUrl;
             
-            // Update domain polygon visibility
-            const selectedDomain = domain;
-            Object.entries(domainPolygons).forEach(([d, poly]) => {
-                if (d === selectedDomain) {
-                    if (!map.hasLayer(poly)) poly.addTo(map);
-                } else {
-                    if (map.hasLayer(poly)) map.removeLayer(poly);
-                }
-            });
-            
-            // Get corner coordinates for the distortable overlay
+            // Double-buffer update to prevent flash
             const domainInfo = domainData[domain];
-            if (!domainInfo) return;
+            if (!domainInfo || !domainInfo.corners || !map) return;
             
-            const poly = domainInfo.polygon;
-            const corners = [
-                [poly[3][0], poly[3][1]], // UL
-                [poly[2][0], poly[2][1]], // UR
-                [poly[1][0], poly[1][1]], // LR
-                [poly[0][0], poly[0][1]], // LL
+            const corners = domainInfo.corners;
+            const coordinates = [
+                [corners[3][1], corners[3][0]],  // NW (top-left)
+                [corners[2][1], corners[2][0]],  // NE (top-right)
+                [corners[1][1], corners[1][0]],  // SE (bottom-right)
+                [corners[0][1], corners[0][0]]   // SW (bottom-left)
             ];
             
             const opacity = document.getElementById('opacitySlider').value / 100;
+            const nextLayer = activeLayer === 'A' ? 'B' : 'A';
+            const nextSourceId = `forecast-image-${nextLayer}`;
+            const nextLayerId = `forecast-layer-${nextLayer}`;
+            const currentLayerId = `forecast-layer-${activeLayer}`;
             
-            if (imageOverlay) {
-                // Update both URL and corners when domain changes
-                imageOverlay.setCorners(corners);
-                imageOverlay.setUrl(imageUrl);
-            } else {
-                imageOverlay = L.distortableImageOverlay(imageUrl, corners, {
-                    opacity: opacity
-                }).addTo(map);
+            // Remove and re-add the inactive source with new image
+            if (map.getLayer(nextLayerId)) {
+                map.removeLayer(nextLayerId);
+            }
+            if (map.getSource(nextSourceId)) {
+                map.removeSource(nextSourceId);
             }
             
-            // Fit map to domain on first load or domain change
-            if (!viewInitialized || currentDomain !== domain) {
-                const bounds = domainInfo.bounds;
-                map.fitBounds([[bounds[0][0], bounds[0][1]], [bounds[1][0], bounds[1][1]]], {
-                    padding: [20, 20]
-                });
+            map.addSource(nextSourceId, {
+                type: 'image',
+                url: imageUrl,
+                coordinates: coordinates
+            });
+            
+            // Add layer with 0 opacity initially
+            map.addLayer({
+                id: nextLayerId,
+                type: 'raster',
+                source: nextSourceId,
+                paint: { 'raster-opacity': 0 }
+            });
+            
+            // Wait for image to load, then crossfade
+            map.once('idle', () => {
+                // Show new layer
+                map.setPaintProperty(nextLayerId, 'raster-opacity', opacity);
+                // Hide old layer
+                if (map.getLayer(currentLayerId)) {
+                    map.setPaintProperty(currentLayerId, 'raster-opacity', 0);
+                }
+                activeLayer = nextLayer;
+            });
+            
+            // Only fit map to domain on initial load
+            if (!viewInitialized) {
+                const bounds = domainData[domain].bounds;
+                map.fitBounds(
+                    [[bounds[0][1], bounds[0][0]], [bounds[1][1], bounds[1][0]]],
+                    { padding: 20 }
+                );
                 viewInitialized = true;
-                currentDomain = domain;
             }
+            currentDomain = domain;
             
-            // Update info
             const paramName = paramInfo[param] || param;
             document.getElementById('infoBox').textContent = `${date} | ${paramName} | ${domain.toUpperCase()}`;
         }
         
-        // Update opacity
+        function loadDates() {
+            const select = document.getElementById('dateSelect');
+            select.innerHTML = '';
+            const dates = Object.keys(manifest).sort().reverse();
+            
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                select.appendChild(option);
+            });
+            
+            if (dates.length > 0) {
+                const today = new Date().toISOString().split('T')[0];
+                const defaultDate = dates.includes(today) ? today : dates[0];
+                select.value = defaultDate;
+                loadDateData(defaultDate);
+            }
+        }
+        
+        function loadDateData(date) {
+            currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
+            updateParameterDropdown();
+            
+            const domainSelect = document.getElementById('domainSelect');
+            const currentDomainVal = domainSelect.value;
+            domainSelect.innerHTML = '';
+            
+            currentData.domains.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d;
+                option.textContent = d === 'd1' ? 'Domain 1 (6km)' : 'Domain 2 (2km)';
+                domainSelect.appendChild(option);
+            });
+            
+            if (currentData.domains.includes(currentDomainVal)) {
+                domainSelect.value = currentDomainVal;
+            } else if (currentData.domains.includes('d2')) {
+                domainSelect.value = 'd2';
+            }
+            
+            const timeSlider = document.getElementById('timeSlider');
+            const currentTimeIdx = parseInt(timeSlider.value);
+            timeSlider.max = currentData.times.length - 1;
+            
+            // Preserve time index if valid, otherwise keep at same position or max
+            if (currentTimeIdx <= parseInt(timeSlider.max)) {
+                timeSlider.value = currentTimeIdx;
+            } else {
+                timeSlider.value = timeSlider.max;
+            }
+            
+            updateTimeDisplay();
+            updateImageSource();
+            preloadImages(); // Preload all time images for this selection
+        }
+        
+        function updateParameterDropdown() {
+            const paramSelect = document.getElementById('paramSelect');
+            const currentParam = paramSelect.value;
+            paramSelect.innerHTML = '';
+            
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {
+                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+            }
+            
+            paramsToShow.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = paramInfo[p] || p;
+                paramSelect.appendChild(option);
+            });
+            
+            if (paramsToShow.includes(currentParam)) {
+                paramSelect.value = currentParam;
+            } else if (paramsToShow.length > 0) {
+                paramSelect.value = paramsToShow[0];
+            }
+        }
+        
+        function updateTimeDisplay() {
+            const slider = document.getElementById('timeSlider');
+            const display = document.getElementById('timeDisplay');
+            const time = currentData.times[slider.value];
+            
+            if (time) {
+                display.textContent = time.substring(0, 2) + ':' + time.substring(2);
+            }
+        }
+        
         function updateOpacity() {
             const slider = document.getElementById('opacitySlider');
             const value = slider.value;
             document.getElementById('opacityValue').textContent = value + '%';
             
-            if (imageOverlay) {
-                imageOverlay.setOpacity(value / 100);
+            const currentLayerId = `forecast-layer-${activeLayer}`;
+            if (map && map.getLayer(currentLayerId)) {
+                map.setPaintProperty(currentLayerId, 'raster-opacity', value / 100);
             }
         }
         
-        // Play/pause animation
         function togglePlay() {
             const btn = document.getElementById('playBtn');
             
@@ -1157,27 +1020,34 @@
                     value = (value + 1) % (parseInt(slider.max) + 1);
                     slider.value = value;
                     updateTimeDisplay();
-                    updateImage();
+                    updateImageSource();
                 }, speed);
             }
         }
         
         // Event listeners
         document.getElementById('dateSelect').addEventListener('change', (e) => loadDateData(e.target.value));
-        document.getElementById('paramSelect').addEventListener('change', updateImage);
+        document.getElementById('paramSelect').addEventListener('change', () => {
+            updateImageSource();
+            preloadImages();
+        });
         document.getElementById('domainSelect').addEventListener('change', () => {
-            updateImage();
-            updateSoundingIfOpen();
+            updateImageSource();
+            preloadImages();
+        });
+        document.getElementById('styleSelect').addEventListener('change', (e) => {
+            console.log('Changing map style to:', e.target.value);
+            map.setStyle(e.target.value);
         });
         document.getElementById('expertMode').addEventListener('change', (e) => {
             expertMode = e.target.checked;
             updateParameterDropdown();
-            updateImage();
+            updateImageSource();
+            preloadImages();
         });
         document.getElementById('timeSlider').addEventListener('input', () => {
             updateTimeDisplay();
-            updateImage();
-            updateSoundingIfOpen();
+            updateImageSource();
         });
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
         document.getElementById('playBtn').addEventListener('click', togglePlay);
@@ -1187,8 +1057,7 @@
             if (parseInt(slider.value) > 0) {
                 slider.value = parseInt(slider.value) - 1;
                 updateTimeDisplay();
-                updateImage();
-                updateSoundingIfOpen();
+                updateImageSource();
             }
         });
         document.getElementById('timeNext').addEventListener('click', () => {
@@ -1196,45 +1065,64 @@
             if (parseInt(slider.value) < parseInt(slider.max)) {
                 slider.value = parseInt(slider.value) + 1;
                 updateTimeDisplay();
-                updateImage();
-                updateSoundingIfOpen();
+                updateImageSource();
             }
         });
         
-        // Mobile controls toggle
+        // Mobile controls - three state system
         const controlsPanel = document.getElementById('controlsPanel');
         const controlsToggle = document.getElementById('controlsToggle');
         const closeControls = document.getElementById('closeControls');
+        const stateIndicator = document.getElementById('stateIndicator');
+        let controlState = 'expanded'; // expanded, small, or away
         
-        controlsToggle.addEventListener('click', () => {
-            controlsPanel.classList.remove('collapsed');
-            controlsToggle.style.display = 'none';
-        });
+        function updateStateIndicator() {
+            stateIndicator.textContent = controlState === 'small' ? 's' : controlState === 'away' ? 'x' : '';
+        }
         
-        closeControls.addEventListener('click', () => {
-            controlsPanel.classList.add('collapsed');
-            controlsToggle.style.display = 'flex';
-        });
-        
-        // Close controls when clicking on map (mobile)
-        document.getElementById('map').addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && !controlsPanel.classList.contains('collapsed')) {
+        function setControlState(newState) {
+            controlState = newState;
+            if (newState === 'expanded') {
+                controlsPanel.classList.remove('collapsed', 'small');
+                controlsToggle.style.display = 'none';
+            } else if (newState === 'small') {
+                controlsPanel.classList.remove('collapsed');
+                controlsPanel.classList.add('small');
+                controlsToggle.style.display = 'flex';
+            } else {
                 controlsPanel.classList.add('collapsed');
                 controlsToggle.style.display = 'flex';
             }
-        });
+            updateStateIndicator();
+        }
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                controlsPanel.classList.remove('collapsed');
-                controlsToggle.style.display = 'none';
+        controlsToggle.addEventListener('click', () => {
+            if (controlState === 'away') {
+                setControlState('expanded');
+            } else if (controlState === 'expanded') {
+                setControlState('small');
+            } else {
+                setControlState('away');
             }
         });
         
-        // Help modal functionality
-        const helpText = "Pleas note this site is in beta stages. I will try and run forcasts every day.\nAny Issues/Bugs/Suggestions please email me: george.downing20@icloud.com.\n\n\n\n================================================================================\n                    RASP (Randomly Accurate Soaring Predictions)\n                              PARAMETER REFERENCE GUIDE\n================================================================================\n\nThis document describes the meteorological parameters available in RASP forecasts,\nprimarily used for soaring flight planning (gliding, paragliding, hang gliding).\n\n================================================================================\n                           THERMAL PARAMETERS\n================================================================================\n\nwstar (Thermal Updraft Velocity)\n    Unit: ft/min\n    The average dry thermal updraft strength near the top of the usable boundary\n    layer. Subtract 200 ft/min to get a more realistic in-flight climb rate.\n    Values < 200 ft/min = weak/no thermals, 400-600 ft/min = moderate, > 800 ft/min = strong.\n\nhbl (BL Top / Thermal Height)\n    Unit: ft AGL\n    Height of the top of the mixing layer (boundary layer). This represents the\n    expected maximum height of dry thermals. NOT the cloudbase height.\n\ndbl (BL Depth)\n    Unit: ft\n    Depth/thickness of the boundary layer. Represents the vertical extent\n    of the convective mixing layer from the surface to the BL top.\n\nhglider (Thermalling Height)\n    Unit: ft AGL\n    Max thermalling height, which is the minimum of the BL top and the\n    overdevelopment cloudbase. This is the practical ceiling for glider pilots.\n\ndglider (Thermalling Depth)\n    Unit: ft\n    The expected depth/thickness of usable thermals for soaring. Calculated as\n    hglider minus the height where thermals become too weak to use.\n\nhwcrit (Critical Height)\n    Unit: ft AGL\n    Height at which the thermal updraft strength falls below a critical threshold\n    (typically 220 ft/min). Useful for determining minimum working altitude.\n\ndwcrit (Critical Depth)\n    Unit: ft\n    Depth of thermals above the critical updraft threshold. The altitude band\n    where thermals are strong enough to be usable for climbing.\n\nbltopvariab (BL Top Variability)\n    Unit: ft\n    Spatial variability of the boundary layer top height. High values indicate\n    inconsistent thermal heights across the region.\n\nwblmaxmin (BL Max/Min W)\n    Unit: ft/min\n    Maximum grid-area-loss updraft strength at BL top. A negative value indicates\n    overall sinking motion. Positive values suggest stronger thermals possible.\n\nzwblmaxmin (Height of BL Max/Min W)\n    Unit: ft AGL\n    Height at which the wblmaxmin value occurs. Useful for understanding the\n    vertical structure of thermals.\n\n================================================================================\n                         THERMAL QUALITY PARAMETERS\n================================================================================\n\nbsratio (Buoyancy/Shear Ratio)\n    Unit: dimensionless\n    Ratio of thermal strength to wind shear. Indicates thermal quality:\n    < 5 = broken/sheared thermals, 5-7 = moderate, > 7 = good organized thermals.\n    Low values mean thermals will be tilted and harder to work.\n\nwstar_bsratio (Combined Thermal Index)\n    Combined display of wstar and bsratio for quick assessment of both thermal\n    strength and quality in one parameter.\n\nsfcshf (Surface Heat Flux)\n    Unit: W/m\u00b2\n    Surface sensible heat flux - the rate at which heat is transferred from the\n    surface to the atmosphere. Higher values indicate stronger thermal generation.\n    Negative values indicate heat transfer to the ground (cooling).\n\nsfcsunpct (Surface Sun Percentage)\n    Unit: %\n    Percentage of full sunshine reaching the surface. Reduced by clouds.\n    100% = clear sky, lower values indicate cloud shadowing.\n\n================================================================================\n                         CLOUD PARAMETERS\n================================================================================\n\nzsfclcl (Surface LCL Height)\n    Unit: ft AGL\n    Lifting Condensation Level based on surface conditions. The height where\n    cumulus clouds would form if air is lifted from the surface.\n\nzsfclclmask (Surface LCL Masked)\n    Unit: ft AGL\n    Same as zsfclcl but masked (not shown) where cumulus are not expected to form.\n\nzsfclcldif (Cu Potential)\n    Unit: ft\n    Difference between the BL top and the surface LCL. Positive values indicate\n    good potential for cumulus cloud formation (Cu overdevelopment possible).\n\nzblcl (BL Cloud Height)\n    Unit: ft AGL\n    Height of cloud base from BL-mean values. More representative of actual\n    cloudbase than surface-based LCL during well-mixed conditions.\n\nzblclmask (BL Cloud Height Masked)\n    Unit: ft AGL\n    Same as zblcl but masked where cumulus clouds are not expected.\n\nzblcldif (BL Cu Potential)\n    Unit: ft\n    BL-based cumulus potential. Positive values indicate cumulus expected.\n\nblcloudpct (BL Cloud Cover)\n    Unit: %\n    Percentage of the sky expected to be covered by cumulus clouds forming\n    at the top of the thermals. High values may indicate overdevelopment.\n\nblicw (BL Integrated Cloud Water)\n    Unit: kg/m\u00b2\n    Integrated cloud water content within the boundary layer. Indicates\n    the total amount of condensed water in BL clouds.\n\nblcwbase (BL Cloud Water Base)\n    Unit: ft AGL\n    Height of the base of clouds containing significant cloud water.\n    Can indicate where actual visible cloudbase will be.\n\ncfracl / wrf=CFRACL (Low Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by low-level clouds (below ~3.5km).\n\ncfracm / wrf=CFRACM (Mid Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by mid-level clouds (~3.5-8km).\n\ncfrach / wrf=CFRACH (High Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by high-level clouds (above ~8km).\n    High cirrus can reduce surface heating and weaken thermals.\n\n================================================================================\n                           WIND PARAMETERS\n================================================================================\n\nsfcwind0 (Surface Wind)\n    Unit: knots\n    Wind speed and direction at the surface (10m AGL). Important for\n    takeoff/landing assessment and ridge soaring potential.\n\nblwind (BL Average Wind)\n    Unit: knots\n    Average wind speed and direction through the boundary layer.\n    Represents the overall wind affecting thermal drift.\n\nbltopwind (BL Top Wind)\n    Unit: knots\n    Wind at the top of the boundary layer. Important for assessing\n    thermal drift at cloudbase and high-altitude conditions.\n\nblwindshear (BL Wind Shear)\n    Unit: knots per 1000ft\n    Vertical wind shear through the boundary layer. High shear tilts\n    thermals and makes them harder to work. Affects thermal quality.\n\n================================================================================\n                         SURFACE PARAMETERS\n================================================================================\n\nsfctemp (Surface Temperature)\n    Unit: \u00b0C\n    Air temperature at 2m above ground level. Important for thermal\n    triggering and pilot comfort.\n\nsfcdewpt (Surface Dew Point)\n    Unit: \u00b0C\n    Dew point temperature at 2m AGL. Indicates moisture content.\n    Closer to sfctemp = higher humidity = lower cloudbase potential.\n\nrain1 (1-hour Precipitation)\n    Unit: inches\n    Accumulated precipitation over the previous hour. Indicates\n    shower/storm activity that will suppress thermal activity.\n\ncape (Convective Available Potential Energy)\n    Unit: J/kg\n    Energy available for convection. High CAPE (>500 J/kg) indicates\n    potential for strong thunderstorm development. Be cautious!\n    0-500 = weak, 500-1500 = moderate, >1500 = strong instability.\n\n================================================================================\n                      PRESSURE LEVEL PARAMETERS\n================================================================================\n\npress950 / press955 (950/955 hPa Level)\n    Conditions at approximately 500m/450m ASL. Shows wind, temperature\n    at low levels above ground.\n\npress850 / press899 / press846 (850 hPa Level)\n    Conditions at approximately 1500m ASL. Standard level for synoptic\n    analysis of lower troposphere.\n\npress795 (795 hPa Level)\n    Conditions at approximately 2000m ASL.\n\npress700 / press701 (700 hPa Level)\n    Conditions at approximately 3000m ASL. Important for mountain flying\n    and assessing mid-level conditions.\n\npress616 / press540 (600-500 hPa Level)\n    Conditions at approximately 4000-5500m ASL. Upper-level analysis.\n\npress500 (500 hPa Level)\n    Conditions at approximately 5500m ASL. Standard level for synoptic\n    analysis of mid-troposphere.\n\n================================================================================\n                         CONVERGENCE PARAMETERS\n================================================================================\n\nwblmaxmin (BL Max Upward/Downward Motion)\n    Unit: ft/min\n    Maximum upward or downward vertical motion within the boundary layer,\n    indicating areas of wind convergence (positive/lifting) or divergence\n    (negative/sinking). Convergence zones can enhance thermal lift and mark\n    areas where thermals are more likely to form or strengthen.\n    Positive values = convergence/lift, negative = divergence/sink.\n\nzwblmaxmin (Height of BL Max W)\n    Unit: ft AGL\n    Height at which the maximum boundary layer vertical motion (wblmaxmin)\n    occurs. Helps understand where in the boundary layer the convergence\n    or divergence is strongest.\n\n================================================================================\n                      CROSS-COUNTRY PERFORMANCE PARAMETERS\n================================================================================\n\npfd_tot (Potential Flight Distance Total)\n    Unit: km\n    Estimated achievable cross-country flight distance based on thermal\n    conditions, averaged over the forecast period. Higher = better soaring day.\n\nxcspeed (Cross-Country Speed)\n    Unit: km/h\n    Expected achievable cross-country speed based on thermal strength and\n    spacing. Accounts for time spent climbing and gliding between thermals.\n    Higher values indicate faster XC potential and better soaring conditions.\n    Is based on a Discus glider polar.\n\nstars (Star Rating)\n    Unit: 0-5 stars\n    Overall soaring quality rating combining thermal strength, height, and \n    conditions. Quick visual indicator of expected soaring conditions:\n    0-1 = poor/unsoarable, 2 = marginal, 3 = moderate, 4 = good, 5 = excellent.\n\n================================================================================\n                         SOUNDING PARAMETERS\n================================================================================\n\nsounding1, sounding2, etc.\n    Atmospheric soundings (skew-T diagrams) at specified locations.\n    Shows vertical profile of temperature, dew point, and wind.\n    Essential for detailed analysis of atmospheric stability.\n\n================================================================================\n                         RIDGE LIFT PARAMETERS\n================================================================================\n\nridgelift (Ridge Lift / Orographic Lift)\n    Unit: ft/min (or cm/s depending on display)\n    Vertical velocity of air at approximately 300ft (100m) above ground level.\n    This is extracted directly from the WRF model's computed vertical velocity\n    field, which accounts for airflow over and around terrain features.\n    \n    Positive values indicate rising air (useful for ridge soaring), while\n    negative values indicate sinking air. Best used in conjunction with\n    surface wind direction to identify ridges that are \"working\".\n    \n    Interpretation:\n    \u2022 > 200 ft/min = Good ridge lift potential\n    \u2022 100-200 ft/min = Marginal ridge lift\n    \u2022 < 100 ft/min = Weak or no ridge lift\n    \u2022 Negative values = Sink / lee side turbulence\n    \n    Note: Actual ridge lift experienced will depend on local terrain features\n    that may be smaller than the model grid resolution (~2km).\n\n================================================================================\n                    EXPERIMENTAL/ADVANCED PARAMETERS\n================================================================================\n\nexperimental1\n    Custom or experimental parameter. Check documentation for specific\n    implementation details.\n\n================================================================================\n                         PARAMETER INTERPRETATION TIPS\n================================================================================\n\nGOOD SOARING CONDITIONS:\n\u2022 wstar > 500 ft/min\n\u2022 hbl > 5000 ft AGL\n\u2022 bsratio > 5\n\u2022 blcloudpct 10-40% (scattered Cu)\n\u2022 Low wind shear\n\u2022 cape < 500 J/kg (avoid thunderstorms)\n\nMARGINAL CONDITIONS:\n\u2022 wstar 200-400 ft/min\n\u2022 bsratio 3-5\n\u2022 High wind shear\n\u2022 Very low or very high cloudbase\n\nPOOR/DANGEROUS CONDITIONS:\n\u2022 wstar < 200 ft/min\n\u2022 bsratio < 3\n\u2022 blcloudpct > 60% (overdevelopment)\n\u2022 cape > 1500 J/kg (thunderstorm risk)\n\u2022 rain1 > 0 in forecast area\n\n================================================================================\n                         UNITS REFERENCE\n================================================================================\n\nIMPLEMENTED UNITS:\n\u2022 Heights: feet (ft) AGL\n\u2022 Vertical Speed: feet/minute (ft/min)\n\u2022 Wind Speed: knots (kt)\n\u2022 Temperature: Celsius (\u00b0C)\n\u2022 Precipitation: inches\n\u2022 Distance: km\n\u2022 Energy: J/kg\n\n================================================================================\n                         ADDITIONAL RESOURCES\n================================================================================\n\nDrJack's RASP Documentation:\nhttp://www.drjack.info/twiki/bin/view/RASPop/RunParametersDescription\n\nRASP Interpretation Guide:\nhttp://www.drjack.info/BLIP/INFO/\n\n================================================================================\n                              END OF DOCUMENT\n================================================================================\n\n\nNote this is AI generated. ";
+        closeControls.addEventListener('click', () => {
+            setControlState('away');
+        });
         
+        document.getElementById('map').addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && controlState === 'expanded') {
+                setControlState('small');
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                setControlState('expanded');
+            }
+        });
+        
+        // Help modal
         document.getElementById('helpText').textContent = helpText;
         
         document.getElementById('helpBtn').addEventListener('click', () => {
@@ -1251,7 +1139,6 @@
             }
         });
         
-        // Close help modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.getElementById('helpModal').classList.remove('active');
@@ -1260,9 +1147,14 @@
             }
         });
         
+        // Close sounding popup
+        document.getElementById('closeSounding').addEventListener('click', () => {
+            document.getElementById('soundingPopup').classList.remove('active');
+            currentSoundingSite = null;
+        });
+        
         // Initialize
         initMap();
-        loadDates();
     </script>
 </body>
 </html>

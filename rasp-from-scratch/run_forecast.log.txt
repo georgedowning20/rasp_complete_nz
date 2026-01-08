@@ -16,3 +16,5 @@
 [2026-01-07 22:00:27] SUCCESS - Day 3 forecast completed (Duration: 00:23:35)
 [2026-01-07 22:00:27] RUN COMPLETE - Total time: 01:30:49
 ---
+[2026-01-08 10:06:05] SUCCESS - Day 0 forecast completed (Duration: 00:39:29)
+[2026-01-08 10:40:23] FAILED - Day 1 forecast failed with exit code 130

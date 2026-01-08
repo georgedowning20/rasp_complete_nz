@@ -1146,8 +1146,8 @@ def generate_html(domain_bounds, manifest, help_text):
         // Initialize map
         function initMap() {{
             map = L.map('map', {{
-                center: [-37.81, 175.77],
-                zoom: 9,
+                center: [-38.5, 176.0],
+                zoom: 8,
                 zoomControl: true,
                 zoomSnap: 0.5,
                 zoomDelta: 0.5,

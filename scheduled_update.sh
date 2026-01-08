@@ -62,12 +62,12 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run the static site generator
-echo "Running generate_static_site.py..."
+echo "Running generate_static_site_mapbox_gl.py..."
 cd "$SCRIPT_DIR"
-python3 generate_static_site.py
+python3 generate_static_site_mapbox_gl.py
 
 if [ $? -ne 0 ]; then
-    echo "Error: generate_static_site.py failed"
+    echo "Error: generate_static_site_mapbox_gl.py failed"
     exit 1
 fi
 
