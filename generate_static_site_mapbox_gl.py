@@ -1099,7 +1099,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         mapboxgl.accessToken = '{mapbox_token}';
         
         const paramInfo = {json.dumps(PARAMETER_INFO)};
-        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin'];
+        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift'];
         const domainData = {json.dumps(domain_bounds)};
         const soundingSites = {json.dumps(SOUNDING_SITES)};
         const manifest = {json.dumps(manifest)};
