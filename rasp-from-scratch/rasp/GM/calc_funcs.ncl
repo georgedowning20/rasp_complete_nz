@@ -645,7 +645,7 @@ begin
 		sreduction = where( wind_local .gt. 8.0 , 1000.0 * (0.047 * (wind_local ^ 2.0) - 0.74 * wind_local + 2.9), 0)
 	else
 		sreduction = where( wind_local .lt. MAXWIND, MAXWIND, wind_local)
-		sreduction = 250 * ((sreduction - MAXWIND)^2.0) / sreduction
+		sreduction = 200 * ((sreduction - MAXWIND)^2.0) / sreduction
 	end if
 	; print ( " stars No Wind "+min(stars)+","+max(stars) ) 
 	stars = stars - sreduction
@@ -660,7 +660,7 @@ begin
 	; Max adjustment +900 @ bsratio = 6
 	; Note bsratio cannot be < 0!
 
-	MAXBSRATIO = 6.0  ; Very seldom better than this in the UK :-)
+	MAXBSRATIO = 5.0  ; Very seldom better than this in the UK :-)
 	bsadjust = where(bsratio_mag .gt. MAXBSRATIO, MAXBSRATIO, bsratio_mag)
 	stars = stars + ((bsadjust - 3.0) * 300)
 	stars = stars > 0
@@ -692,8 +692,8 @@ begin
 	; wgt = (/                              1.,      2.,       1.                                 /)
 	; wgt = (/                          1.,     3.,       3.,      1.                             /)	; Don't use N_coeffs is even
 	; wgt = (/                      1.,     4.,       6.,      4.,      1.                        /)
-	; wgt = (/                  1.,     5.,      10.,     10.,      5.,      1.                   /)	; Don't use N_coeffs is even
-	  wgt = (/              1.,     6.,     15.,      20.,     15.,      6.,     1.               /)
+	  wgt = (/                  1.,     5.,      10.,     10.,      5.,      1.                   /)	; Don't use N_coeffs is even
+	; wgt = (/              1.,     6.,     15.,      20.,     15.,      6.,     1.               /)
 	; wgt = (/          1.,    7.,     21.,      35.,      35.,      21.,    7.,      1.          /)	; Don't use N_coeffs is even
 	; wgt = (/       1.,    8.,    28.,     56.,      70.,      56.,     28.,     8.,     1.      /)
 	; wgt = (/   1.,    9.,    36.,     84.,     126.,     126.,     84.,     36.,    9.,    1.   /)	; Don't use N_coeffs is even
