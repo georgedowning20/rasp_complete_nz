@@ -275,3 +275,129 @@ Finished at: 2026-01-09 09:31:25
 ==========================================
 /Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: line 119: unexpected EOF while looking for matching `"'
 /Users/georgedowning/Desktop/Rasp_complete/scheduled_update.sh: line 120: syntax error: unexpected end of file
+Preventing sleep during forecast (caffeinate PID: 84346)
+Running immediately (forced mode)...
+Starting at Sat Jan 10 05:14:05 NZDT 2026
+Cleaning results/OUT folder...
+  Removed all files from results/OUT
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-09
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-10 05:14:07
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-10
+Checking for existing results for forecast day 2026-01-10
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+Running meteogram on Sat Jan 10 05:31:41 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-10
+Started running rasp for forecast 2026-01-10 at 04-56, ended at 2026-01-10_05-34
+✓ Day 0 forecast completed successfully
+  Duration: 00:20:06
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-10 05:34:13
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-11
+Checking for existing results for forecast day 2026-01-11
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Sat Jan 10 05:51:03 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-11
+Started running rasp for forecast 2026-01-11 at 05-34, ended at 2026-01-10_05-53
+✓ Day 1 forecast completed successfully
+  Duration: 00:19:22
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-10 05:53:35
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-12
+Checking for existing results for forecast day 2026-01-12
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+Running meteogram on Sat Jan 10 06:10:31 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-12
+Started running rasp for forecast 2026-01-12 at 05-53, ended at 2026-01-10_06-13
+✓ Day 2 forecast completed successfully
+  Duration: 00:19:28
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-10 06:13:03
+==========================================
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-13
+Checking for existing results for forecast day 2026-01-13
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+Running meteogram on Sat Jan 10 06:30:25 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-13
+Started running rasp for forecast 2026-01-13 at 06-13, ended at 2026-01-10_06-32
+✓ Day 3 forecast completed successfully
+  Duration: 00:19:53
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 01:18:49
+Finished at: 2026-01-10 06:32:56
+==========================================
+Running generate_static_site_mapbox_gl.py...
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+   Processing 2026-01-10...
+      Copied 4225 images
+   Processing 2026-01-11...
+      Copied 4225 images
+   Processing 2026-01-12...
+      Copied 4225 images
+   Processing 2026-01-13...
+      Copied 4225 images
+📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 4
+   🖼️  Images: 16900
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
