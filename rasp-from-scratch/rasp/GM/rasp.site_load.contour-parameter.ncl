@@ -124,7 +124,7 @@ end if
 
 ;;; Ridge Lift
 if( plot_param .eq. "ridgelift" ) then
-    opts_bparam@ContourParameters = (/ -500., 500., 50. /)
+    opts_bparam@ContourParameters = (/ -400., 400., 50. /)
 end if
 
 if( plot_param .eq. "mslpress" ) then
