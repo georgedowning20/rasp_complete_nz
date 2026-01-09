@@ -650,6 +650,29 @@
                 flex: 1;
                 margin-bottom: 8px;
             }
+            .sounding-popup {
+                top: 50%;
+                left: 15px;
+                right: 15px;
+                transform: translateY(-50%);
+                width: auto;
+                max-width: none;
+                padding: 15px;
+            }
+            .sounding-popup img {
+                max-height: calc(100vh - 120px);
+            }
+            .sounding-popup h3 {
+                font-size: 1.1em;
+                margin-bottom: 15px;
+            }
+            .sounding-popup .close-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.6em;
+                top: 10px;
+                right: 10px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1518,12 +1541,21 @@
         });
         
         // Controls - two state system: big (expanded) or little (top bar)
+        // Little mode only available on mobile/tablet (<=768px)
         const controlsPanel = document.getElementById('controlsPanel');
         const expandToggle = document.getElementById('expandToggle');
         const collapseToggle = document.getElementById('collapseToggle');
         let controlState = 'big'; // big or little
         
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+        
         function setControlState(newState) {
+            // Only allow little mode on mobile devices
+            if (newState === 'little' && !isMobile()) {
+                return;
+            }
             controlState = newState;
             if (newState === 'big') {
                 controlsPanel.classList.remove('little');
@@ -1537,12 +1569,21 @@
         });
         
         collapseToggle.addEventListener('click', () => {
-            setControlState('little');
+            if (isMobile()) {
+                setControlState('little');
+            }
         });
         
         document.getElementById('map').addEventListener('click', (e) => {
-            if (controlState === 'big') {
+            if (isMobile() && controlState === 'big') {
                 setControlState('little');
+            }
+        });
+        
+        // Ensure big mode on resize to desktop
+        window.addEventListener('resize', () => {
+            if (!isMobile() && controlState === 'little') {
+                setControlState('big');
             }
         });
         
