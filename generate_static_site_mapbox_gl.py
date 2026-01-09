@@ -331,6 +331,74 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             -webkit-overflow-scrolling: touch;
         }}
         
+        /* Loading Screen */
+        .loading-screen {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }}
+        .loading-screen.hidden {{
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }}
+        .loading-content {{
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }}
+        .loading-title {{
+            font-size: 2em;
+            color: #e94560;
+            margin-bottom: 10px;
+        }}
+        .loading-subtitle {{
+            font-size: 1em;
+            color: #aaa;
+            margin-bottom: 30px;
+        }}
+        .loading-bar-container {{
+            width: 100%;
+            height: 8px;
+            background: #0f3460;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }}
+        .loading-bar {{
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }}
+        .loading-status {{
+            font-size: 0.85em;
+            color: #888;
+            min-height: 1.2em;
+        }}
+        .loading-spinner {{
+            width: 40px;
+            height: 40px;
+            border: 3px solid #0f3460;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto 0;
+        }}
+        @keyframes spin {{
+            to {{ transform: rotate(360deg); }}
+        }}
+        
         #map {{
             position: fixed;
             top: 0;
@@ -634,6 +702,77 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             color: white;
         }}
         
+        /* Location Button */
+        .location-btn {{
+            position: fixed;
+            bottom: 100px;
+            right: 10px;
+            z-index: 1100;
+            background: rgba(22, 33, 62, 0.95);
+            color: #4a9eff;
+            border: 2px solid #4a9eff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }}
+        .location-btn:hover {{
+            background: #4a9eff;
+            color: white;
+        }}
+        .location-btn.active {{
+            background: #4a9eff;
+            color: white;
+            animation: pulse-location 2s infinite;
+        }}
+        .location-btn.searching {{
+            animation: pulse-search 1s infinite;
+        }}
+        @keyframes pulse-location {{
+            0%, 100% {{ box-shadow: 0 0 0 0 rgba(74, 158, 255, 0.7); }}
+            50% {{ box-shadow: 0 0 0 10px rgba(74, 158, 255, 0); }}
+        }}
+        @keyframes pulse-search {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.5; }}
+        }}
+        
+        /* GPS Marker */
+        .gps-marker {{
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }}
+        .gps-marker-pulse {{
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(74, 158, 255, 0.3);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: gps-pulse 2s infinite;
+        }}
+        @keyframes gps-pulse {{
+            0% {{ transform: translate(-50%, -50%) scale(0.5); opacity: 1; }}
+            100% {{ transform: translate(-50%, -50%) scale(2); opacity: 0; }}
+        }}
+        .gps-accuracy-circle {{
+            background: rgba(74, 158, 255, 0.15);
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            border-radius: 50%;
+        }}
+        
         .help-modal {{
             position: fixed;
             top: 0;
@@ -835,6 +974,19 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-title">🌤️ RASP NZ</div>
+            <div class="loading-subtitle">Loading Weather Forecast...</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <div class="loading-status" id="loadingStatus">Initializing...</div>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+    
     <div id="map"></div>
     
     <button class="controls-toggle" id="controlsToggle" aria-label="Open controls">☰<span class="state-indicator" id="stateIndicator"></span></button>
@@ -909,6 +1061,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
     </div>
     
+    <button class="location-btn" id="locationBtn" title="Find my location" aria-label="Find my location">📍</button>
+    
     <div class="info-box" id="infoBox">Loading...</div>
     
     <div class="header-box" id="headerBox">
@@ -966,6 +1120,58 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         let preloadedImages = {{}};
         let activeLayer = 'A'; // Toggle between 'A' and 'B' for double buffering
         
+        // Loading state management
+        let loadingProgress = 0;
+        const loadingStages = {{
+            mapbox: {{ weight: 20, done: false, label: 'Loading Mapbox...' }},
+            style: {{ weight: 25, done: false, label: 'Loading map style...' }},
+            terrain: {{ weight: 15, done: false, label: 'Loading terrain...' }},
+            data: {{ weight: 20, done: false, label: 'Loading forecast data...' }},
+            image: {{ weight: 20, done: false, label: 'Loading forecast overlay...' }}
+        }};
+        
+        function updateLoadingProgress(stage) {{
+            if (loadingStages[stage] && !loadingStages[stage].done) {{
+                loadingStages[stage].done = true;
+                loadingProgress = Object.values(loadingStages)
+                    .filter(s => s.done)
+                    .reduce((sum, s) => sum + s.weight, 0);
+                
+                const loadingBar = document.getElementById('loadingBar');
+                const loadingStatus = document.getElementById('loadingStatus');
+                
+                if (loadingBar) {{
+                    loadingBar.style.width = loadingProgress + '%';
+                }}
+                
+                // Find next incomplete stage for status message
+                const nextStage = Object.values(loadingStages).find(s => !s.done);
+                if (loadingStatus && nextStage) {{
+                    loadingStatus.textContent = nextStage.label;
+                }} else if (loadingStatus) {{
+                    loadingStatus.textContent = 'Almost ready...';
+                }}
+                
+                console.log(`Loading progress: ${{loadingProgress}}% (${{stage}} complete)`);
+                
+                // Hide loading screen when complete
+                if (loadingProgress >= 100) {{
+                    hideLoadingScreen();
+                }}
+            }}
+        }}
+        
+        function hideLoadingScreen() {{
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {{
+                loadingScreen.classList.add('hidden');
+                // Remove from DOM after animation
+                setTimeout(() => {{
+                    loadingScreen.style.display = 'none';
+                }}, 500);
+            }}
+        }}
+        
         function getBasePath() {{
             const path = window.location.pathname;
             if (path.includes('/docs/')) {{
@@ -979,6 +1185,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         // Initialize map with Lambert Conformal projection
         function initMap() {{
             console.log('Initializing map...');
+            updateLoadingProgress('mapbox');
+            
             try {{
                 map = new mapboxgl.Map({{
                     container: 'map',
@@ -994,6 +1202,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 
                 map.on('style.load', () => {{
                     console.log('Map style loaded, adding layers...');
+                    updateLoadingProgress('style');
                     
                     // Add terrain source and layer for 3D
                     map.addSource('mapbox-dem', {{
@@ -1017,12 +1226,14 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                         ]
                     }});
                     
+                    updateLoadingProgress('terrain');
                     addMapLayers();
                     
                     // Only load dates on initial load, not on style change
                     if (!viewInitialized) {{
                         setTimeout(() => {{
                             console.log('Loading dates...');
+                            updateLoadingProgress('data');
                             loadDates();
                         }}, 100);
                     }} else {{
@@ -1078,6 +1289,209 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                     paint: {{ 'raster-opacity': 0 }}
                 }});
             }}
+            
+            // Add sounding site markers
+            addSoundingMarkers();
+        }}
+        
+        // Sounding markers - using native Mapbox layers for proper anchoring
+        function addSoundingMarkers() {{
+            // Create GeoJSON data for sounding sites
+            const soundingGeoJSON = {{
+                type: 'FeatureCollection',
+                features: Object.entries(soundingSites).map(([siteId, site]) => ({{
+                    type: 'Feature',
+                    properties: {{
+                        id: siteId,
+                        name: site.name
+                    }},
+                    geometry: {{
+                        type: 'Point',
+                        coordinates: [site.lon, site.lat]
+                    }}
+                }}))
+            }};
+            
+            // Remove existing source/layers if they exist (for style changes)
+            if (map.getLayer('sounding-labels')) map.removeLayer('sounding-labels');
+            if (map.getLayer('sounding-markers')) map.removeLayer('sounding-markers');
+            if (map.getSource('sounding-sites')) map.removeSource('sounding-sites');
+            
+            // Add source
+            map.addSource('sounding-sites', {{
+                type: 'geojson',
+                data: soundingGeoJSON
+            }});
+            
+            // Create custom skew-T icon as an image
+            const iconSize = 48;
+            const canvas = document.createElement('canvas');
+            canvas.width = iconSize;
+            canvas.height = iconSize;
+            const ctx = canvas.getContext('2d');
+            
+            // Helper function for rounded rectangle (cross-browser compatible)
+            function drawRoundedRect(ctx, x, y, width, height, radius) {{
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.arcTo(x + width, y, x + width, y + radius, radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+                ctx.lineTo(x + radius, y + height);
+                ctx.arcTo(x, y + height, x, y + height - radius, radius);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+            }}
+            
+            // Draw background
+            ctx.fillStyle = 'rgba(22, 33, 62, 0.95)';
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            drawRoundedRect(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw skewed isotherms (temperature lines tilted right)
+            ctx.strokeStyle = 'rgba(233, 69, 96, 0.25)';
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < 4; i++) {{
+                ctx.beginPath();
+                ctx.moveTo(8 + i * 9, iconSize - 8);
+                ctx.lineTo(16 + i * 9, 8);
+                ctx.stroke();
+            }}
+            
+            // Draw horizontal pressure lines (isobars)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            for (let y of [12, 20, 28, 36]) {{
+                ctx.beginPath();
+                ctx.moveTo(8, y);
+                ctx.lineTo(iconSize - 8, y);
+                ctx.stroke();
+            }}
+            
+            // Draw temperature profile (red) with inversion
+            // Starts warm at surface, cools, then WARMS (inversion), then cools again
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(28, 40);      // Surface - warm
+            ctx.lineTo(22, 32);      // Cooling with height
+            ctx.lineTo(28, 26);      // INVERSION - temperature increases (bulge right)
+            ctx.lineTo(20, 18);      // Above inversion - cooling again
+            ctx.lineTo(16, 10);      // Upper level - cold
+            ctx.stroke();
+            
+            // Draw dewpoint profile (green/cyan dashed) - stays left of temp
+            ctx.strokeStyle = '#00d4aa';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 2]);
+            ctx.beginPath();
+            ctx.moveTo(18, 40);      // Surface dewpoint
+            ctx.lineTo(14, 32);      // Decreasing
+            ctx.lineTo(12, 26);      // Dry at inversion (big temp-dewpoint spread)
+            ctx.lineTo(10, 18);      // Still dry above
+            ctx.lineTo(8, 10);       // Upper level
+            ctx.stroke();
+            
+            // Add as image to map
+            const imageData = ctx.getImageData(0, 0, iconSize, iconSize);
+            
+            if (!map.hasImage('skewt-icon')) {{
+                map.addImage('skewt-icon', imageData, {{ pixelRatio: 2 }});
+            }}
+            
+            // Add symbol layer for markers
+            map.addLayer({{
+                id: 'sounding-markers',
+                type: 'symbol',
+                source: 'sounding-sites',
+                layout: {{
+                    'icon-image': 'skewt-icon',
+                    'icon-size': 0.7,
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                    'icon-pitch-alignment': 'viewport',
+                    'icon-rotation-alignment': 'viewport'
+                }}
+            }});
+            
+            // Add labels layer
+            map.addLayer({{
+                id: 'sounding-labels',
+                type: 'symbol',
+                source: 'sounding-sites',
+                layout: {{
+                    'text-field': ['get', 'name'],
+                    'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                    'text-size': 11,
+                    'text-offset': [0, 1.8],
+                    'text-anchor': 'top',
+                    'text-allow-overlap': false
+                }},
+                paint: {{
+                    'text-color': '#ffffff',
+                    'text-halo-color': 'rgba(22, 33, 62, 0.9)',
+                    'text-halo-width': 2
+                }}
+            }});
+            
+            // Add click handler for markers
+            map.on('click', 'sounding-markers', (e) => {{
+                if (e.features && e.features.length > 0) {{
+                    const feature = e.features[0];
+                    const siteId = feature.properties.id;
+                    const siteName = feature.properties.name;
+                    showSounding(siteId, siteName);
+                }}
+            }});
+            
+            // Change cursor on hover
+            map.on('mouseenter', 'sounding-markers', () => {{
+                map.getCanvas().style.cursor = 'pointer';
+            }});
+            
+            map.on('mouseleave', 'sounding-markers', () => {{
+                map.getCanvas().style.cursor = '';
+            }});
+            
+            console.log(`Added ${{soundingGeoJSON.features.length}} sounding markers using symbol layer`);
+        }}
+        
+        function showSounding(siteId, siteName) {{
+            const date = document.getElementById('dateSelect').value;
+            const timeIdx = document.getElementById('timeSlider').value;
+            const time = currentData.times[timeIdx];
+            const domain = document.getElementById('domainSelect').value;
+            
+            if (!date || !time) {{
+                console.warn('Cannot show sounding: missing date or time');
+                return;
+            }}
+            
+            // Check if this sounding site is available
+            if (!currentData.soundings.includes(siteId)) {{
+                alert(`Sounding for ${{siteName}} is not available for this date`);
+                return;
+            }}
+            
+            // Build sounding image URL
+            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{siteId}}.curr.${{time}}lst.${{domain}}.png`;
+            
+            // Update popup content
+            document.getElementById('soundingTitle').textContent = `${{siteName}} Sounding - ${{time.substring(0,2)}}:${{time.substring(2)}} ${{date}}`;
+            document.getElementById('soundingImg').src = soundingUrl;
+            
+            // Show popup
+            document.getElementById('soundingPopup').classList.add('active');
+            currentSoundingSite = siteId;
+            
+            console.log(`Showing sounding: ${{soundingUrl}}`);
         }}
         
         // Preload all time images for current selection
@@ -1189,6 +1603,9 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                     map.setPaintProperty(currentLayerId, 'raster-opacity', 0);
                 }}
                 activeLayer = nextLayer;
+                
+                // Mark image loading complete for initial load
+                updateLoadingProgress('image');
             }});
             
             // Only fit map to domain on initial load
@@ -1460,6 +1877,190 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         document.getElementById('closeSounding').addEventListener('click', () => {{
             document.getElementById('soundingPopup').classList.remove('active');
             currentSoundingSite = null;
+        }});
+        
+        // =====================================================
+        // GPS LOCATION TRACKING
+        // =====================================================
+        
+        let gpsMarker = null;
+        let gpsAccuracyCircle = null;
+        let watchId = null;
+        let locationEnabled = false;
+        
+        function createGpsMarker() {{
+            // Create marker element
+            const el = document.createElement('div');
+            el.className = 'gps-marker';
+            
+            // Add pulse effect
+            const pulse = document.createElement('div');
+            pulse.className = 'gps-marker-pulse';
+            el.appendChild(pulse);
+            
+            return el;
+        }}
+        
+        function updateGpsPosition(position) {{
+            const {{ latitude, longitude, accuracy }} = position.coords;
+            const lngLat = [longitude, latitude];
+            
+            console.log(`GPS position: ${{latitude}}, ${{longitude}} (accuracy: ${{accuracy}}m)`);
+            
+            // Create or update marker
+            if (!gpsMarker) {{
+                gpsMarker = new mapboxgl.Marker({{
+                    element: createGpsMarker(),
+                    anchor: 'center'
+                }})
+                .setLngLat(lngLat)
+                .addTo(map);
+            }} else {{
+                gpsMarker.setLngLat(lngLat);
+            }}
+            
+            // Create or update accuracy circle
+            const accuracyCircleId = 'gps-accuracy-circle';
+            const metersPerPixel = 156543.03392 * Math.cos(latitude * Math.PI / 180) / Math.pow(2, map.getZoom());
+            const radiusInPixels = accuracy / metersPerPixel;
+            
+            // Use a source/layer for the accuracy circle
+            if (map.getSource(accuracyCircleId)) {{
+                map.getSource(accuracyCircleId).setData({{
+                    type: 'Feature',
+                    geometry: {{
+                        type: 'Point',
+                        coordinates: lngLat
+                    }},
+                    properties: {{
+                        accuracy: accuracy
+                    }}
+                }});
+            }} else {{
+                map.addSource(accuracyCircleId, {{
+                    type: 'geojson',
+                    data: {{
+                        type: 'Feature',
+                        geometry: {{
+                            type: 'Point',
+                            coordinates: lngLat
+                        }},
+                        properties: {{
+                            accuracy: accuracy
+                        }}
+                    }}
+                }});
+                
+                map.addLayer({{
+                    id: accuracyCircleId,
+                    type: 'circle',
+                    source: accuracyCircleId,
+                    paint: {{
+                        'circle-radius': {{
+                            stops: [
+                                [0, 0],
+                                [20, accuracy * 1000]
+                            ],
+                            base: 2
+                        }},
+                        'circle-color': 'rgba(74, 158, 255, 0.15)',
+                        'circle-stroke-color': 'rgba(74, 158, 255, 0.3)',
+                        'circle-stroke-width': 1,
+                        'circle-pitch-alignment': 'map'
+                    }}
+                }}, 'forecast-layer-A'); // Add below forecast layer
+            }}
+            
+            // Update button state
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('searching');
+            btn.classList.add('active');
+        }}
+        
+        function handleGpsError(error) {{
+            console.error('GPS error:', error);
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('searching', 'active');
+            
+            let message = 'Unable to get location';
+            switch (error.code) {{
+                case error.PERMISSION_DENIED:
+                    message = 'Location permission denied';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location unavailable';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Location request timed out';
+                    break;
+            }}
+            alert(message);
+            disableLocationTracking();
+        }}
+        
+        function enableLocationTracking() {{
+            if (!navigator.geolocation) {{
+                alert('Geolocation is not supported by your browser');
+                return;
+            }}
+            
+            const btn = document.getElementById('locationBtn');
+            btn.classList.add('searching');
+            locationEnabled = true;
+            
+            // Get initial position and fly to it
+            navigator.geolocation.getCurrentPosition(
+                (position) => {{
+                    updateGpsPosition(position);
+                    map.flyTo({{
+                        center: [position.coords.longitude, position.coords.latitude],
+                        zoom: Math.max(map.getZoom(), 10)
+                    }});
+                }},
+                handleGpsError,
+                {{ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }}
+            );
+            
+            // Start watching position
+            watchId = navigator.geolocation.watchPosition(
+                updateGpsPosition,
+                handleGpsError,
+                {{ enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }}
+            );
+        }}
+        
+        function disableLocationTracking() {{
+            locationEnabled = false;
+            
+            if (watchId !== null) {{
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }}
+            
+            // Remove marker
+            if (gpsMarker) {{
+                gpsMarker.remove();
+                gpsMarker = null;
+            }}
+            
+            // Remove accuracy circle
+            if (map.getLayer('gps-accuracy-circle')) {{
+                map.removeLayer('gps-accuracy-circle');
+            }}
+            if (map.getSource('gps-accuracy-circle')) {{
+                map.removeSource('gps-accuracy-circle');
+            }}
+            
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('active', 'searching');
+        }}
+        
+        document.getElementById('locationBtn').addEventListener('click', () => {{
+            if (locationEnabled) {{
+                disableLocationTracking();
+            }} else {{
+                enableLocationTracking();
+            }}
         }});
         
         // Initialize
