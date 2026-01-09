@@ -115,52 +115,72 @@
             max-width: 320px;
             max-height: calc(100vh - 20px);
             overflow-y: auto;
-            transition: transform 0.3s ease, opacity 0.3s ease, max-width 0.3s ease, padding 0.3s ease;
+            transition: all 0.3s ease;
         }
-        .controls.collapsed {
-            transform: translateX(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .controls.small {
+        .controls.little {
+            top: 0;
+            left: 0;
+            right: 0;
             max-width: none;
-            width: calc(100% - 80px);
-            left: 10px;
-            right: 70px;
-            padding: 6px 10px;
-            border-radius: 8px;
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            max-height: none;
+            overflow: visible;
         }
-        .controls.small h2,
-        .controls.small .mobile-row,
-        .controls.small .expert-toggle,
-        .controls.small .opacity-control,
-        .controls.small .play-controls,
-        .controls.small .help-btn {
+        .controls.little h2,
+        .controls.little .mobile-row,
+        .controls.little .expert-toggle,
+        .controls.little .opacity-control,
+        .controls.little .play-controls,
+        .controls.little .help-btn {
             display: none;
         }
-        .controls.small .control-group {
+        .controls.little .control-group {
             display: none;
         }
-        .controls.small .control-group.time-control {
-            display: block;
+        .controls.little .control-group.time-control {
+            display: flex;
+            flex: 1;
             margin-bottom: 0;
+            align-items: center;
+            gap: 10px;
+            order: 1;
         }
-        .controls.small .control-group.time-control label {
+        .controls.little .control-group.time-control label {
             display: none;
         }
-        .controls.small .time-slider-container {
+        .controls.little .time-slider-container {
             margin-top: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .controls.small .time-nav-btn {
+        .controls.little .time-nav {
+            margin-top: 0;
+            flex: 1;
+        }
+        .controls.little .time-nav-btn {
             width: 36px;
             height: 36px;
-            font-size: 1.1em;
+            font-size: 1em;
         }
-        .controls.small .time-display {
-            font-size: 1.3em;
+        .controls.little .time-display {
+            font-size: 1.2em;
+            min-width: 60px;
         }
-        .controls.small input[type="range"] {
-            margin: 6px 0;
+        .controls.little input[type="range"] {
+            margin: 0;
+            flex: 1;
+        }
+        .controls.little .expand-toggle {
+            display: flex;
+            order: 2;
         }
         .controls h2 {
             color: #e94560;
@@ -170,35 +190,24 @@
             justify-content: space-between;
             align-items: center;
         }
-        .controls-toggle {
+        .expand-toggle {
             display: none;
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1101;
             background: rgba(233, 69, 96, 0.95);
             color: white;
             border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             font-size: 1.2em;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
-            flex-direction: column;
+            flex-shrink: 0;
             align-items: center;
             justify-content: center;
         }
-        .controls-toggle.active {
-            transform: translateX(0);
+        .expand-toggle:hover {
+            background: #ff6b6b;
         }
-        .state-indicator {
-            font-size: 0.7em;
-            color: #aaa;
-            margin-top: 2px;
-        }
-        .close-controls {
+        .collapse-toggle {
             display: none;
             background: none;
             border: none;
@@ -208,7 +217,7 @@
             padding: 0;
             line-height: 1;
         }
-        .close-controls:hover { color: #fff; }
+        .collapse-toggle:hover { color: #fff; }
         
         .control-group {
             margin-bottom: 12px;
@@ -587,15 +596,7 @@
                 padding: 12px 15px;
                 max-height: 70vh;
             }
-            .controls.collapsed {
-                transform: translateY(-100%);
-            }
-            .controls-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .close-controls {
+            .collapse-toggle {
                 display: block;
             }
             .controls h2 {
@@ -680,12 +681,11 @@
     
     <div id="map"></div>
     
-    <button class="controls-toggle" id="controlsToggle" aria-label="Open controls">☰<span class="state-indicator" id="stateIndicator"></span></button>
-    
     <div class="controls" id="controlsPanel">
+        <button class="expand-toggle" id="expandToggle" aria-label="Expand controls">☰</button>
         <h2>
             <span>🌤️ RASP NZ</span>
-            <button class="close-controls" id="closeControls" aria-label="Close controls">×</button>
+            <button class="collapse-toggle" id="collapseToggle" aria-label="Collapse controls">−</button>
         </h2>
         
         <div class="mobile-row">
@@ -1517,56 +1517,32 @@
             }
         });
         
-        // Mobile controls - three state system
+        // Controls - two state system: big (expanded) or little (top bar)
         const controlsPanel = document.getElementById('controlsPanel');
-        const controlsToggle = document.getElementById('controlsToggle');
-        const closeControls = document.getElementById('closeControls');
-        const stateIndicator = document.getElementById('stateIndicator');
-        let controlState = 'expanded'; // expanded, small, or away
-        
-        function updateStateIndicator() {
-            stateIndicator.textContent = controlState === 'small' ? 's' : controlState === 'away' ? 'x' : '';
-        }
+        const expandToggle = document.getElementById('expandToggle');
+        const collapseToggle = document.getElementById('collapseToggle');
+        let controlState = 'big'; // big or little
         
         function setControlState(newState) {
             controlState = newState;
-            if (newState === 'expanded') {
-                controlsPanel.classList.remove('collapsed', 'small');
-                controlsToggle.style.display = 'none';
-            } else if (newState === 'small') {
-                controlsPanel.classList.remove('collapsed');
-                controlsPanel.classList.add('small');
-                controlsToggle.style.display = 'flex';
+            if (newState === 'big') {
+                controlsPanel.classList.remove('little');
             } else {
-                controlsPanel.classList.add('collapsed');
-                controlsToggle.style.display = 'flex';
+                controlsPanel.classList.add('little');
             }
-            updateStateIndicator();
         }
         
-        controlsToggle.addEventListener('click', () => {
-            if (controlState === 'away') {
-                setControlState('expanded');
-            } else if (controlState === 'expanded') {
-                setControlState('small');
-            } else {
-                setControlState('away');
-            }
+        expandToggle.addEventListener('click', () => {
+            setControlState('big');
         });
         
-        closeControls.addEventListener('click', () => {
-            setControlState('away');
+        collapseToggle.addEventListener('click', () => {
+            setControlState('little');
         });
         
         document.getElementById('map').addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && controlState === 'expanded') {
-                setControlState('small');
-            }
-        });
-        
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                setControlState('expanded');
+            if (controlState === 'big') {
+                setControlState('little');
             }
         });
         
