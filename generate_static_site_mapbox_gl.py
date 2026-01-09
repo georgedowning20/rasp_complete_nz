@@ -1494,6 +1494,31 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             console.log(`Showing sounding: ${{soundingUrl}}`);
         }}
         
+        // Update currently displayed sounding when time changes
+        function updateCurrentSounding() {{
+            if (!currentSoundingSite) return;
+            
+            const popup = document.getElementById('soundingPopup');
+            if (!popup.classList.contains('active')) return;
+            
+            const date = document.getElementById('dateSelect').value;
+            const timeIdx = document.getElementById('timeSlider').value;
+            const time = currentData.times[timeIdx];
+            const domain = document.getElementById('domainSelect').value;
+            const siteName = soundingSites[currentSoundingSite]?.name || 'Unknown';
+            
+            if (!date || !time) return;
+            
+            // Build updated sounding image URL
+            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{currentSoundingSite}}.curr.${{time}}lst.${{domain}}.png`;
+            
+            // Update popup content
+            document.getElementById('soundingTitle').textContent = `${{siteName}} Sounding - ${{time.substring(0,2)}}:${{time.substring(2)}} ${{date}}`;
+            document.getElementById('soundingImg').src = soundingUrl;
+            
+            console.log(`Updated sounding: ${{soundingUrl}}`);
+        }}
+        
         // Preload all time images for current selection
         function preloadImages() {{
             const date = document.getElementById('dateSelect').value;
@@ -1678,6 +1703,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             updateTimeDisplay();
             updateImageSource();
             preloadImages(); // Preload all time images for this selection
+            updateCurrentSounding(); // Update sounding if popup is open
         }}
         
         function updateParameterDropdown() {{
@@ -1747,6 +1773,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                     slider.value = value;
                     updateTimeDisplay();
                     updateImageSource();
+                    updateCurrentSounding();
                 }}, speed);
             }}
         }}
@@ -1760,6 +1787,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         document.getElementById('domainSelect').addEventListener('change', () => {{
             updateImageSource();
             preloadImages();
+            updateCurrentSounding();
         }});
         document.getElementById('styleSelect').addEventListener('change', (e) => {{
             console.log('Changing map style to:', e.target.value);
@@ -1774,6 +1802,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         document.getElementById('timeSlider').addEventListener('input', () => {{
             updateTimeDisplay();
             updateImageSource();
+            updateCurrentSounding();
         }});
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
         document.getElementById('playBtn').addEventListener('click', togglePlay);
@@ -1784,6 +1813,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 slider.value = parseInt(slider.value) - 1;
                 updateTimeDisplay();
                 updateImageSource();
+                updateCurrentSounding();
             }}
         }});
         document.getElementById('timeNext').addEventListener('click', () => {{
@@ -1792,6 +1822,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 slider.value = parseInt(slider.value) + 1;
                 updateTimeDisplay();
                 updateImageSource();
+                updateCurrentSounding();
             }}
         }});
         
