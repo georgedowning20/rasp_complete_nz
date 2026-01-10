@@ -416,6 +416,20 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             color: #888;
             min-height: 1.2em;
         }}
+        .clear-settings-btn {{
+            background: rgba(233, 69, 96, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }}
+        .clear-settings-btn:hover {{
+            background: rgba(255, 107, 107, 0.9);
+        }}
         .loading-spinner {{
             width: 40px;
             height: 40px;
@@ -1014,6 +1028,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 <div class="loading-bar" id="loadingBar"></div>
             </div>
             <div class="loading-status" id="loadingStatus">Initializing...</div>
+            <button id="clearSettingsBtn" class="clear-settings-btn">Clear Settings & Reload</button>
             <div class="loading-spinner"></div>
         </div>
     </div>
@@ -1849,6 +1864,11 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             updateCurrentSounding();
         }});
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
+        
+        document.getElementById('clearSettingsBtn').addEventListener('click', () => {{
+            localStorage.clear();
+            location.reload();
+        }});
         
         document.getElementById('timePrev').addEventListener('click', () => {{
             const slider = document.getElementById('timeSlider');
