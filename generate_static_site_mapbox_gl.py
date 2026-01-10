@@ -1730,7 +1730,13 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
                 const today = nzTime.toISOString().split('T')[0];
                 const savedDate = localStorage.getItem('lastDate');
-                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
+                let defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
+                
+                // Ensure the default date has data, otherwise use the latest date with data
+                if (!manifest[defaultDate] || manifest[defaultDate].parameters.length === 0) {{
+                    defaultDate = dates.find(date => manifest[date] && manifest[date].parameters.length > 0) || dates[0];
+                }}
+                
                 select.value = defaultDate;
                 loadDateData(defaultDate);
             }}
@@ -1767,20 +1773,16 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }}
             
             const timeSlider = document.getElementById('timeSlider');
-            const savedTimeIdx = parseInt(localStorage.getItem('lastTimeIdx')) || 0;
+            const savedTime = localStorage.getItem('lastTime');
             timeSlider.max = currentData.times.length - 1;
             
-            // Preserve saved time index if valid, otherwise keep at same position or max
-            if (savedTimeIdx <= parseInt(timeSlider.max) && savedTimeIdx >= 0) {{
-                timeSlider.value = savedTimeIdx;
-            }} else {{
-                const currentTimeIdx = parseInt(timeSlider.value);
-                if (currentTimeIdx <= parseInt(timeSlider.max)) {{
-                    timeSlider.value = currentTimeIdx;
-                }} else {{
-                    timeSlider.value = timeSlider.max;
-                }}
+            // Find index of saved time, or default to middle
+            let timeIdx = Math.floor(currentData.times.length / 2); // default to middle
+            if (savedTime && currentData.times.includes(savedTime)) {{
+                timeIdx = currentData.times.indexOf(savedTime);
             }}
+            
+            timeSlider.value = timeIdx;
             
             updateTimeDisplay();
             updateImageSource();
@@ -1864,7 +1866,9 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             preloadImages();
         }});
         document.getElementById('timeSlider').addEventListener('input', () => {{
-            localStorage.setItem('lastTimeIdx', document.getElementById('timeSlider').value);
+            const slider = document.getElementById('timeSlider');
+            const time = currentData.times[slider.value];
+            localStorage.setItem('lastTime', time);
             updateTimeDisplay();
             updateImageSource();
             updateCurrentSounding();
