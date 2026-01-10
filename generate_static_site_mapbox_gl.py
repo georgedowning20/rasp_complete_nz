@@ -1114,7 +1114,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         let viewInitialized = false;
         let currentDomain = null;
         let currentSoundingSite = null;
-        let expertMode = false;
+        let expertMode = localStorage.getItem('expertMode') === 'true';
         let preloadedImages = {{}};
         let activeLayer = 'A'; // Toggle between 'A' and 'B' for double buffering
         
@@ -1665,7 +1665,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 const nzOffsetHours = 13; // NZ daylight saving time offset
                 const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
                 const today = nzTime.toISOString().split('T')[0];
-                const defaultDate = dates.includes(today) ? today : dates[0];
+                const savedDate = localStorage.getItem('lastDate');
+                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
                 select.value = defaultDate;
                 loadDateData(defaultDate);
             }}
@@ -1686,7 +1687,10 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 domainSelect.appendChild(option);
             }});
             
-            if (currentData.domains.includes(currentDomainVal)) {{
+            const savedDomain = localStorage.getItem('lastDomain');
+            if (savedDomain && currentData.domains.includes(savedDomain)) {{
+                domainSelect.value = savedDomain;
+            }} else if (currentData.domains.includes(currentDomainVal)) {{
                 domainSelect.value = currentDomainVal;
             }} else if (currentData.domains.includes('d2')) {{
                 domainSelect.value = 'd2';
@@ -1726,7 +1730,10 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 paramSelect.appendChild(option);
             }});
             
-            if (paramsToShow.includes(currentParam)) {{
+            const savedParam = localStorage.getItem('lastParam');
+            if (savedParam && paramsToShow.includes(savedParam)) {{
+                paramSelect.value = savedParam;
+            }} else if (paramsToShow.includes(currentParam)) {{
                 paramSelect.value = currentParam;
             }} else if (paramsToShow.length > 0) {{
                 paramSelect.value = paramsToShow[0];
@@ -1755,12 +1762,17 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         }}
         
         // Event listeners
-        document.getElementById('dateSelect').addEventListener('change', (e) => loadDateData(e.target.value));
+        document.getElementById('dateSelect').addEventListener('change', (e) => {{
+            localStorage.setItem('lastDate', e.target.value);
+            loadDateData(e.target.value);
+        }});
         document.getElementById('paramSelect').addEventListener('change', () => {{
+            localStorage.setItem('lastParam', document.getElementById('paramSelect').value);
             updateImageSource();
             preloadImages();
         }});
         document.getElementById('domainSelect').addEventListener('change', () => {{
+            localStorage.setItem('lastDomain', document.getElementById('domainSelect').value);
             updateImageSource();
             preloadImages();
             updateCurrentSounding();
@@ -1771,6 +1783,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         }});
         document.getElementById('expertMode').addEventListener('change', (e) => {{
             expertMode = e.target.checked;
+            localStorage.setItem('expertMode', expertMode);
             updateParameterDropdown();
             updateImageSource();
             preloadImages();
@@ -2086,6 +2099,9 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         // Initialize
         initMap();
         restoreLocationTracking();
+        
+        // Restore UI state
+        document.getElementById('expertMode').checked = expertMode;
     </script>
 </body>
 </html>
