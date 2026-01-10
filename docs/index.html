@@ -79,6 +79,20 @@
             color: #888;
             min-height: 1.2em;
         }
+        .clear-settings-btn {
+            background: rgba(233, 69, 96, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .clear-settings-btn:hover {
+            background: rgba(255, 107, 107, 0.9);
+        }
         .loading-spinner {
             width: 40px;
             height: 40px;
@@ -677,6 +691,7 @@
                 <div class="loading-bar" id="loadingBar"></div>
             </div>
             <div class="loading-status" id="loadingStatus">Initializing...</div>
+            <button id="clearSettingsBtn" class="clear-settings-btn">Clear Settings & Reload</button>
             <div class="loading-spinner"></div>
         </div>
     </div>
@@ -1386,6 +1401,12 @@
         
         function loadDateData(date) {
             currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
+            
+            // Reset sounding if not available for this date
+            if (currentSoundingSite && !currentData.soundings.includes(currentSoundingSite)) {
+                currentSoundingSite = null;
+            }
+            
             updateParameterDropdown();
             
             const domainSelect = document.getElementById('domainSelect');
@@ -1409,14 +1430,19 @@
             }
             
             const timeSlider = document.getElementById('timeSlider');
-            const currentTimeIdx = parseInt(timeSlider.value);
+            const savedTimeIdx = parseInt(localStorage.getItem('lastTimeIdx')) || 0;
             timeSlider.max = currentData.times.length - 1;
             
-            // Preserve time index if valid, otherwise keep at same position or max
-            if (currentTimeIdx <= parseInt(timeSlider.max)) {
-                timeSlider.value = currentTimeIdx;
+            // Preserve saved time index if valid, otherwise keep at same position or max
+            if (savedTimeIdx <= parseInt(timeSlider.max) && savedTimeIdx >= 0) {
+                timeSlider.value = savedTimeIdx;
             } else {
-                timeSlider.value = timeSlider.max;
+                const currentTimeIdx = parseInt(timeSlider.value);
+                if (currentTimeIdx <= parseInt(timeSlider.max)) {
+                    timeSlider.value = currentTimeIdx;
+                } else {
+                    timeSlider.value = timeSlider.max;
+                }
             }
             
             updateTimeDisplay();
@@ -1501,11 +1527,17 @@
             preloadImages();
         });
         document.getElementById('timeSlider').addEventListener('input', () => {
+            localStorage.setItem('lastTimeIdx', document.getElementById('timeSlider').value);
             updateTimeDisplay();
             updateImageSource();
             updateCurrentSounding();
         });
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
+        
+        document.getElementById('clearSettingsBtn').addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
         
         document.getElementById('timePrev').addEventListener('click', () => {
             const slider = document.getElementById('timeSlider');
