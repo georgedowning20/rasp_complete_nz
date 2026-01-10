@@ -7699,3 +7699,136 @@ To https://github.com/GeorgeDowning20/Rasp_complete_nz.git
    ed846c69e..e09a9c688  main -> main
 Completed successfully at Sat Jan 10 06:45:54 NZDT 2026
 Sleep prevention disabled
+Preventing sleep during forecast (caffeinate PID: 84824)
+Running immediately (forced mode)...
+Starting at Sun Jan 11 05:11:37 NZDT 2026
+Cleaning results/OUT folder...
+  Removed all files from results/OUT
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-10
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-11 05:11:40
+==========================================
+time="2026-01-11T05:11:41+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-cbe3b2d99ee3]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-11
+Checking for existing results for forecast day 2026-01-11
+Removing previous logs for 2026-01-11
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+Running meteogram on Sun Jan 11 05:28:20 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-11
+Started running rasp for forecast 2026-01-11 at 04-56, ended at 2026-01-11_05-30
+✓ Day 0 forecast completed successfully
+  Duration: 00:19:10
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-11 05:30:51
+==========================================
+time="2026-01-11T05:30:52+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-cbe3b2d99ee3]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-12
+Checking for existing results for forecast day 2026-01-12
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Sun Jan 11 05:48:21 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-12
+Started running rasp for forecast 2026-01-12 at 05-30, ended at 2026-01-11_05-50
+✓ Day 1 forecast completed successfully
+  Duration: 00:20:04
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-11 05:50:55
+==========================================
+time="2026-01-11T05:50:55+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-cbe3b2d99ee3]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-13
+Checking for existing results for forecast day 2026-01-13
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+Running meteogram on Sun Jan 11 06:08:52 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-13
+Started running rasp for forecast 2026-01-13 at 05-50, ended at 2026-01-11_06-11
+✓ Day 2 forecast completed successfully
+  Duration: 00:20:41
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-11 06:11:36
+==========================================
+time="2026-01-11T06:11:36+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-cbe3b2d99ee3]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-14
+Checking for existing results for forecast day 2026-01-14
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+Running meteogram on Sun Jan 11 06:29:13 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-14
+Started running rasp for forecast 2026-01-14 at 06-11, ended at 2026-01-11_06-31
+✓ Day 3 forecast completed successfully
+  Duration: 00:20:10
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 01:20:07
+Finished at: 2026-01-11 06:31:47
+==========================================
+Running generate_static_site_mapbox_gl.py...
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+   Processing 2026-01-11...
+      Copied 2583 images
+   Processing 2026-01-12...
+      Copied 2583 images
+   Processing 2026-01-13...
+      Copied 2583 images
+   Processing 2026-01-14...
+      Copied 2583 images
+📸 Creating favicon...
+📸 Favicon created
+📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 4
+   🖼️  Images: 10332
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
