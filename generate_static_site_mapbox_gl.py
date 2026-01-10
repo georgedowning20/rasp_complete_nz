@@ -1708,14 +1708,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }});
             
             if (dates.length > 0) {{
-                // Get current date in NZ timezone (UTC+13 during daylight saving, UTC+12 otherwise)
-                // For January 2026, daylight saving is in effect (UTC+13)
-                const now = new Date();
-                const nzOffsetHours = 13; // NZ daylight saving time offset
-                const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
-                const today = nzTime.toISOString().split('T')[0];
                 const savedDate = localStorage.getItem('lastDate');
-                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
+                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : dates[0];
                 select.value = defaultDate;
                 loadDateData(defaultDate);
             }}
@@ -1723,6 +1717,12 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         
         function loadDateData(date) {{
             currentData = manifest[date] || {{ parameters: [], times: [], domains: [], soundings: [] }};
+            
+            // Reset sounding if not available for this date
+            if (currentSoundingSite && !currentData.soundings.includes(currentSoundingSite)) {{
+                currentSoundingSite = null;
+            }}
+            
             updateParameterDropdown();
             
             const domainSelect = document.getElementById('domainSelect');
@@ -1746,14 +1746,19 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }}
             
             const timeSlider = document.getElementById('timeSlider');
-            const currentTimeIdx = parseInt(timeSlider.value);
+            const savedTimeIdx = parseInt(localStorage.getItem('lastTimeIdx')) || 0;
             timeSlider.max = currentData.times.length - 1;
             
-            // Preserve time index if valid, otherwise keep at same position or max
-            if (currentTimeIdx <= parseInt(timeSlider.max)) {{
-                timeSlider.value = currentTimeIdx;
+            // Preserve saved time index if valid, otherwise keep at same position or max
+            if (savedTimeIdx <= parseInt(timeSlider.max) && savedTimeIdx >= 0) {{
+                timeSlider.value = savedTimeIdx;
             }} else {{
-                timeSlider.value = timeSlider.max;
+                const currentTimeIdx = parseInt(timeSlider.value);
+                if (currentTimeIdx <= parseInt(timeSlider.max)) {{
+                    timeSlider.value = currentTimeIdx;
+                }} else {{
+                    timeSlider.value = timeSlider.max;
+                }}
             }}
             
             updateTimeDisplay();
@@ -1838,6 +1843,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             preloadImages();
         }});
         document.getElementById('timeSlider').addEventListener('input', () => {{
+            localStorage.setItem('lastTimeIdx', document.getElementById('timeSlider').value);
             updateTimeDisplay();
             updateImageSource();
             updateCurrentSounding();
