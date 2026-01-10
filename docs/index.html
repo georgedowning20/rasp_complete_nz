@@ -6,6 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>RASP Weather Viewer - NZ</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
     <style>
@@ -136,7 +138,6 @@
         .controls.little .mobile-row,
         .controls.little .expert-toggle,
         .controls.little .opacity-control,
-        .controls.little .play-controls,
         .controls.little .help-btn {
             display: none;
         }
@@ -267,25 +268,6 @@
             font-size: 1.6em;
             color: #e94560;
             font-weight: bold;
-        }
-        .play-controls {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .play-btn {
-            flex: 1;
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 12px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .play-btn:hover, .play-btn:active { background: #ff6b6b; }
-        .speed-select {
-            width: 80px;
         }
         .expert-toggle {
             margin-top: 10px;
@@ -632,9 +614,6 @@
             .time-display {
                 font-size: 1.4em;
             }
-            .play-controls {
-                gap: 6px;
-            }
             .time-nav {
                 gap: 6px;
             }
@@ -751,15 +730,6 @@
             </div>
         </div>
         
-        <div class="play-controls">
-            <button class="play-btn" id="playBtn">▶ Play</button>
-            <select id="speedSelect" class="speed-select">
-                <option value="2000">Slow</option>
-                <option value="1000" selected>Normal</option>
-                <option value="500">Fast</option>
-            </select>
-        </div>
-        
         <div class="control-group expert-toggle">
             <label class="toggle-label">
                 <input type="checkbox" id="expertMode">
@@ -812,8 +782,8 @@
         
         mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvcmdlZG93bmluZyIsImEiOiJjbWZlMzBndzYwMmhxMmpyNWFqcnkzdjJmIn0.L9RHEN7ySukYIhsKKu4-Rw';
         
-        const paramInfo = {"wstar": "Thermal Updraft Velocity (W*)", "bsratio": "Buoyancy/Shear Ratio", "wstar_bsratio": "W* with B/S Ratio", "hglider": "Thermalling Height (MSL)", "dglider": "Thermalling Height (AGL)", "hwcrit": "Height of Critical Updraft (MSL)", "dwcrit": "Height of Critical Updraft (AGL)", "hbl": "BL Top Height (MSL)", "dbl": "BL Depth (AGL)", "bltopvariab": "BL Top Variability", "wblmaxmin": "Convergence", "zwblmaxmin": "Height of Max BL Up/Down", "sfcsunpct": "Surface Sun %", "sfcshf": "Surface Heat Flux", "sfctemp": "Surface Temperature", "sfcdewpt": "Surface Dewpoint", "sfcwind0": "Surface Wind", "blwind": "BL Average Wind", "bltopwind": "BL Top Wind", "blwindshear": "BL Wind Shear", "zsfclcl": "Sfc LCL Height", "zsfclcldif": "Sfc Cu Cloudbase (AGL)", "zsfclclmask": "Sfc Cu Potential", "zblcl": "BL Top LCL Height", "zblcldif": "OD Cu Cloudbase (AGL)", "zblclmask": "OD Cu Potential", "blicw": "BL Cloud Ice+Water", "blcwbase": "BL Cloud Base", "blcloudpct": "BL Cloud %", "cfracl": "Low Cloud Fraction", "cfracm": "Mid Cloud Fraction", "cfrach": "High Cloud Fraction", "rain1": "1hr Rain", "cape": "CAPE", "press950": "950mb Wind", "press850": "850mb Wind", "press700": "700mb Wind", "press500": "500mb Wind", "stars": "Star Rating", "xcspeed": "XC Speed", "pfd_tot": "Potential Flight Distance (Total)", "ridgelift": "Ridge Lift (Vertical Velocity ~300ft AGL)"};
-        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift'];
+        const paramInfo = {"wstar": "Thermal Updraft Velocity (W*)", "bsratio": "Buoyancy/Shear Ratio", "wstar_bsratio": "W* with B/S Ratio", "hglider": "Thermalling Height (MSL)", "dglider": "Thermalling Height (AGL)", "hwcrit": "Height of Critical Updraft (MSL)", "dwcrit": "Height of Critical Updraft (AGL)", "hbl": "BL Top Height (MSL)", "dbl": "BL Depth (AGL)", "bltopvariab": "BL Top Variability", "wblmaxmin": "Convergence", "zwblmaxmin": "Height of Max BL Up/Down", "sfcsunpct": "Surface Sun %", "sfcshf": "Surface Heat Flux", "sfctemp": "Surface Temperature", "sfcdewpt": "Surface Dewpoint", "sfcwind0": "Surface Wind", "blwind": "BL Average Wind", "bltopwind": "BL Top Wind", "blwindshear": "BL Wind Shear", "zsfclcl": "Sfc LCL Height", "zsfclcldif": "Sfc Cu Cloudbase (AGL)", "zsfclclmask": "Sfc Cu Potential", "zblcl": "BL Top LCL Height", "zblcldif": "OD Cu Cloudbase (AGL)", "zblclmask": "OD Cu Potential", "blicw": "BL Cloud Ice+Water", "blcwbase": "BL Cloud Base", "blcloudpct": "BL Cloud %", "cfracl": "Low Cloud Fraction", "cfracm": "Mid Cloud Fraction", "cfrach": "High Cloud Fraction", "rain1": "1hr Rain", "cape": "CAPE", "press950": "Wave 950mb (~2,000ft)", "press850": "Wave 850mb (~5,000ft)", "press700": "Wave 700mb (~10,000ft)", "press500": "Wave 500mb (~18,000ft)", "stars": "Star Rating", "xcspeed": "XC Speed", "pfd_tot": "Potential Flight Distance (Total)", "ridgelift": "Ridge Lift (Vertical Velocity ~300ft AGL)"};
+        const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift', 'press850', 'press700'];
         const domainData = {"d1": {"bounds": [[-41.12742432392281, 172.45936264797353], [-35.77199580323005, 179.28764947835705]], "corners": [[-41.12742432392281, 172.45936264797353], [-41.12742432392281, 179.54063735202644], [-35.77199580323005, 179.28764947835705], [-35.77199580323005, 172.71235052164292]]}, "d2": {"bounds": [[-39.16021707675689, 174.01782025731345], [-36.46027936139781, 177.4409515243398]], "corners": [[-39.16021707675689, 174.01782025731345], [-39.16738119568803, 177.49542832380757], [-36.46027936139781, 177.4409515243398], [-36.453377027852916, 174.09001976059483]]}};
         const soundingSites = {"3": {"name": "Hamilton", "lat": -37.787, "lon": 175.2793}, "4": {"name": "Taupo", "lat": -38.6857, "lon": 176.0702}, "5": {"name": "Rotorua", "lat": -38.1368, "lon": 176.2497}, "6": {"name": "Napier", "lat": -39.4928, "lon": 176.912}, "7": {"name": "NewPlymouth", "lat": -39.0556, "lon": 174.0752}, "8": {"name": "Matamata", "lat": -37.81, "lon": 175.77}};
         const manifest = {"2026-01-10": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-11": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-12": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}, "2026-01-13": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "pfd_tot", "press500", "press700", "press850", "press950", "rain1", "ridgelift", "sfcdewpt", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"], "domains": ["d1", "d2"], "soundings": ["1", "3", "4", "5", "6", "7", "8"]}};
@@ -825,12 +795,10 @@
         
         let currentData = { parameters: [], times: [], domains: [], soundings: [] };
         let map = null;
-        let isPlaying = false;
-        let playInterval = null;
         let viewInitialized = false;
         let currentDomain = null;
         let currentSoundingSite = null;
-        let expertMode = false;
+        let expertMode = localStorage.getItem('expertMode') === 'true';
         let preloadedImages = {};
         let activeLayer = 'A'; // Toggle between 'A' and 'B' for double buffering
         
@@ -1060,7 +1028,7 @@
             }
             
             // Draw background
-            ctx.fillStyle = 'rgba(22, 33, 62, 0.95)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
             ctx.strokeStyle = '#e94560';
             ctx.lineWidth = 2;
             drawRoundedRect(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
@@ -1094,23 +1062,23 @@
             ctx.lineJoin = 'round';
             ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.moveTo(28, 40);      // Surface - warm
-            ctx.lineTo(22, 32);      // Cooling with height
-            ctx.lineTo(28, 26);      // INVERSION - temperature increases (bulge right)
-            ctx.lineTo(20, 18);      // Above inversion - cooling again
-            ctx.lineTo(16, 10);      // Upper level - cold
+            ctx.moveTo(34, 40);      // Surface - warm
+            ctx.lineTo(28, 32);      // Cooling with height
+            ctx.lineTo(34, 26);      // INVERSION - temperature increases (bulge right)
+            ctx.lineTo(26, 18);      // Above inversion - cooling again
+            ctx.lineTo(22, 10);      // Upper level - cold
             ctx.stroke();
             
             // Draw dewpoint profile (green/cyan dashed) - stays left of temp
-            ctx.strokeStyle = '#00d4aa';
+            ctx.strokeStyle = '#0b00d4';
             ctx.lineWidth = 2;
             ctx.setLineDash([3, 2]);
             ctx.beginPath();
-            ctx.moveTo(18, 40);      // Surface dewpoint
-            ctx.lineTo(14, 32);      // Decreasing
-            ctx.lineTo(12, 26);      // Dry at inversion (big temp-dewpoint spread)
-            ctx.lineTo(10, 18);      // Still dry above
-            ctx.lineTo(8, 10);       // Upper level
+            ctx.moveTo(24, 40);      // Surface dewpoint
+            ctx.lineTo(24, 32);      // Decreasing
+            ctx.lineTo(17, 28);      // Dry at inversion (big temp-dewpoint spread)
+            ctx.lineTo(16, 18);      // Still dry above
+            ctx.lineTo(14, 10);       // Upper level
             ctx.stroke();
             
             // Add as image to map
@@ -1127,7 +1095,7 @@
                 source: 'sounding-sites',
                 layout: {
                     'icon-image': 'skewt-icon',
-                    'icon-size': 0.7,
+                    'icon-size': 1.0,
                     'icon-allow-overlap': true,
                     'icon-ignore-placement': true,
                     'icon-pitch-alignment': 'viewport',
@@ -1375,8 +1343,14 @@
             });
             
             if (dates.length > 0) {
-                const today = new Date().toISOString().split('T')[0];
-                const defaultDate = dates.includes(today) ? today : dates[0];
+                // Get current date in NZ timezone (UTC+13 during daylight saving, UTC+12 otherwise)
+                // For January 2026, daylight saving is in effect (UTC+13)
+                const now = new Date();
+                const nzOffsetHours = 13; // NZ daylight saving time offset
+                const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
+                const today = nzTime.toISOString().split('T')[0];
+                const savedDate = localStorage.getItem('lastDate');
+                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
                 select.value = defaultDate;
                 loadDateData(defaultDate);
             }
@@ -1397,7 +1371,10 @@
                 domainSelect.appendChild(option);
             });
             
-            if (currentData.domains.includes(currentDomainVal)) {
+            const savedDomain = localStorage.getItem('lastDomain');
+            if (savedDomain && currentData.domains.includes(savedDomain)) {
+                domainSelect.value = savedDomain;
+            } else if (currentData.domains.includes(currentDomainVal)) {
                 domainSelect.value = currentDomainVal;
             } else if (currentData.domains.includes('d2')) {
                 domainSelect.value = 'd2';
@@ -1427,7 +1404,7 @@
             
             let paramsToShow = currentData.parameters;
             if (!expertMode) {
-                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+                paramsToShow = basicParams.filter(p => currentData.parameters.includes(p));
             }
             
             paramsToShow.forEach(p => {
@@ -1437,7 +1414,10 @@
                 paramSelect.appendChild(option);
             });
             
-            if (paramsToShow.includes(currentParam)) {
+            const savedParam = localStorage.getItem('lastParam');
+            if (savedParam && paramsToShow.includes(savedParam)) {
+                paramSelect.value = savedParam;
+            } else if (paramsToShow.includes(currentParam)) {
                 paramSelect.value = currentParam;
             } else if (paramsToShow.length > 0) {
                 paramSelect.value = paramsToShow[0];
@@ -1465,40 +1445,18 @@
             }
         }
         
-        function togglePlay() {
-            const btn = document.getElementById('playBtn');
-            
-            if (isPlaying) {
-                isPlaying = false;
-                btn.textContent = '▶ Play';
-                if (playInterval) {
-                    clearInterval(playInterval);
-                    playInterval = null;
-                }
-            } else {
-                isPlaying = true;
-                btn.textContent = '⏸ Pause';
-                
-                const speed = parseInt(document.getElementById('speedSelect').value);
-                playInterval = setInterval(() => {
-                    const slider = document.getElementById('timeSlider');
-                    let value = parseInt(slider.value);
-                    value = (value + 1) % (parseInt(slider.max) + 1);
-                    slider.value = value;
-                    updateTimeDisplay();
-                    updateImageSource();
-                    updateCurrentSounding();
-                }, speed);
-            }
-        }
-        
         // Event listeners
-        document.getElementById('dateSelect').addEventListener('change', (e) => loadDateData(e.target.value));
+        document.getElementById('dateSelect').addEventListener('change', (e) => {
+            localStorage.setItem('lastDate', e.target.value);
+            loadDateData(e.target.value);
+        });
         document.getElementById('paramSelect').addEventListener('change', () => {
+            localStorage.setItem('lastParam', document.getElementById('paramSelect').value);
             updateImageSource();
             preloadImages();
         });
         document.getElementById('domainSelect').addEventListener('change', () => {
+            localStorage.setItem('lastDomain', document.getElementById('domainSelect').value);
             updateImageSource();
             preloadImages();
             updateCurrentSounding();
@@ -1509,6 +1467,7 @@
         });
         document.getElementById('expertMode').addEventListener('change', (e) => {
             expertMode = e.target.checked;
+            localStorage.setItem('expertMode', expertMode);
             updateParameterDropdown();
             updateImageSource();
             preloadImages();
@@ -1519,7 +1478,6 @@
             updateCurrentSounding();
         });
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
-        document.getElementById('playBtn').addEventListener('click', togglePlay);
         
         document.getElementById('timePrev').addEventListener('click', () => {
             const slider = document.getElementById('timeSlider');
@@ -1625,7 +1583,25 @@
         let gpsMarker = null;
         let gpsAccuracyCircle = null;
         let watchId = null;
-        let locationEnabled = false;
+        let locationEnabled = localStorage.getItem('locationEnabled') === 'true';
+        
+        async function restoreLocationTracking() {
+            if (locationEnabled && navigator.permissions && navigator.permissions.query) {
+                try {
+                    const result = await navigator.permissions.query({name: 'geolocation'});
+                    if (result.state === 'granted') {
+                        enableLocationTracking();
+                    } else {
+                        // Permission not granted, reset preference
+                        localStorage.removeItem('locationEnabled');
+                        locationEnabled = false;
+                    }
+                } catch (e) {
+                    // Permissions API not supported, try anyway
+                    enableLocationTracking();
+                }
+            }
+        }
         
         function createGpsMarker() {
             // Create marker element
@@ -1746,6 +1722,7 @@
             const btn = document.getElementById('locationBtn');
             btn.classList.add('searching');
             locationEnabled = true;
+            localStorage.setItem('locationEnabled', 'true');
             
             // Get initial position and fly to it
             navigator.geolocation.getCurrentPosition(
@@ -1770,6 +1747,7 @@
         
         function disableLocationTracking() {
             locationEnabled = false;
+            localStorage.removeItem('locationEnabled');
             
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
@@ -1804,6 +1782,10 @@
         
         // Initialize
         initMap();
+        restoreLocationTracking();
+        
+        // Restore UI state
+        document.getElementById('expertMode').checked = expertMode;
     </script>
 </body>
 </html>
