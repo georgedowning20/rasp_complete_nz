@@ -97,10 +97,10 @@ PARAMETER_INFO = {
     'cfrach': 'High Cloud Fraction',
     'rain1': '1hr Rain',
     'cape': 'CAPE',
-    'press950': '950mb Wind',
-    'press850': '850mb Wind',
-    'press700': '700mb Wind',
-    'press500': '500mb Wind',
+    'press950': 'Wave 950mb (~2,000ft)',
+    'press850': 'Wave 850mb (~5,000ft)',
+    'press700': 'Wave 700mb (~10,000ft)',
+    'press500': 'Wave 500mb (~18,000ft)',
     'stars': 'Star Rating',
     'xcspeed': 'XC Speed',
     'pfd_tot': 'Potential Flight Distance (Total)',
@@ -454,7 +454,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         .controls.little .mobile-row,
         .controls.little .expert-toggle,
         .controls.little .opacity-control,
-        .controls.little .play-controls,
         .controls.little .help-btn {{
             display: none;
         }}
@@ -585,25 +584,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             font-size: 1.6em;
             color: #e94560;
             font-weight: bold;
-        }}
-        .play-controls {{
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }}
-        .play-btn {{
-            flex: 1;
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 12px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }}
-        .play-btn:hover, .play-btn:active {{ background: #ff6b6b; }}
-        .speed-select {{
-            width: 80px;
         }}
         .expert-toggle {{
             margin-top: 10px;
@@ -950,9 +930,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             .time-display {{
                 font-size: 1.4em;
             }}
-            .play-controls {{
-                gap: 6px;
-            }}
             .time-nav {{
                 gap: 6px;
             }}
@@ -1069,15 +1046,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             </div>
         </div>
         
-        <div class="play-controls">
-            <button class="play-btn" id="playBtn">▶ Play</button>
-            <select id="speedSelect" class="speed-select">
-                <option value="2000">Slow</option>
-                <option value="1000" selected>Normal</option>
-                <option value="500">Fast</option>
-            </select>
-        </div>
-        
         <div class="control-group expert-toggle">
             <label class="toggle-label">
                 <input type="checkbox" id="expertMode">
@@ -1131,7 +1099,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         mapboxgl.accessToken = '{mapbox_token}';
         
         const paramInfo = {json.dumps(PARAMETER_INFO)};
-        const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift'];
+        const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift', 'press850', 'press700'];
         const domainData = {json.dumps(domain_bounds)};
         const soundingSites = {json.dumps(SOUNDING_SITES)};
         const manifest = {json.dumps(manifest)};
@@ -1143,8 +1111,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         
         let currentData = {{ parameters: [], times: [], domains: [], soundings: [] }};
         let map = null;
-        let isPlaying = false;
-        let playInterval = null;
         let viewInitialized = false;
         let currentDomain = null;
         let currentSoundingSite = null;
@@ -1412,11 +1378,11 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             ctx.lineJoin = 'round';
             ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.moveTo(38, 40);      // Surface - warm
-            ctx.lineTo(32, 32);      // Cooling with height
-            ctx.lineTo(38, 26);      // INVERSION - temperature increases (bulge right)
-            ctx.lineTo(30, 18);      // Above inversion - cooling again
-            ctx.lineTo(26, 10);      // Upper level - cold
+            ctx.moveTo(34, 40);      // Surface - warm
+            ctx.lineTo(28, 32);      // Cooling with height
+            ctx.lineTo(34, 26);      // INVERSION - temperature increases (bulge right)
+            ctx.lineTo(26, 18);      // Above inversion - cooling again
+            ctx.lineTo(22, 10);      // Upper level - cold
             ctx.stroke();
             
             // Draw dewpoint profile (green/cyan dashed) - stays left of temp
@@ -1424,11 +1390,11 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             ctx.lineWidth = 2;
             ctx.setLineDash([3, 2]);
             ctx.beginPath();
-            ctx.moveTo(26, 40);      // Surface dewpoint
-            ctx.lineTo(26, 32);      // Decreasing
-            ctx.lineTo(21, 28);      // Dry at inversion (big temp-dewpoint spread)
-            ctx.lineTo(20, 18);      // Still dry above
-            ctx.lineTo(18, 10);       // Upper level
+            ctx.moveTo(24, 40);      // Surface dewpoint
+            ctx.lineTo(24, 32);      // Decreasing
+            ctx.lineTo(17, 28);      // Dry at inversion (big temp-dewpoint spread)
+            ctx.lineTo(16, 18);      // Still dry above
+            ctx.lineTo(14, 10);       // Upper level
             ctx.stroke();
             
             // Add as image to map
@@ -1445,7 +1411,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 source: 'sounding-sites',
                 layout: {{
                     'icon-image': 'skewt-icon',
-                    'icon-size': 0.7,
+                    'icon-size': 1.0,
                     'icon-allow-overlap': true,
                     'icon-ignore-placement': true,
                     'icon-pitch-alignment': 'viewport',
@@ -1788,33 +1754,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }}
         }}
         
-        function togglePlay() {{
-            const btn = document.getElementById('playBtn');
-            
-            if (isPlaying) {{
-                isPlaying = false;
-                btn.textContent = '▶ Play';
-                if (playInterval) {{
-                    clearInterval(playInterval);
-                    playInterval = null;
-                }}
-            }} else {{
-                isPlaying = true;
-                btn.textContent = '⏸ Pause';
-                
-                const speed = parseInt(document.getElementById('speedSelect').value);
-                playInterval = setInterval(() => {{
-                    const slider = document.getElementById('timeSlider');
-                    let value = parseInt(slider.value);
-                    value = (value + 1) % (parseInt(slider.max) + 1);
-                    slider.value = value;
-                    updateTimeDisplay();
-                    updateImageSource();
-                    updateCurrentSounding();
-                }}, speed);
-            }}
-        }}
-        
         // Event listeners
         document.getElementById('dateSelect').addEventListener('change', (e) => loadDateData(e.target.value));
         document.getElementById('paramSelect').addEventListener('change', () => {{
@@ -1842,7 +1781,6 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             updateCurrentSounding();
         }});
         document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
-        document.getElementById('playBtn').addEventListener('click', togglePlay);
         
         document.getElementById('timePrev').addEventListener('click', () => {{
             const slider = document.getElementById('timeSlider');
