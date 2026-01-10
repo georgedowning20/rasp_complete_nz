@@ -18,6 +18,7 @@ import re
 import json
 import shutil
 from pathlib import Path
+import multiprocessing
 
 try:
     import pyproj
@@ -280,7 +281,7 @@ def get_available_data(date):
             soundings.add(sounding_match.group(1))
     
     # Check for pfd_tot (special case - no time in filename)
-    if os.path.exists(os.path.join(date_dir, 'pfd_tot.body.png')):
+    if os.path.exists(os.path.join(date_dir, 'pfd_tot.body.webp')):
         parameters.add('pfd_tot')
     
     return {
@@ -291,23 +292,43 @@ def get_available_data(date):
     }
 
 
+def process_image(args):
+    """Process a single image: open PNG and save as WebP."""
+    src_path, dest_path = args
+    try:
+        img = Image.open(src_path)
+        img.save(dest_path, 'WEBP', quality=90)
+        return 1
+    except Exception as e:
+        print(f"Error processing {src_path}: {e}")
+        return 0
+
+
 def copy_images(date, dest_dir):
-    """Copy all images for a date to the destination directory."""
+    """Copy all images for a date to the destination directory, compressing to WebP in parallel."""
     src_dir = os.path.join(OUT_DIR, date)
     if not os.path.exists(src_dir):
         return 0
     
     os.makedirs(dest_dir, exist_ok=True)
-    count = 0
     
+    # Collect files to process
+    files_to_process = []
     for filename in os.listdir(src_dir):
-        if filename.endswith('.png'):
+        if filename.endswith('.png') and ('.body.' in filename or '.head.' in filename or '.foot.' in filename or filename.startswith('sounding')):
             src_path = os.path.join(src_dir, filename)
-            dest_path = os.path.join(dest_dir, filename)
-            shutil.copy2(src_path, dest_path)
-            count += 1
+            dest_filename = filename.replace('.png', '.webp')
+            dest_path = os.path.join(dest_dir, dest_filename)
+            files_to_process.append((src_path, dest_path))
     
-    return count
+    if not files_to_process:
+        return 0
+    
+    # Use multiprocessing to process in parallel
+    with multiprocessing.Pool() as pool:
+        results = pool.map(process_image, files_to_process)
+    
+    return sum(results)
 
 
 def generate_html(domain_bounds, manifest, help_text, mapbox_token):
@@ -1505,7 +1526,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }}
             
             // Build sounding image URL
-            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{siteId}}.curr.${{time}}lst.${{domain}}.png`;
+            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{siteId}}.curr.${{time}}lst.${{domain}}.webp`;
             
             // Update popup content
             document.getElementById('soundingTitle').textContent = `${{siteName}} Sounding - ${{time.substring(0,2)}}:${{time.substring(2)}} ${{date}}`;
@@ -1534,7 +1555,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             if (!date || !time) return;
             
             // Build updated sounding image URL
-            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{currentSoundingSite}}.curr.${{time}}lst.${{domain}}.png`;
+            const soundingUrl = `${{basePath}}data/${{date}}/sounding${{currentSoundingSite}}.curr.${{time}}lst.${{domain}}.webp`;
             
             // Update popup content
             document.getElementById('soundingTitle').textContent = `${{siteName}} Sounding - ${{time.substring(0,2)}}:${{time.substring(2)}} ${{date}}`;
@@ -1560,9 +1581,9 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 const img = new Image();
                 let url;
                 if (param === 'pfd_tot') {{
-                    url = `${{basePath}}data/${{date}}/pfd_tot.body.png`;
+                    url = `${{basePath}}data/${{date}}/pfd_tot.body.webp`;
                 }} else {{
-                    url = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.body.png`;
+                    url = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.body.webp`;
                 }}
                 img.src = url;
                 preloadedImages[key][time] = img;
@@ -1585,19 +1606,19 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             
             let imageUrl;
             if (param === 'pfd_tot') {{
-                imageUrl = `${{basePath}}data/${{date}}/pfd_tot.body.png`;
+                imageUrl = `${{basePath}}data/${{date}}/pfd_tot.body.webp`;
             }} else {{
-                imageUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.body.png`;
+                imageUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.body.webp`;
             }}
             
             // Update header and legend
             let headerUrl, legendUrl;
             if (param === 'pfd_tot') {{
-                headerUrl = `${{basePath}}data/${{date}}/pfd_tot.head.png`;
-                legendUrl = `${{basePath}}data/${{date}}/pfd_tot.foot.png`;
+                headerUrl = `${{basePath}}data/${{date}}/pfd_tot.head.webp`;
+                legendUrl = `${{basePath}}data/${{date}}/pfd_tot.foot.webp`;
             }} else {{
-                headerUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.head.png`;
-                legendUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.foot.png`;
+                headerUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.head.webp`;
+                legendUrl = `${{basePath}}data/${{date}}/${{param}}.curr.${{time}}lst.${{domain}}.foot.webp`;
             }}
             
             document.getElementById('headerImg').src = headerUrl;
