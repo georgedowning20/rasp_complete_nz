@@ -1105,6 +1105,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         const manifest = {json.dumps(manifest)};
         const helpText = {help_text_json};
         
+        console.log('Manifest loaded:', Object.keys(manifest));
+        
         // =====================================================
         // APPLICATION CODE
         // =====================================================
@@ -1183,6 +1185,15 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         // Initialize map with Lambert Conformal projection
         function initMap() {{
             console.log('Initializing map...');
+            
+            // Check if Mapbox GL JS is supported (requires WebGL)
+            if (!mapboxgl.supported()) {{
+                console.error('Mapbox GL JS not supported - WebGL required');
+                hideLoadingScreen();
+                alert('Your browser does not support WebGL, which is required for this map. Please:\\n\\n1. Enable hardware acceleration in Chrome settings\\n2. Update your graphics drivers\\n3. Try a different browser (Firefox, Edge)\\n4. If on a virtual machine, ensure 3D acceleration is enabled');
+                return;
+            }}
+            
             updateLoadingProgress('mapbox');
             
             try {{
@@ -1198,7 +1209,9 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 
                 console.log('Map created, waiting for style.load...');
                 
+                let styleLoaded = false;
                 map.on('style.load', () => {{
+                    styleLoaded = true;
                     console.log('Map style loaded, adding layers...');
                     updateLoadingProgress('style');
                     
@@ -1244,9 +1257,22 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
                 
                 map.on('error', (e) => {{
                     console.error('Map error:', e);
+                    hideLoadingScreen();
+                    alert('Map failed to load. Check console for details.');
                 }});
+                
+                // Timeout for style load
+                setTimeout(() => {{
+                    if (!styleLoaded) {{
+                        console.error('Style failed to load within 5 seconds - likely invalid Mapbox token');
+                        hideLoadingScreen();
+                        alert('Failed to load map style. Please check your Mapbox access token at https://account.mapbox.com/access-tokens/');
+                    }}
+                }}, 5000);
             }} catch (e) {{
                 console.error('Error initializing map:', e);
+                hideLoadingScreen();
+                alert('Error initializing map: ' + e.message + '\\n\\nIf this is a WebGL error, try:\\n1. chrome://settings/ → Advanced → System → Enable hardware acceleration\\n2. Update graphics drivers\\n3. Restart browser');
             }}
         }}
         
@@ -1651,6 +1677,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             select.innerHTML = '';
             const dates = Object.keys(manifest).sort().reverse();
             
+            console.log('Available dates:', dates);
+            
             dates.forEach(date => {{
                 const option = document.createElement('option');
                 option.value = date;
@@ -2016,13 +2044,13 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             let message = 'Unable to get location';
             switch (error.code) {{
                 case error.PERMISSION_DENIED:
-                    message = 'Location permission denied';
+                    message = 'Location permission denied. To enable location:\\n\\nChrome: Click the lock icon in address bar → Location → Allow\\nFirefox: Click the shield icon → Location → Allow\\n\\nOr go to browser settings and allow location for localhost.';
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    message = 'Location unavailable';
+                    message = 'Location unavailable. Check if location services are enabled on your device.';
                     break;
                 case error.TIMEOUT:
-                    message = 'Location request timed out';
+                    message = 'Location request timed out. Try again.';
                     break;
             }}
             alert(message);
