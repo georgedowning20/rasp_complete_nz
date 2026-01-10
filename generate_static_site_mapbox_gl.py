@@ -26,6 +26,13 @@ except ImportError:
     os.system("pip install pyproj")
     import pyproj
 
+try:
+    from PIL import Image, ImageDraw
+except ImportError:
+    print("Installing Pillow...")
+    os.system("pip install Pillow")
+    from PIL import Image, ImageDraw
+
 # Configuration
 RESULTS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/results'
 OUT_DIR = os.path.join(RESULTS_DIR, 'OUT')
@@ -315,6 +322,8 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>RASP Weather Viewer - NZ</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
     <style>
@@ -1122,7 +1131,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         mapboxgl.accessToken = '{mapbox_token}';
         
         const paramInfo = {json.dumps(PARAMETER_INFO)};
-        const basicParams = ['pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'hglider', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift'];
+        const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift'];
         const domainData = {json.dumps(domain_bounds)};
         const soundingSites = {json.dumps(SOUNDING_SITES)};
         const manifest = {json.dumps(manifest)};
@@ -1369,7 +1378,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }}
             
             // Draw background
-            ctx.fillStyle = 'rgba(22, 33, 62, 0.95)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
             ctx.strokeStyle = '#e94560';
             ctx.lineWidth = 2;
             drawRoundedRect(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
@@ -1403,23 +1412,23 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             ctx.lineJoin = 'round';
             ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.moveTo(28, 40);      // Surface - warm
-            ctx.lineTo(22, 32);      // Cooling with height
-            ctx.lineTo(28, 26);      // INVERSION - temperature increases (bulge right)
-            ctx.lineTo(20, 18);      // Above inversion - cooling again
-            ctx.lineTo(16, 10);      // Upper level - cold
+            ctx.moveTo(38, 40);      // Surface - warm
+            ctx.lineTo(32, 32);      // Cooling with height
+            ctx.lineTo(38, 26);      // INVERSION - temperature increases (bulge right)
+            ctx.lineTo(30, 18);      // Above inversion - cooling again
+            ctx.lineTo(26, 10);      // Upper level - cold
             ctx.stroke();
             
             // Draw dewpoint profile (green/cyan dashed) - stays left of temp
-            ctx.strokeStyle = '#00d4aa';
+            ctx.strokeStyle = '#0b00d4';
             ctx.lineWidth = 2;
             ctx.setLineDash([3, 2]);
             ctx.beginPath();
-            ctx.moveTo(18, 40);      // Surface dewpoint
-            ctx.lineTo(14, 32);      // Decreasing
-            ctx.lineTo(12, 26);      // Dry at inversion (big temp-dewpoint spread)
-            ctx.lineTo(10, 18);      // Still dry above
-            ctx.lineTo(8, 10);       // Upper level
+            ctx.moveTo(26, 40);      // Surface dewpoint
+            ctx.lineTo(26, 32);      // Decreasing
+            ctx.lineTo(21, 28);      // Dry at inversion (big temp-dewpoint spread)
+            ctx.lineTo(20, 18);      // Still dry above
+            ctx.lineTo(18, 10);       // Upper level
             ctx.stroke();
             
             // Add as image to map
@@ -1684,7 +1693,12 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }});
             
             if (dates.length > 0) {{
-                const today = new Date().toISOString().split('T')[0];
+                // Get current date in NZ timezone (UTC+13 during daylight saving, UTC+12 otherwise)
+                // For January 2026, daylight saving is in effect (UTC+13)
+                const now = new Date();
+                const nzOffsetHours = 13; // NZ daylight saving time offset
+                const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
+                const today = nzTime.toISOString().split('T')[0];
                 const defaultDate = dates.includes(today) ? today : dates[0];
                 select.value = defaultDate;
                 loadDateData(defaultDate);
@@ -1736,7 +1750,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             
             let paramsToShow = currentData.parameters;
             if (!expertMode) {{
-                paramsToShow = currentData.parameters.filter(p => basicParams.includes(p));
+                paramsToShow = basicParams.filter(p => currentData.parameters.includes(p));
             }}
             
             paramsToShow.forEach(p => {{
@@ -2157,6 +2171,38 @@ def generate_static_site():
         count = copy_images(date, dest_dir)
         total_images += count
         print(f"      Copied {count} images")
+    
+    # Create custom skew-T favicon
+    print("📸 Creating favicon...")
+    iconSize = 256
+    img = Image.new('RGBA', (iconSize, iconSize), (255, 255, 255, 255))  # White background
+    draw = ImageDraw.Draw(img)
+    
+    # Draw background (white rectangle with red border)
+    draw.rectangle([21, 21, iconSize-21, iconSize-21], fill=(255, 255, 255, 255), outline=(233, 69, 96), width=5)
+    
+    # Draw skewed isotherms
+    for i in range(4):
+        draw.line([35 + i * 48, iconSize - 42, 78 + i * 48, 42], fill=(233, 69, 96, 64), width=5)
+    
+    # Draw horizontal pressure lines (light grey)
+    for y in [64, 107, 149, 192]:
+        draw.line([35, y, iconSize - 35, y], fill=(200, 200, 200), width=4)
+    
+    # Draw temperature profile
+    temp_points = [(196, 213), (158, 171), (196, 139), (147, 96), (126, 53)]
+    draw.line(temp_points, fill=(233, 69, 96), width=10, joint='curve')
+    
+    # Draw dewpoint profile
+    dew_points = [(126, 213), (126, 171), (99, 149), (94, 96), (84, 53)]
+    for i in range(len(dew_points) - 1):
+        x1, y1 = dew_points[i]
+        x2, y2 = dew_points[i + 1]
+        draw.line([x1, y1, x2, y2], fill=(11, 0, 212), width=8)
+    
+    dest_favicon = os.path.join(DOCS_DIR, 'favicon.png')
+    img.save(dest_favicon)
+    print("📸 Favicon created")
     
     # Read help.txt content
     print("📖 Loading help text...")
