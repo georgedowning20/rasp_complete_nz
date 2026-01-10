@@ -1886,7 +1886,25 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         let gpsMarker = null;
         let gpsAccuracyCircle = null;
         let watchId = null;
-        let locationEnabled = false;
+        let locationEnabled = localStorage.getItem('locationEnabled') === 'true';
+        
+        async function restoreLocationTracking() {{
+            if (locationEnabled && navigator.permissions && navigator.permissions.query) {{
+                try {{
+                    const result = await navigator.permissions.query({{name: 'geolocation'}});
+                    if (result.state === 'granted') {{
+                        enableLocationTracking();
+                    }} else {{
+                        // Permission not granted, reset preference
+                        localStorage.removeItem('locationEnabled');
+                        locationEnabled = false;
+                    }}
+                }} catch (e) {{
+                    // Permissions API not supported, try anyway
+                    enableLocationTracking();
+                }}
+            }}
+        }}
         
         function createGpsMarker() {{
             // Create marker element
@@ -2007,6 +2025,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             const btn = document.getElementById('locationBtn');
             btn.classList.add('searching');
             locationEnabled = true;
+            localStorage.setItem('locationEnabled', 'true');
             
             // Get initial position and fly to it
             navigator.geolocation.getCurrentPosition(
@@ -2031,6 +2050,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         
         function disableLocationTracking() {{
             locationEnabled = false;
+            localStorage.removeItem('locationEnabled');
             
             if (watchId !== null) {{
                 navigator.geolocation.clearWatch(watchId);
@@ -2065,6 +2085,7 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
         
         // Initialize
         initMap();
+        restoreLocationTracking();
     </script>
 </body>
 </html>
