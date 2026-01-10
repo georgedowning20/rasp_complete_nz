@@ -2195,11 +2195,19 @@ def generate_static_site():
     print("=" * 60)
     
     # Create docs directory
+    cname_content = None
     if os.path.exists(DOCS_DIR):
+        cname_path = os.path.join(DOCS_DIR, 'CNAME')
+        if os.path.exists(cname_path):
+            with open(cname_path, 'r') as f:
+                cname_content = f.read()
         print(f"📁 Cleaning existing docs folder...")
         shutil.rmtree(DOCS_DIR)
     
     os.makedirs(DOCS_DIR)
+    if cname_content:
+        with open(os.path.join(DOCS_DIR, 'CNAME'), 'w') as f:
+            f.write(cname_content)
     data_dir = os.path.join(DOCS_DIR, 'data')
     os.makedirs(data_dir)
     
