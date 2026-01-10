@@ -1723,8 +1723,14 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             }});
             
             if (dates.length > 0) {{
+                // Get current date in NZ timezone (UTC+13 during daylight saving, UTC+12 otherwise)
+                // For January 2026, daylight saving is in effect (UTC+13)
+                const now = new Date();
+                const nzOffsetHours = 13; // NZ daylight saving time offset
+                const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
+                const today = nzTime.toISOString().split('T')[0];
                 const savedDate = localStorage.getItem('lastDate');
-                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : dates[0];
+                const defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
                 select.value = defaultDate;
                 loadDateData(defaultDate);
             }}
