@@ -1248,21 +1248,10 @@ begin
 	else
 		currvalue = ".curr."
 	end if
-	i3 = str_index_of_substr(filename, "WINDOW", -1)
-	if ( .not. ismissing( i3 )) then
-		tailstr = "w2"
-	else
-		i3 = str_index_of_substr(filename, "d01", -1)
-		if ( .not. ismissing( i3 )) then
-			tailstr = "d1"
-		else
-			tailstr = "d2"
-		end if
-	end if
-
 	gmthr = new(1, float)
 	jday  = new(1, integer)
 	getfiledate(filename, jday, gmthr, domainid)
+	tailstr = domainid
 	; Set local time for o/p filenames
 	ENV_NCL_ID = getenv("ENV_NCL_ID")
 	if ( .not. ismissing(ENV_NCL_ID) ) then

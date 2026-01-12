@@ -17,7 +17,7 @@ class LambertConformalDomain:
 
     def __init__(self, ref_lat, ref_lon, truelat1, truelat2, stand_lon,
                  dx, dy, e_we, e_sn, parent=None, i_parent_start=1, j_parent_start=1,
-                 parent_grid_ratio=1):
+                 parent_grid_ratio=1, use_custom_center=False):
         self.ref_lat = ref_lat
         self.ref_lon = ref_lon
         self.truelat1 = truelat1
@@ -31,6 +31,7 @@ class LambertConformalDomain:
         self.i_parent_start = i_parent_start
         self.j_parent_start = j_parent_start
         self.parent_grid_ratio = parent_grid_ratio
+        self.use_custom_center = use_custom_center
 
         self.proj = pyproj.Proj(
             proj='lcc',
@@ -54,7 +55,8 @@ class LambertConformalDomain:
     def get_domain_bounds(self, use_square_image=False):
         ref_x, ref_y = self.transformer_to_lcc.transform(self.ref_lon, self.ref_lat)
 
-        if self.parent is not None:
+        if self.parent is not None and not self.use_custom_center:
+            # Use parent-based offset calculation for standard nested domains
             parent_ref_x, parent_ref_y = self.transformer_to_lcc.transform(
                 self.parent.ref_lon, self.parent.ref_lat
             )
@@ -67,6 +69,15 @@ class LambertConformalDomain:
             nest_ll_y = parent_ll_y + (self.j_parent_start - 1) * self.parent.dy
             nest_ur_x = nest_ll_x + (self.e_we - 1) * self.dx
             nest_ur_y = nest_ll_y + (self.e_sn - 1) * self.dy
+        elif self.parent is not None and self.use_custom_center:
+            # Use custom center point for domains with explicit ref_lat/ref_lon
+            half_x = (self.e_we - 1) * self.dx / 2.0
+            half_y = (self.e_sn - 1) * self.dy / 2.0
+
+            nest_ll_x = ref_x - half_x
+            nest_ll_y = ref_y - half_y
+            nest_ur_x = ref_x + half_x
+            nest_ur_y = ref_y + half_y
         else:
             half_x = (self.e_we - 1) * self.dx / 2.0
             half_y = (self.e_sn - 1) * self.dy / 2.0
@@ -136,4 +147,21 @@ def create_domains():
         parent_grid_ratio=WRF_CONFIG['d2']['parent_grid_ratio'],
     )
 
-    return {'d1': d1, 'd2': d2}
+    d3 = LambertConformalDomain(
+        ref_lat=WRF_CONFIG['d3'].get('ref_lat', WRF_CONFIG['ref_lat']),
+        ref_lon=WRF_CONFIG['d3'].get('ref_lon', WRF_CONFIG['ref_lon']),
+        truelat1=WRF_CONFIG['truelat1'],
+        truelat2=WRF_CONFIG['truelat2'],
+        stand_lon=WRF_CONFIG['stand_lon'],
+        dx=WRF_CONFIG['d3']['dx'],
+        dy=WRF_CONFIG['d3']['dy'],
+        e_we=WRF_CONFIG['d3']['e_we'],
+        e_sn=WRF_CONFIG['d3']['e_sn'],
+        parent=d2,
+        i_parent_start=WRF_CONFIG['d3']['i_parent_start'],
+        j_parent_start=WRF_CONFIG['d3']['j_parent_start'],
+        parent_grid_ratio=WRF_CONFIG['d3']['parent_grid_ratio'],
+        use_custom_center='ref_lat' in WRF_CONFIG['d3'],
+    )
+
+    return {'d1': d1, 'd2': d2, 'd3': d3}

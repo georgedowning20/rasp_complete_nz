@@ -1,0 +1,11 @@
+# This file cannot contain blank lines! (unless they are prepended with a hash sign)
+# NZ North Island gliding/soaring sites for meteograms
+1,Auckland,d1,174.7633,-36.8485,
+2,Wellington,d1,174.7762,-41.2865,
+3,Hamilton,d1,175.2793,-37.7870,
+4,Taupo,d1,176.0702,-38.6857,
+5,Rotorua,d1,176.2497,-38.1368,
+6,Napier,d1,176.9120,-39.4928,
+7,NewPlymouth,d1,174.0752,-39.0556,
+8,Matamata,d1,175.7700,-37.8100,
+9,Drury,d1,174.9500,-37.1000,

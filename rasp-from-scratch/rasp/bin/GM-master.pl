@@ -1832,10 +1832,14 @@ $PROXY = "";
               open(NEWNAMELIST, ">", "namelist.wps");
               $wps_startdate = $startyyyy4dom[1]."-".$startmm4dom[1]."-".$startdd4dom[1]."_".$starthh4dom[1].":".$min2.":00" ;
               $wps_enddate   = $endyyyy4dom[1]  ."-".$endmm4dom[1]  ."-".$enddd4dom[1]  ."_".$endhh4dom[1]  .":".$min2.":00" ;
+              my $n_domains = $MAXDOMAIN{$regionname}[$IWINDOW];
+              my $start_list = join(', ', ("'$wps_startdate'") x $n_domains);
+              my $end_list   = join(', ', ("'$wps_enddate'")   x $n_domains);
+
               for($iline=0; $iline<=$#namelistlines; $iline++){
                 $line = $namelistlines[$iline];
-                if($line =~ m/start_date/i ) { $namelistlines[$iline] = sprintf(" start_date = '%s', '%s',\n", $wps_startdate, $wps_startdate); }
-                if($line =~ m/end_date/i   ) { $namelistlines[$iline] = sprintf(" end_date   = '%s', '%s',\n", $wps_enddate,   $wps_enddate) ; }
+                if($line =~ m/start_date/i ) { $namelistlines[$iline] = sprintf(" start_date = %s,\n", $start_list); }
+                if($line =~ m/end_date/i   ) { $namelistlines[$iline] = sprintf(" end_date   = %s,\n", $end_list) ; }
                 # Update opt_metgrid_tbl_path - Required to be in $BASEDIR (which must be set!)
                 if($line =~ m/opt_metgrid_tbl_path/i   ) {
                   $BaseDir = $ENV{"BASEDIR"};

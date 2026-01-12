@@ -25,6 +25,16 @@ WRF_CONFIG = {
         'e_we': 151, 'e_sn': 151,
         'i_parent_start': 12, 'j_parent_start': 38,
         'parent_grid_ratio': 3,
+        # 'ref_lat': -37.8239,
+        # 'ref_lon': 175.7604,
+    },
+    'd3': {
+        'dx': 500, 'dy': 500,
+        'e_we': 81, 'e_sn': 81,
+        'i_parent_start': 46, 'j_parent_start': 131,
+        'parent_grid_ratio': 4,
+        'ref_lat': -37.1386,
+        'ref_lon': 175.5593,
     }
 }
 
