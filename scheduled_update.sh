@@ -90,7 +90,7 @@ fi
 # Run the static site generator
 echo "Running generate_static_site_mapbox_gl.py..."
 cd "$SCRIPT_DIR"
-python3 generate_static_site_mapbox_gl.py
+python3 website/generate_static_site_mapbox_gl.py
 
 if [ $? -ne 0 ]; then
     echo "Error: generate_static_site_mapbox_gl.py failed"

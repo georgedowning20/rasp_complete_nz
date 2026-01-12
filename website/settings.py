@@ -1,0 +1,85 @@
+"""Shared configuration for the static site generator."""
+
+# Configuration
+RESULTS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/results'
+OUT_DIR = f"{RESULTS_DIR}/OUT"
+DOCS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/docs'
+
+# Mapbox Configuration
+# Get your access token from https://account.mapbox.com/access-tokens/
+MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZ2VvcmdlZG93bmluZyIsImEiOiJjbWZlMzBndzYwMmhxMmpyNWFqcnkzdjJmIn0.L9RHEN7ySukYIhsKKu4-Rw'
+
+# WRF Domain configuration - Lambert Conformal projection
+WRF_CONFIG = {
+    'ref_lat': -38.50,
+    'ref_lon': 176.00,
+    'truelat1': -35.00,
+    'truelat2': -42.00,
+    'stand_lon': 176.00,
+    'd1': {
+        'dx': 6000, 'dy': 6000,
+        'e_we': 80, 'e_sn': 100,
+    },
+    'd2': {
+        'dx': 2000, 'dy': 2000,
+        'e_we': 151, 'e_sn': 151,
+        'i_parent_start': 12, 'j_parent_start': 38,
+        'parent_grid_ratio': 3,
+    }
+}
+
+# Parameter descriptions
+PARAMETER_INFO = {
+    'wstar': 'Thermal Updraft Velocity (W*)',
+    'bsratio': 'Buoyancy/Shear Ratio',
+    'wstar_bsratio': 'W* with B/S Ratio',
+    'hglider': 'Thermalling Height (MSL)',
+    'dglider': 'Thermalling Height (AGL)',
+    'hwcrit': 'Height of Critical Updraft (MSL)',
+    'dwcrit': 'Height of Critical Updraft (AGL)',
+    'hbl': 'BL Top Height (MSL)',
+    'dbl': 'BL Depth (AGL)',
+    'bltopvariab': 'BL Top Variability',
+    'wblmaxmin': 'Convergence',
+    'zwblmaxmin': 'Height of Max BL Up/Down',
+    'sfcsunpct': 'Surface Sun %',
+    'sfcshf': 'Surface Heat Flux',
+    'sfctemp': 'Surface Temperature',
+    'sfcdewpt': 'Surface Dewpoint',
+    'sfcwind0': 'Surface Wind',
+    'blwind': 'BL Average Wind',
+    'bltopwind': 'BL Top Wind',
+    'blwindshear': 'BL Wind Shear',
+    'zsfclcl': 'Sfc LCL Height',
+    'zsfclcldif': 'Sfc Cu Cloudbase (AGL)',
+    'zsfclclmask': 'Sfc Cu Potential',
+    'zblcl': 'BL Top LCL Height',
+    'zblcldif': 'OD Cu Cloudbase (AGL)',
+    'zblclmask': 'OD Cu Potential',
+    'blicw': 'BL Cloud Ice+Water',
+    'blcwbase': 'BL Cloud Base',
+    'blcloudpct': 'BL Cloud %',
+    'cfracl': 'Low Cloud Fraction',
+    'cfracm': 'Mid Cloud Fraction',
+    'cfrach': 'High Cloud Fraction',
+    'rain1': '1hr Rain',
+    'cape': 'CAPE',
+    'press950': 'Wave 950mb (~2,000ft)',
+    'press850': 'Wave 850mb (~5,000ft)',
+    'press700': 'Wave 700mb (~10,000ft)',
+    'press500': 'Wave 500mb (~18,000ft)',
+    'stars': 'Star Rating',
+    'xcspeed': 'XC Speed',
+    'pfd_tot': 'Potential Flight Distance (Total)',
+    'ridgelift': 'Ridge Lift (Vertical Velocity ~300ft AGL)',
+}
+
+# Sounding locations
+SOUNDING_SITES = {
+    '3': {'name': 'Hamilton', 'lat': -37.7870, 'lon': 175.2793},
+    '4': {'name': 'Taupo', 'lat': -38.6857, 'lon': 176.0702},
+    '5': {'name': 'Rotorua', 'lat': -38.1368, 'lon': 176.2497},
+    '6': {'name': 'Napier', 'lat': -39.4928, 'lon': 176.9120},
+    '7': {'name': 'NewPlymouth', 'lat': -39.0556, 'lon': 174.0752},
+    '8': {'name': 'Matamata', 'lat': -37.8100, 'lon': 175.7700},
+}

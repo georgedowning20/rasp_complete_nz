@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>RASP Weather Viewer - NZ</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loading-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }
+        .loading-title {
+            font-size: 2em;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        .loading-subtitle {
+            font-size: 1em;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+        .loading-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #0f3460;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .loading-status {
+            font-size: 0.85em;
+            color: #888;
+            min-height: 1.2em;
+        }
+        .clear-settings-btn {
+            background: rgba(233, 69, 96, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .clear-settings-btn:hover {
+            background: rgba(255, 107, 107, 0.9);
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #0f3460;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto 0;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            z-index: 1;
+        }
+        
+        /* Controls Panel */
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1100;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: 320px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .controls.little {
+            top: 0;
+            left: 0;
+            right: 0;
+            max-width: none;
+            width: 100%;
+            padding: 8px 15px;
+            border-radius: 0 0 10px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            max-height: none;
+            overflow: visible;
+        }
+        .controls.little h2,
+        .controls.little .mobile-row,
+        .controls.little .expert-toggle,
+        .controls.little .opacity-control,
+        .controls.little .help-btn {
+            display: none;
+        }
+        .controls.little .control-group {
+            display: none;
+        }
+        .controls.little .control-group.time-control {
+            display: flex;
+            flex: 1;
+            margin-bottom: 0;
+            align-items: center;
+            gap: 10px;
+            order: 1;
+        }
+        .controls.little .control-group.time-control label {
+            display: none;
+        }
+        .controls.little .time-slider-container {
+            margin-top: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .controls.little .time-nav {
+            margin-top: 0;
+            flex: 1;
+        }
+        .controls.little .time-nav-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 1em;
+        }
+        .controls.little .time-display {
+            font-size: 1.2em;
+            min-width: 60px;
+        }
+        .controls.little input[type="range"] {
+            margin: 0;
+            flex: 1;
+        }
+        .controls.little .expand-toggle {
+            display: flex;
+            order: 2;
+        }
+        .controls h2 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expand-toggle {
+            display: none;
+            background: rgba(233, 69, 96, 0.95);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+        }
+        .expand-toggle:hover {
+            background: #ff6b6b;
+        }
+        .collapse-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .collapse-toggle:hover { color: #fff; }
+        
+        .control-group {
+            margin-bottom: 12px;
+        }
+        .control-group label {
+            display: block;
+            font-size: 0.75em;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        select {
+            width: 100%;
+            background: #0f3460;
+            color: #fff;
+            border: 1px solid #e94560;
+            padding: 10px 8px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        select:focus { outline: none; border-color: #fff; }
+        
+        .time-slider-container {
+            margin-top: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #0f3460;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #e94560;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .time-display {
+            text-align: center;
+            font-size: 1.6em;
+            color: #e94560;
+            font-weight: bold;
+        }
+        .expert-toggle {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .toggle-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .opacity-control {
+            margin-top: 10px;
+        }
+        .opacity-control input {
+            width: 100%;
+        }
+        
+        .info-box {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(22, 33, 62, 0.9);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            color: #aaa;
+            max-width: calc(100vw - 20px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .header-box {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1099;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 20px);
+        }
+        .header-box img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .legend-box {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 20px);
+        }
+        .legend-box img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .time-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .time-nav-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-nav-btn:hover, .time-nav-btn:active { background: #ff6b6b; }
+        .time-nav-btn:disabled { background: #555; cursor: not-allowed; }
+        
+        .help-btn {
+            background: #0f3460;
+            color: #e94560;
+            border: 1px solid #e94560;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+        .help-btn:hover {
+            background: #e94560;
+            color: white;
+        }
+        
+        /* General button touch improvements */
+        button {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        /* Location Button */
+        .location-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 10px;
+            z-index: 1100;
+            background: rgba(22, 33, 62, 0.95);
+            color: #4a9eff;
+            border: 2px solid #4a9eff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .location-btn:hover {
+            background: #4a9eff;
+            color: white;
+        }
+        .location-btn.active {
+            background: #4a9eff;
+            color: white;
+            animation: pulse-location 2s infinite;
+        }
+        .location-btn.searching {
+            animation: pulse-search 1s infinite;
+        }
+        @keyframes pulse-location {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 158, 255, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(74, 158, 255, 0); }
+        }
+        @keyframes pulse-search {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* GPS Marker */
+        .gps-marker {
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .gps-marker-pulse {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(74, 158, 255, 0.3);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: gps-pulse 2s infinite;
+        }
+        @keyframes gps-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        .gps-accuracy-circle {
+            background: rgba(74, 158, 255, 0.15);
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            border-radius: 50%;
+        }
+        
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 3000;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .help-modal.active {
+            display: flex;
+        }
+        .help-content {
+            background: #16213e;
+            border-radius: 10px;
+            max-width: 800px;
+            max-height: 90vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+        }
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            background: #0f3460;
+        }
+        .help-header h2 {
+            color: #e94560;
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .help-close-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .help-close-btn:hover {
+            background: #ff6b6b;
+        }
+        .help-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .help-text {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            color: #ddd;
+        }
+        
+        .sounding-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(22, 33, 62, 0.98);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+            display: none;
+            max-width: calc(100vw - 20px);
+            max-height: calc(100vh - 20px);
+            overflow: auto;
+        }
+        .sounding-popup.active {
+            display: block;
+        }
+        .sounding-popup img {
+            max-width: 100%;
+            max-height: calc(100vh - 80px);
+            display: block;
+        }
+        .sounding-popup .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4em;
+        }
+        .sounding-popup h3 {
+            color: #e94560;
+            margin: 0 0 10px 0;
+            padding-right: 40px;
+            font-size: 1em;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .controls {
+                top: 0;
+                left: 0;
+                right: 0;
+                max-width: 100%;
+                border-radius: 0 0 10px 10px;
+                padding: 12px 15px;
+                max-height: 70vh;
+            }
+            .collapse-toggle {
+                display: block;
+            }
+            .controls h2 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            .header-box {
+                top: auto;
+                bottom: 70px;
+                left: 5px;
+                right: 5px;
+                transform: none;
+                max-width: none;
+                padding: 4px;
+            }
+            .legend-box {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                transform: none;
+                padding: 6px;
+                max-width: none;
+            }
+            .legend-box img {
+                max-height: none;
+                width: 100%;
+                height: auto;
+                min-height: 50px;
+            }
+            .info-box {
+                display: none;
+            }
+            .time-display {
+                font-size: 1.4em;
+            }
+            .time-nav {
+                gap: 6px;
+            }
+            .time-nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+            .mobile-row {
+                display: flex;
+                gap: 10px;
+            }
+            .mobile-row .control-group {
+                flex: 1;
+                margin-bottom: 8px;
+            }
+            .sounding-popup {
+                top: 50%;
+                left: 15px;
+                right: 15px;
+                transform: translateY(-50%);
+                width: auto;
+                max-width: none;
+                padding: 15px;
+            }
+            .sounding-popup img {
+                max-height: calc(100vh - 120px);
+            }
+            .sounding-popup h3 {
+                font-size: 1.1em;
+                margin-bottom: 15px;
+            }
+            .sounding-popup .close-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.6em;
+                top: 10px;
+                right: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                padding: 10px 12px;
+            }
+            .header-box {
+                display: none;
+            }
+            .legend-box img {
+                min-height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-title">🌤️ RASP NZ</div>
+            <div class="loading-subtitle">Loading Weather Forecast...</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <div class="loading-status" id="loadingStatus">Initializing...</div>
+            <button id="clearSettingsBtn" class="clear-settings-btn">Clear Settings & Reload</button>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div class="controls" id="controlsPanel">
+        <button class="expand-toggle" id="expandToggle" aria-label="Expand controls">☰</button>
+        <h2>
+            <span>🌤️ RASP NZ</span>
+            <button class="collapse-toggle" id="collapseToggle" aria-label="Collapse controls">−</button>
+        </h2>
+        
+        <div class="mobile-row">
+            <div class="control-group">
+                <label>Map Style</label>
+                <select id="styleSelect">
+                    <option value="mapbox://styles/mapbox/streets-v12">Streets</option>
+                    <option value="mapbox://styles/mapbox/satellite-streets-v12">Satellite</option>
+                    <option value="mapbox://styles/mapbox/outdoors-v12">Outdoors</option>
+                    <option value="mapbox://styles/mapbox/light-v11">Light</option>
+                    <option value="mapbox://styles/mapbox/dark-v11">Dark</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Date</label>
+                <select id="dateSelect"></select>
+            </div>
+            
+            <div class="control-group">
+                <label>Domain</label>
+                <select id="domainSelect"></select>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label>Parameter</label>
+            <select id="paramSelect"></select>
+        </div>
+        
+        <div class="control-group time-control">
+            <label>Time (Local)</label>
+            <div class="time-slider-container">
+                <input type="range" id="timeSlider" min="0" max="9" value="4">
+                <div class="time-nav">
+                    <button class="time-nav-btn" id="timePrev" title="Previous" aria-label="Previous time">◀</button>
+                    <div class="time-display" id="timeDisplay" style="flex:1">--:--</div>
+                    <button class="time-nav-btn" id="timeNext" title="Next" aria-label="Next time">▶</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-group expert-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" id="expertMode">
+                <span>Expert Mode</span>
+            </label>
+        </div>
+        
+        <div class="control-group opacity-control">
+            <label>Opacity: <span id="opacityValue">70%</span></label>
+            <input type="range" id="opacitySlider" min="0" max="100" value="70">
+        </div>
+        
+        <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
+    </div>
+    
+    <button class="location-btn" id="locationBtn" title="Find my location" aria-label="Find my location">📍</button>
+    
+    <div class="info-box" id="infoBox">Loading...</div>
+    
+    <div class="header-box" id="headerBox">
+        <img id="headerImg" src="" alt="Header">
+    </div>
+    
+    <div class="legend-box" id="legendBox">
+        <img id="legendImg" src="" alt="Scale">
+    </div>
+    
+    <div class="sounding-popup" id="soundingPopup">
+        <button class="close-btn" id="closeSounding">×</button>
+        <h3 id="soundingTitle">Sounding</h3>
+        <img id="soundingImg" src="" alt="Sounding">
+    </div>
+    
+    <div class="help-modal" id="helpModal">
+        <div class="help-content">
+            <div class="help-header">
+                <h2>📖 RASP Parameter Reference</h2>
+                <button class="help-close-btn" id="helpCloseBtn">×</button>
+            </div>
+            <div class="help-body">
+                <pre class="help-text" id="helpText"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // =====================================================
+        // EMBEDDED DATA - Generated by static site generator
+        // =====================================================
+        
+        mapboxgl.accessToken = '__MAPBOX_TOKEN__';
+        
+        const paramInfo = __PARAM_INFO__;
+        const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift', 'press850', 'press700'];
+        const domainData = __DOMAIN_DATA__;
+        const soundingSites = __SOUNDING_SITES__;
+        const manifest = __MANIFEST__;
+        const helpText = __HELP_TEXT__;
+        
+        console.log('Manifest loaded:', Object.keys(manifest));
+        
+        // =====================================================
+        // APPLICATION CODE
+        // =====================================================
+        
+        let currentData = { parameters: [], times: [], domains: [], soundings: [] };
+        let map = null;
+        let viewInitialized = false;
+        let currentDomain = null;
+        let currentSoundingSite = null;
+        let expertMode = localStorage.getItem('expertMode') === 'true';
+        let preloadedImages = {};
+        let activeLayer = 'A'; // Toggle between 'A' and 'B' for double buffering
+        
+        // Loading state management
+        let loadingProgress = 0;
+        const loadingStages = {
+            mapbox: { weight: 20, done: false, label: 'Loading Mapbox...' },
+            style: { weight: 25, done: false, label: 'Loading map style...' },
+            terrain: { weight: 15, done: false, label: 'Loading terrain...' },
+            data: { weight: 20, done: false, label: 'Loading forecast data...' },
+            image: { weight: 20, done: false, label: 'Loading forecast overlay...' }
+        };
+        
+        function updateLoadingProgress(stage) {
+            if (loadingStages[stage] && !loadingStages[stage].done) {
+                loadingStages[stage].done = true;
+                loadingProgress = Object.values(loadingStages)
+                    .filter(s => s.done)
+                    .reduce((sum, s) => sum + s.weight, 0);
+                
+                const loadingBar = document.getElementById('loadingBar');
+                const loadingStatus = document.getElementById('loadingStatus');
+                
+                if (loadingBar) {
+                    loadingBar.style.width = loadingProgress + '%';
+                }
+                
+                // Find next incomplete stage for status message
+                const nextStage = Object.values(loadingStages).find(s => !s.done);
+                if (loadingStatus && nextStage) {
+                    loadingStatus.textContent = nextStage.label;
+                } else if (loadingStatus) {
+                    loadingStatus.textContent = 'Almost ready...';
+                }
+                
+                console.log(`Loading progress: ${loadingProgress}% (${stage} complete)`);
+                
+                // Hide loading screen when complete
+                if (loadingProgress >= 100) {
+                    hideLoadingScreen();
+                }
+            }
+        }
+        
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+        }
+        
+        function getBasePath() {
+            const path = window.location.pathname;
+            if (path.includes('/docs/')) {
+                return path.substring(0, path.indexOf('/docs/') + 6);
+            }
+            return path.substring(0, path.lastIndexOf('/') + 1);
+        }
+        
+        const basePath = getBasePath();
+        
+        // Initialize map with Lambert Conformal projection
+        function initMap() {
+            console.log('Initializing map...');
+            
+            // Check if Mapbox GL JS is supported (requires WebGL)
+            if (!mapboxgl.supported()) {
+                console.error('Mapbox GL JS not supported - WebGL required');
+                hideLoadingScreen();
+                alert('Your browser does not support WebGL, which is required for this map. Please:\\n\\n1. Enable hardware acceleration in Chrome settings\\n2. Update your graphics drivers\\n3. Try a different browser (Firefox, Edge)\\n4. If on a virtual machine, ensure 3D acceleration is enabled');
+                return;
+            }
+            
+            updateLoadingProgress('mapbox');
+            
+            try {
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [176.0, -38.5],
+                    zoom: 8,
+                    pitch: 45,
+                    bearing: 0,
+                    attributionControl: true
+                });
+                
+                console.log('Map created, waiting for style.load...');
+                
+                let styleLoaded = false;
+                map.on('style.load', () => {
+                    styleLoaded = true;
+                    console.log('Map style loaded, adding layers...');
+                    updateLoadingProgress('style');
+                    
+                    // Add terrain source and layer for 3D
+                    map.addSource('mapbox-dem', {
+                        'type': 'raster-dem',
+                        'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                        'tileSize': 512,
+                        'maxzoom': 14
+                    });
+                    
+                    // Set terrain with zoom-based exaggeration
+                    map.setTerrain({
+                        'source': 'mapbox-dem',
+                        'exaggeration': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0, 20,
+                            8, 5,
+                            12, 2,
+                            16, 1
+                        ]
+                    });
+                    
+                    updateLoadingProgress('terrain');
+                    addMapLayers();
+                    
+                    // Only load dates on initial load, not on style change
+                    if (!viewInitialized) {
+                        setTimeout(() => {
+                            console.log('Loading dates...');
+                            updateLoadingProgress('data');
+                            loadDates();
+                        }, 100);
+                    } else {
+                        // Re-add the forecast layer after style change
+                        setTimeout(() => {
+                            updateImageSource();
+                        }, 100);
+                    }
+                });
+                
+                map.on('error', (e) => {
+                    console.error('Map error:', e);
+                    hideLoadingScreen();
+                    alert('Map failed to load. Check console for details.');
+                });
+                
+                // Timeout for style load
+                setTimeout(() => {
+                    if (!styleLoaded) {
+                        console.error('Style failed to load within 5 seconds - likely invalid Mapbox token');
+                        hideLoadingScreen();
+                        alert('Failed to load map style. Please check your Mapbox access token at https://account.mapbox.com/access-tokens/');
+                    }
+                }, 5000);
+            } catch (e) {
+                console.error('Error initializing map:', e);
+                hideLoadingScreen();
+                alert('Error initializing map: ' + e.message + '\\n\\nIf this is a WebGL error, try:\\n1. chrome://settings/ → Advanced → System → Enable hardware acceleration\\n2. Update graphics drivers\\n3. Restart browser');
+            }
+        }
+        
+        function addMapLayers() {
+            // Add two image sources for double-buffering (no flash on time change)
+            const defaultCoords = [
+                [172.5, -35.77],  // NW (top-left)
+                [179.5, -35.77],  // NE (top-right)
+                [179.5, -41.13],  // SE (bottom-right)
+                [172.5, -41.13]   // SW (bottom-left)
+            ];
+            const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+            
+            if (!map.getSource('forecast-image-A')) {
+                map.addSource('forecast-image-A', {
+                    type: 'image',
+                    url: transparentPixel,
+                    coordinates: defaultCoords
+                });
+                map.addLayer({
+                    id: 'forecast-layer-A',
+                    type: 'raster',
+                    source: 'forecast-image-A',
+                    paint: { 'raster-opacity': 0.7 }
+                });
+            }
+            
+            if (!map.getSource('forecast-image-B')) {
+                map.addSource('forecast-image-B', {
+                    type: 'image',
+                    url: transparentPixel,
+                    coordinates: defaultCoords
+                });
+                map.addLayer({
+                    id: 'forecast-layer-B',
+                    type: 'raster',
+                    source: 'forecast-image-B',
+                    paint: { 'raster-opacity': 0 }
+                });
+            }
+            
+            // Add sounding site markers
+            addSoundingMarkers();
+        }
+        
+        // Sounding markers - using native Mapbox layers for proper anchoring
+        function addSoundingMarkers() {
+            // Create GeoJSON data for sounding sites
+            const soundingGeoJSON = {
+                type: 'FeatureCollection',
+                features: Object.entries(soundingSites).map(([siteId, site]) => ({
+                    type: 'Feature',
+                    properties: {
+                        id: siteId,
+                        name: site.name
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [site.lon, site.lat]
+                    }
+                }))
+            };
+            
+            // Remove existing source/layers if they exist (for style changes)
+            if (map.getLayer('sounding-labels')) map.removeLayer('sounding-labels');
+            if (map.getLayer('sounding-markers')) map.removeLayer('sounding-markers');
+            if (map.getSource('sounding-sites')) map.removeSource('sounding-sites');
+            
+            // Add source
+            map.addSource('sounding-sites', {
+                type: 'geojson',
+                data: soundingGeoJSON
+            });
+            
+            // Create custom skew-T icon as an image
+            const iconSize = 48;
+            const canvas = document.createElement('canvas');
+            canvas.width = iconSize;
+            canvas.height = iconSize;
+            const ctx = canvas.getContext('2d');
+            
+            // Helper function for rounded rectangle (cross-browser compatible)
+            function drawRoundedRect(ctx, x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.arcTo(x + width, y, x + width, y + radius, radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+                ctx.lineTo(x + radius, y + height);
+                ctx.arcTo(x, y + height, x, y + height - radius, radius);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+            }
+            
+            // Draw background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            drawRoundedRect(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw skewed isotherms (temperature lines tilted right)
+            ctx.strokeStyle = 'rgba(233, 69, 96, 0.25)';
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(8 + i * 9, iconSize - 8);
+                ctx.lineTo(16 + i * 9, 8);
+                ctx.stroke();
+            }
+            
+            // Draw horizontal pressure lines (isobars)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            for (let y of [12, 20, 28, 36]) {
+                ctx.beginPath();
+                ctx.moveTo(8, y);
+                ctx.lineTo(iconSize - 8, y);
+                ctx.stroke();
+            }
+            
+            // Draw temperature profile (red) with inversion
+            // Starts warm at surface, cools, then WARMS (inversion), then cools again
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(34, 40);      // Surface - warm
+            ctx.lineTo(28, 32);      // Cooling with height
+            ctx.lineTo(34, 26);      // INVERSION - temperature increases (bulge right)
+            ctx.lineTo(26, 18);      // Above inversion - cooling again
+            ctx.lineTo(22, 10);      // Upper level - cold
+            ctx.stroke();
+            
+            // Draw dewpoint profile (green/cyan dashed) - stays left of temp
+            ctx.strokeStyle = '#0b00d4';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 2]);
+            ctx.beginPath();
+            ctx.moveTo(24, 40);      // Surface dewpoint
+            ctx.lineTo(24, 32);      // Decreasing
+            ctx.lineTo(17, 28);      // Dry at inversion (big temp-dewpoint spread)
+            ctx.lineTo(16, 18);      // Still dry above
+            ctx.lineTo(14, 10);       // Upper level
+            ctx.stroke();
+            
+            // Add as image to map
+            const imageData = ctx.getImageData(0, 0, iconSize, iconSize);
+            
+            if (!map.hasImage('skewt-icon')) {
+                map.addImage('skewt-icon', imageData, { pixelRatio: 2 });
+            }
+            
+            // Add symbol layer for markers
+            map.addLayer({
+                id: 'sounding-markers',
+                type: 'symbol',
+                source: 'sounding-sites',
+                layout: {
+                    'icon-image': 'skewt-icon',
+                    'icon-size': 1.0,
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                    'icon-pitch-alignment': 'viewport',
+                    'icon-rotation-alignment': 'viewport'
+                }
+            });
+            
+            // Add labels layer
+            map.addLayer({
+                id: 'sounding-labels',
+                type: 'symbol',
+                source: 'sounding-sites',
+                layout: {
+                    'text-field': ['get', 'name'],
+                    'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                    'text-size': 11,
+                    'text-offset': [0, 1.8],
+                    'text-anchor': 'top',
+                    'text-allow-overlap': false
+                },
+                paint: {
+                    'text-color': '#ffffff',
+                    'text-halo-color': 'rgba(22, 33, 62, 0.9)',
+                    'text-halo-width': 2
+                }
+            });
+            
+            // Add click handler for markers
+            map.on('click', 'sounding-markers', (e) => {
+                if (e.features && e.features.length > 0) {
+                    const feature = e.features[0];
+                    const siteId = feature.properties.id;
+                    const siteName = feature.properties.name;
+                    showSounding(siteId, siteName);
+                }
+            });
+            
+            // Change cursor on hover
+            map.on('mouseenter', 'sounding-markers', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            
+            map.on('mouseleave', 'sounding-markers', () => {
+                map.getCanvas().style.cursor = '';
+            });
+            
+            console.log(`Added ${soundingGeoJSON.features.length} sounding markers using symbol layer`);
+        }
+        
+        function showSounding(siteId, siteName) {
+            const date = document.getElementById('dateSelect').value;
+            const timeIdx = document.getElementById('timeSlider').value;
+            const time = currentData.times[timeIdx];
+            const domain = document.getElementById('domainSelect').value;
+            
+            if (!date || !time) {
+                console.warn('Cannot show sounding: missing date or time');
+                return;
+            }
+            
+            // Check if this sounding site is available
+            if (!currentData.soundings.includes(siteId)) {
+                alert(`Sounding for ${siteName} is not available for this date`);
+                return;
+            }
+            
+            // Build sounding image URL
+            const soundingUrl = `${basePath}data/${date}/sounding${siteId}.curr.${time}lst.${domain}.webp`;
+            
+            // Update popup content
+            document.getElementById('soundingTitle').textContent = `${siteName} Sounding - ${time.substring(0,2)}:${time.substring(2)} ${date}`;
+            document.getElementById('soundingImg').src = soundingUrl;
+            
+            // Show popup
+            document.getElementById('soundingPopup').classList.add('active');
+            currentSoundingSite = siteId;
+            
+            console.log(`Showing sounding: ${soundingUrl}`);
+        }
+        
+        // Update currently displayed sounding when time changes
+        function updateCurrentSounding() {
+            if (!currentSoundingSite) return;
+            
+            const popup = document.getElementById('soundingPopup');
+            if (!popup.classList.contains('active')) return;
+            
+            const date = document.getElementById('dateSelect').value;
+            const timeIdx = document.getElementById('timeSlider').value;
+            const time = currentData.times[timeIdx];
+            const domain = document.getElementById('domainSelect').value;
+            const siteName = soundingSites[currentSoundingSite]?.name || 'Unknown';
+            
+            if (!date || !time) return;
+            
+            // Build updated sounding image URL
+            const soundingUrl = `${basePath}data/${date}/sounding${currentSoundingSite}.curr.${time}lst.${domain}.webp`;
+            
+            // Update popup content
+            document.getElementById('soundingTitle').textContent = `${siteName} Sounding - ${time.substring(0,2)}:${time.substring(2)} ${date}`;
+            document.getElementById('soundingImg').src = soundingUrl;
+            
+            console.log(`Updated sounding: ${soundingUrl}`);
+        }
+        
+        // Preload all time images for current selection
+        function preloadImages() {
+            const date = document.getElementById('dateSelect').value;
+            const param = document.getElementById('paramSelect').value;
+            const domain = document.getElementById('domainSelect').value;
+            
+            if (!date || !param || !domain) return;
+            
+            const key = `${date}-${param}-${domain}`;
+            if (preloadedImages[key]) return; // Already preloaded
+            
+            preloadedImages[key] = {};
+            
+            currentData.times.forEach(time => {
+                const img = new Image();
+                let url;
+                if (param === 'pfd_tot') {
+                    url = `${basePath}data/${date}/pfd_tot.body.webp`;
+                } else {
+                    url = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.body.webp`;
+                }
+                img.src = url;
+                preloadedImages[key][time] = img;
+            });
+            
+            console.log(`Preloaded ${currentData.times.length} images for ${key}`);
+        }
+        
+        function updateImageSource() {
+            const date = document.getElementById('dateSelect').value;
+            const param = document.getElementById('paramSelect').value;
+            const domain = document.getElementById('domainSelect').value;
+            const timeIdx = document.getElementById('timeSlider').value;
+            const time = currentData.times[timeIdx];
+            
+            if (!date || !param || !domain || !time) {
+                console.warn('Missing required data:', { date, param, domain, time });
+                return;
+            }
+            
+            let imageUrl;
+            if (param === 'pfd_tot') {
+                imageUrl = `${basePath}data/${date}/pfd_tot.body.webp`;
+            } else {
+                imageUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.body.webp`;
+            }
+            
+            // Update header and legend
+            let headerUrl, legendUrl;
+            if (param === 'pfd_tot') {
+                headerUrl = `${basePath}data/${date}/pfd_tot.head.webp`;
+                legendUrl = `${basePath}data/${date}/pfd_tot.foot.webp`;
+            } else {
+                headerUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.head.webp`;
+                legendUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.foot.webp`;
+            }
+            
+            document.getElementById('headerImg').src = headerUrl;
+            document.getElementById('legendImg').src = legendUrl;
+            
+            // Double-buffer update to prevent flash
+            const domainInfo = domainData[domain];
+            if (!domainInfo || !domainInfo.corners || !map) return;
+            
+            const corners = domainInfo.corners;
+            const coordinates = [
+                [corners[3][1], corners[3][0]],  // NW (top-left)
+                [corners[2][1], corners[2][0]],  // NE (top-right)
+                [corners[1][1], corners[1][0]],  // SE (bottom-right)
+                [corners[0][1], corners[0][0]]   // SW (bottom-left)
+            ];
+            
+            const opacity = document.getElementById('opacitySlider').value / 100;
+            const nextLayer = activeLayer === 'A' ? 'B' : 'A';
+            const nextSourceId = `forecast-image-${nextLayer}`;
+            const nextLayerId = `forecast-layer-${nextLayer}`;
+            const currentLayerId = `forecast-layer-${activeLayer}`;
+            
+            // Remove and re-add the inactive source with new image
+            if (map.getLayer(nextLayerId)) {
+                map.removeLayer(nextLayerId);
+            }
+            if (map.getSource(nextSourceId)) {
+                map.removeSource(nextSourceId);
+            }
+            
+            map.addSource(nextSourceId, {
+                type: 'image',
+                url: imageUrl,
+                coordinates: coordinates
+            });
+            
+            // Add layer with 0 opacity initially
+            map.addLayer({
+                id: nextLayerId,
+                type: 'raster',
+                source: nextSourceId,
+                paint: { 'raster-opacity': 0 }
+            });
+            
+            // Wait for image to load, then crossfade
+            map.once('idle', () => {
+                // Show new layer
+                map.setPaintProperty(nextLayerId, 'raster-opacity', opacity);
+                // Hide old layer
+                if (map.getLayer(currentLayerId)) {
+                    map.setPaintProperty(currentLayerId, 'raster-opacity', 0);
+                }
+                activeLayer = nextLayer;
+                
+                // Mark image loading complete for initial load
+                updateLoadingProgress('image');
+            });
+            
+            // Only fit map to domain on initial load
+            if (!viewInitialized) {
+                const bounds = domainData[domain].bounds;
+                map.fitBounds(
+                    [[bounds[0][1], bounds[0][0]], [bounds[1][1], bounds[1][0]]],
+                    { padding: 20 }
+                );
+                viewInitialized = true;
+            }
+            currentDomain = domain;
+            
+            const paramName = paramInfo[param] || param;
+            document.getElementById('infoBox').textContent = `${date} | ${paramName} | ${domain.toUpperCase()}`;
+        }
+        
+        function loadDates() {
+            const select = document.getElementById('dateSelect');
+            select.innerHTML = '';
+            const dates = Object.keys(manifest).sort().reverse();
+            
+            console.log('Available dates:', dates);
+            
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                select.appendChild(option);
+            });
+            
+            if (dates.length > 0) {
+                // Get current date in NZ timezone (UTC+13 during daylight saving, UTC+12 otherwise)
+                // For January 2026, daylight saving is in effect (UTC+13)
+                const now = new Date();
+                const nzOffsetHours = 13; // NZ daylight saving time offset
+                const nzTime = new Date(now.getTime() + (nzOffsetHours * 60 * 60 * 1000));
+                const today = nzTime.toISOString().split('T')[0];
+                const savedDate = localStorage.getItem('lastDate');
+                let defaultDate = (savedDate && dates.includes(savedDate)) ? savedDate : (dates.includes(today) ? today : dates[0]);
+                
+                // Ensure the default date has data, otherwise use the latest date with data
+                if (!manifest[defaultDate] || manifest[defaultDate].parameters.length === 0) {
+                    defaultDate = dates.find(date => manifest[date] && manifest[date].parameters.length > 0) || dates[0];
+                }
+                
+                select.value = defaultDate;
+                loadDateData(defaultDate);
+            }
+        }
+        
+        function loadDateData(date) {
+            currentData = manifest[date] || { parameters: [], times: [], domains: [], soundings: [] };
+            
+            // Reset sounding if not available for this date
+            if (currentSoundingSite && !currentData.soundings.includes(currentSoundingSite)) {
+                currentSoundingSite = null;
+            }
+            
+            updateParameterDropdown();
+            
+            const domainSelect = document.getElementById('domainSelect');
+            const currentDomainVal = domainSelect.value;
+            domainSelect.innerHTML = '';
+            
+            currentData.domains.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d;
+                option.textContent = d === 'd1' ? 'Domain 1 (6km)' : 'Domain 2 (2km)';
+                domainSelect.appendChild(option);
+            });
+            
+            const savedDomain = localStorage.getItem('lastDomain');
+            if (savedDomain && currentData.domains.includes(savedDomain)) {
+                domainSelect.value = savedDomain;
+            } else if (currentData.domains.includes(currentDomainVal)) {
+                domainSelect.value = currentDomainVal;
+            } else if (currentData.domains.includes('d2')) {
+                domainSelect.value = 'd2';
+            }
+            
+            const timeSlider = document.getElementById('timeSlider');
+            const savedTime = localStorage.getItem('lastTime');
+            timeSlider.max = currentData.times.length - 1;
+            
+            // Find index of saved time, or default to middle
+            let timeIdx = Math.floor(currentData.times.length / 2); // default to middle
+            if (savedTime && currentData.times.includes(savedTime)) {
+                timeIdx = currentData.times.indexOf(savedTime);
+            }
+            
+            timeSlider.value = timeIdx;
+            
+            updateTimeDisplay();
+            updateImageSource();
+            preloadImages(); // Preload all time images for this selection
+            updateCurrentSounding(); // Update sounding if popup is open
+        }
+        
+        function updateParameterDropdown() {
+            const paramSelect = document.getElementById('paramSelect');
+            const currentParam = paramSelect.value;
+            paramSelect.innerHTML = '';
+            
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {
+                paramsToShow = basicParams.filter(p => currentData.parameters.includes(p));
+            }
+            
+            paramsToShow.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = paramInfo[p] || p;
+                paramSelect.appendChild(option);
+            });
+            
+            const savedParam = localStorage.getItem('lastParam');
+            if (savedParam && paramsToShow.includes(savedParam)) {
+                paramSelect.value = savedParam;
+            } else if (paramsToShow.includes(currentParam)) {
+                paramSelect.value = currentParam;
+            } else if (paramsToShow.length > 0) {
+                paramSelect.value = paramsToShow[0];
+            }
+        }
+        
+        function updateTimeDisplay() {
+            const slider = document.getElementById('timeSlider');
+            const display = document.getElementById('timeDisplay');
+            const time = currentData.times[slider.value];
+            
+            if (time) {
+                display.textContent = time.substring(0, 2) + ':' + time.substring(2);
+            }
+        }
+        
+        function updateOpacity() {
+            const slider = document.getElementById('opacitySlider');
+            const value = slider.value;
+            document.getElementById('opacityValue').textContent = value + '%';
+            
+            const currentLayerId = `forecast-layer-${activeLayer}`;
+            if (map && map.getLayer(currentLayerId)) {
+                map.setPaintProperty(currentLayerId, 'raster-opacity', value / 100);
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('dateSelect').addEventListener('change', (e) => {
+            localStorage.setItem('lastDate', e.target.value);
+            loadDateData(e.target.value);
+        });
+        document.getElementById('paramSelect').addEventListener('change', () => {
+            localStorage.setItem('lastParam', document.getElementById('paramSelect').value);
+            updateImageSource();
+            preloadImages();
+        });
+        document.getElementById('domainSelect').addEventListener('change', () => {
+            localStorage.setItem('lastDomain', document.getElementById('domainSelect').value);
+            updateImageSource();
+            preloadImages();
+            updateCurrentSounding();
+        });
+        document.getElementById('styleSelect').addEventListener('change', (e) => {
+            console.log('Changing map style to:', e.target.value);
+            map.setStyle(e.target.value);
+        });
+        document.getElementById('expertMode').addEventListener('change', (e) => {
+            expertMode = e.target.checked;
+            localStorage.setItem('expertMode', expertMode);
+            updateParameterDropdown();
+            updateImageSource();
+            preloadImages();
+        });
+        document.getElementById('timeSlider').addEventListener('input', () => {
+            const slider = document.getElementById('timeSlider');
+            const time = currentData.times[slider.value];
+            localStorage.setItem('lastTime', time);
+            updateTimeDisplay();
+            updateImageSource();
+            updateCurrentSounding();
+        });
+        document.getElementById('opacitySlider').addEventListener('input', updateOpacity);
+        
+        document.getElementById('clearSettingsBtn').addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
+        
+        function changeTime(delta) {
+            const slider = document.getElementById('timeSlider');
+            const max = parseInt(slider.max);
+            let next = parseInt(slider.value) + delta;
+            if (next > max) next = 0;
+            if (next < 0) next = max;
+            slider.value = next;
+            const time = currentData.times[slider.value];
+            if (time) {
+                localStorage.setItem('lastTime', time);
+            }
+            updateTimeDisplay();
+            updateImageSource();
+            updateCurrentSounding();
+        }
+
+        document.getElementById('timePrev').addEventListener('click', () => {
+            changeTime(-1);
+        });
+        document.getElementById('timeNext').addEventListener('click', () => {
+            changeTime(1);
+        });
+        
+        // Controls - two state system: big (expanded) or little (top bar)
+        // Little mode only available on mobile/tablet (<=768px)
+        const controlsPanel = document.getElementById('controlsPanel');
+        const expandToggle = document.getElementById('expandToggle');
+        const collapseToggle = document.getElementById('collapseToggle');
+        let controlState = 'big'; // big or little
+        
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+        
+        function setControlState(newState) {
+            // Only allow little mode on mobile devices
+            if (newState === 'little' && !isMobile()) {
+                return;
+            }
+            controlState = newState;
+            if (newState === 'big') {
+                controlsPanel.classList.remove('little');
+            } else {
+                controlsPanel.classList.add('little');
+            }
+        }
+        
+        expandToggle.addEventListener('click', () => {
+            setControlState('big');
+        });
+        
+        collapseToggle.addEventListener('click', () => {
+            if (isMobile()) {
+                setControlState('little');
+            }
+        });
+        
+        document.getElementById('map').addEventListener('click', (e) => {
+            // On small screens, collapse controls first without advancing time
+            if (isMobile() && controlState === 'big') {
+                setControlState('little');
+                return;
+            }
+            changeTime(1);
+        });
+        
+        // Ensure big mode on resize to desktop
+        window.addEventListener('resize', () => {
+            if (!isMobile() && controlState === 'little') {
+                setControlState('big');
+            }
+        });
+        
+        // Help modal
+        document.getElementById('helpText').textContent = helpText;
+        
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            document.getElementById('helpModal').classList.add('active');
+        });
+        
+        document.getElementById('helpCloseBtn').addEventListener('click', () => {
+            document.getElementById('helpModal').classList.remove('active');
+        });
+        
+        document.getElementById('helpModal').addEventListener('click', (e) => {
+            if (e.target.id === 'helpModal') {
+                document.getElementById('helpModal').classList.remove('active');
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('helpModal').classList.remove('active');
+                document.getElementById('soundingPopup').classList.remove('active');
+                currentSoundingSite = null;
+            }
+        });
+        
+        // Close sounding popup
+        document.getElementById('closeSounding').addEventListener('click', () => {
+            document.getElementById('soundingPopup').classList.remove('active');
+            currentSoundingSite = null;
+        });
+        
+        // =====================================================
+        // GPS LOCATION TRACKING
+        // =====================================================
+        
+        let gpsMarker = null;
+        let gpsAccuracyCircle = null;
+        let watchId = null;
+        let locationEnabled = localStorage.getItem('locationEnabled') === 'true';
+        
+        async function restoreLocationTracking() {
+            if (locationEnabled && navigator.permissions && navigator.permissions.query) {
+                try {
+                    const result = await navigator.permissions.query({name: 'geolocation'});
+                    if (result.state === 'granted') {
+                        enableLocationTracking();
+                    } else {
+                        // Permission not granted, reset preference
+                        localStorage.removeItem('locationEnabled');
+                        locationEnabled = false;
+                    }
+                } catch (e) {
+                    // Permissions API not supported, try anyway
+                    enableLocationTracking();
+                }
+            }
+        }
+        
+        function createGpsMarker() {
+            // Create marker element
+            const el = document.createElement('div');
+            el.className = 'gps-marker';
+            
+            // Add pulse effect
+            const pulse = document.createElement('div');
+            pulse.className = 'gps-marker-pulse';
+            el.appendChild(pulse);
+            
+            return el;
+        }
+        
+        function updateGpsPosition(position) {
+            const { latitude, longitude, accuracy } = position.coords;
+            const lngLat = [longitude, latitude];
+            
+            console.log(`GPS position: ${latitude}, ${longitude} (accuracy: ${accuracy}m)`);
+            
+            // Create or update marker
+            if (!gpsMarker) {
+                gpsMarker = new mapboxgl.Marker({
+                    element: createGpsMarker(),
+                    anchor: 'center'
+                })
+                .setLngLat(lngLat)
+                .addTo(map);
+            } else {
+                gpsMarker.setLngLat(lngLat);
+            }
+            
+            // Create or update accuracy circle
+            const accuracyCircleId = 'gps-accuracy-circle';
+            const metersPerPixel = 156543.03392 * Math.cos(latitude * Math.PI / 180) / Math.pow(2, map.getZoom());
+            const radiusInPixels = accuracy / metersPerPixel;
+            
+            // Use a source/layer for the accuracy circle
+            if (map.getSource(accuracyCircleId)) {
+                map.getSource(accuracyCircleId).setData({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: lngLat
+                    },
+                    properties: {
+                        accuracy: accuracy
+                    }
+                });
+            } else {
+                map.addSource(accuracyCircleId, {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: lngLat
+                        },
+                        properties: {
+                            accuracy: accuracy
+                        }
+                    }
+                });
+                
+                map.addLayer({
+                    id: accuracyCircleId,
+                    type: 'circle',
+                    source: accuracyCircleId,
+                    paint: {
+                        'circle-radius': {
+                            stops: [
+                                [0, 0],
+                                [20, accuracy * 1000]
+                            ],
+                            base: 2
+                        },
+                        'circle-color': 'rgba(74, 158, 255, 0.15)',
+                        'circle-stroke-color': 'rgba(74, 158, 255, 0.3)',
+                        'circle-stroke-width': 1,
+                        'circle-pitch-alignment': 'map'
+                    }
+                }, 'forecast-layer-A'); // Add below forecast layer
+            }
+            
+            // Update button state
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('searching');
+            btn.classList.add('active');
+        }
+        
+        function handleGpsError(error) {
+            console.error('GPS error:', error);
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('searching', 'active');
+            
+            let message = 'Unable to get location';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location permission denied. To enable location:\\n\\nChrome: Click the lock icon in address bar → Location → Allow\\nFirefox: Click the shield icon → Location → Allow\\n\\nOr go to browser settings and allow location for localhost.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location unavailable. Check if location services are enabled on your device.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Location request timed out. Try again.';
+                    break;
+            }
+            alert(message);
+            disableLocationTracking();
+        }
+        
+        function enableLocationTracking() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser');
+                return;
+            }
+            
+            const btn = document.getElementById('locationBtn');
+            btn.classList.add('searching');
+            locationEnabled = true;
+            localStorage.setItem('locationEnabled', 'true');
+            
+            // Get initial position and fly to it
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateGpsPosition(position);
+                    map.flyTo({
+                        center: [position.coords.longitude, position.coords.latitude],
+                        zoom: Math.max(map.getZoom(), 10)
+                    });
+                },
+                handleGpsError,
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+            
+            // Start watching position
+            watchId = navigator.geolocation.watchPosition(
+                updateGpsPosition,
+                handleGpsError,
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+            );
+        }
+        
+        function disableLocationTracking() {
+            locationEnabled = false;
+            localStorage.removeItem('locationEnabled');
+            
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            // Remove marker
+            if (gpsMarker) {
+                gpsMarker.remove();
+                gpsMarker = null;
+            }
+            
+            // Remove accuracy circle
+            if (map.getLayer('gps-accuracy-circle')) {
+                map.removeLayer('gps-accuracy-circle');
+            }
+            if (map.getSource('gps-accuracy-circle')) {
+                map.removeSource('gps-accuracy-circle');
+            }
+            
+            const btn = document.getElementById('locationBtn');
+            btn.classList.remove('active', 'searching');
+        }
+        
+        document.getElementById('locationBtn').addEventListener('click', () => {
+            if (locationEnabled) {
+                disableLocationTracking();
+            } else {
+                enableLocationTracking();
+            }
+        });
+        
+        // Initialize
+        initMap();
+        restoreLocationTracking();
+        
+        // Restore UI state
+        document.getElementById('expertMode').checked = expertMode;
+    </script>
+</body>
+</html>
