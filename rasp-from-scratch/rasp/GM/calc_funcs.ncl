@@ -909,16 +909,6 @@ begin
 	return(bparam)
 end
 
-;
-; SIMPLETEST - Simple test parameter that returns value of 2 everywhere
-;
-function simpletest(isize, jsize)
-begin
-	bparam = new( (/jsize,isize/), float)
-	bparam = 2.0
-	return(bparam)
-end
-
 
 ;
 ; RIDGELIFT - Vertical velocity at approximately 300ft AGL
