@@ -735,6 +735,14 @@ def generate_html(domain_bounds, manifest, help_text, mapbox_token):
             color: white;
         }}
         
+        /* General button touch improvements */
+        button {{
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+        }}
+        
         /* Location Button */
         .location-btn {{
             position: fixed;
