@@ -882,8 +882,8 @@
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
         </div>
         
+        <button class="help-btn" id="lazyModeBtn">🚀 Lazy RASP</button>
         <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
-        <button class="help-btn" id="lazyModeBtn" style="background: #e94560; color: white; margin-top: 5px;">🚀 Lazy RASP</button>
     </div>
     
     <button class="location-btn" id="locationBtn" title="Find my location" aria-label="Find my location">📍</button>
@@ -911,7 +911,7 @@
     <div class="help-modal" id="lazyModeModal">
         <div class="help-content" style="max-height: calc(100vh - 40px); display: flex; flex-direction: column;">
             <div class="help-header">
-                <h2>🚀 Lazy RASP - Parameter Review</h2>
+                <h2 id="lazyModeTitle">🚀 Lazy RASP - Parameter Review</h2>
                 <button class="help-close-btn" id="lazyModeCloseBtn">×</button>
             </div>
             <div style="padding: 15px; border-bottom: 1px solid #444; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -1571,7 +1571,8 @@
             dates.forEach(date => {
                 const option = document.createElement('option');
                 option.value = date;
-                option.textContent = date;
+                const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+                option.textContent = `${dayName} ${date}`;
                 select.appendChild(option);
             });
             
@@ -1883,8 +1884,9 @@
                 
                 if (lazyTimes.length === 0) return;
                 
+                const dayName = new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long' });
                 html += `<div class="lazy-day-section">
-                    <div class="lazy-day-header">${d}</div>
+                    <div class="lazy-day-header">${dayName} ${d}</div>
                     <div class="lazy-time-group">`;
                 
                 lazyTimes.forEach(time => {
@@ -1975,6 +1977,9 @@
                 lazyDomainSelect.appendChild(option);
             });
             lazyDomainSelect.value = document.getElementById('domainSelect').value;
+            
+            // Update title
+            document.getElementById('lazyModeTitle').textContent = `🚀 Lazy RASP`;
             
             // Update coastline for current domain (await it)
             await updateLazyModeCoastline(lazyDomainSelect.value);
