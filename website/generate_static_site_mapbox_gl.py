@@ -77,7 +77,14 @@ def generate_static_site():
 
     create_favicon(DOCS_DIR)
 
-    print("📖 Loading help text...")
+    print("�️  Generating coastline overlays...")
+    try:
+        from generate_coastline_svg import save_coastline_svgs
+        save_coastline_svgs(DOCS_DIR)
+    except Exception as e:
+        print(f"   ⚠️  Warning: Could not generate coastlines: {e}")
+
+    print("�📖 Loading help text...")
     help_file_path = Path(__file__).parent / 'help.txt'
     help_text = help_file_path.read_text() if help_file_path.exists() else "Help file not found."
 

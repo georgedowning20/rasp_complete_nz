@@ -546,6 +546,77 @@
             color: #ddd;
         }
         
+        /* Lazy Mode Styles */
+        .lazy-day-section {
+            border: 1px solid #e94560;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #0f3460;
+            margin-bottom: 10px;
+        }
+        .lazy-day-header {
+            background: #e94560;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .lazy-time-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            padding: 10px;
+            grid-auto-rows: 1fr;
+        }
+        .lazy-time-image {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+        .lazy-time-image-inner {
+            position: relative;
+            width: 100%;
+            aspect-ratio: var(--lazy-aspect-ratio, 1 / 1);
+            overflow: hidden;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+        .lazy-time-image-inner img.forecast-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: block;
+            transform-origin: center;
+        }
+        .lazy-time-image-inner .coastline-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            border-radius: 5px;
+            object-fit: fill;
+            display: block;
+        }
+        .lazy-time-image .forecast-img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+        }
+        .lazy-time-label {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
         .sounding-popup {
             position: fixed;
             top: 50%;
@@ -687,6 +758,14 @@
                 min-height: 45px;
             }
         }
+        
+        /* PC viewing mode - larger modals */
+        @media (min-width: 1024px) {
+            .help-content {
+                max-width: 80vw;
+                max-height: 80vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -766,6 +845,7 @@
         </div>
         
         <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
+        <button class="help-btn" id="lazyModeBtn" style="background: #e94560; color: white; margin-top: 5px;">🚀 Lazy RASP</button>
     </div>
     
     <button class="location-btn" id="locationBtn" title="Find my location" aria-label="Find my location">📍</button>
@@ -786,6 +866,28 @@
         <img id="soundingImg" src="" alt="Sounding">
     </div>
     
+    <div class="help-modal" id="lazyModeModal">
+        <div class="help-content" style="max-height: calc(100vh - 40px); display: flex; flex-direction: column;">
+            <div class="help-header">
+                <h2>🚀 Lazy RASP - Parameter Review</h2>
+                <button class="help-close-btn" id="lazyModeCloseBtn">×</button>
+            </div>
+            <div style="padding: 15px; border-bottom: 1px solid #444; display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 150px;">
+                    <label style="display: block; font-size: 0.75em; color: #aaa; text-transform: uppercase; margin-bottom: 4px;">Parameter</label>
+                    <select id="lazyModeParamSelect" style="width: 100%; background: #0f3460; color: #fff; border: 1px solid #e94560; padding: 8px; border-radius: 5px; font-size: 14px;"></select>
+                </div>
+                <div style="flex: 1; min-width: 100px;">
+                    <label style="display: block; font-size: 0.75em; color: #aaa; text-transform: uppercase; margin-bottom: 4px;">Domain</label>
+                    <select id="lazyModeDomainSelect" style="width: 100%; background: #0f3460; color: #fff; border: 1px solid #e94560; padding: 8px; border-radius: 5px; font-size: 14px;"></select>
+                </div>
+            </div>
+            <div class="help-body" id="lazyModeBody" style="padding: 0; overflow: auto; flex: 1;">
+                <div id="lazyModeContent" style="display: grid; grid-template-columns: 1fr; gap: 10px; padding: 10px;"></div>
+            </div>
+        </div>
+    </div>
+    
     <div class="help-modal" id="helpModal">
         <div class="help-content">
             <div class="help-header">
@@ -799,6 +901,34 @@
     </div>
     
     <script>
+        // =====================================================
+        // COASTLINE DATA - Generated from WRF domains
+        // =====================================================
+        
+        // Coastline SVGs - loaded dynamically from files
+        const COASTLINE_SVG = {};
+        
+        // Load coastline SVG for a domain
+        async function loadCoastlineSVG(domain) {
+            if (COASTLINE_SVG[domain]) {
+                return COASTLINE_SVG[domain];
+            }
+            
+            try {
+                const response = await fetch(`coastline_${domain}.svg`);
+                if (response.ok) {
+                    const svgText = await response.text();
+                    COASTLINE_SVG[domain] = svgText;
+                    return svgText;
+                }
+            } catch (e) {
+                console.warn(`Could not load coastline for ${domain}:`, e);
+            }
+            
+            // Return empty SVG as fallback
+            return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"></svg>';
+        }
+        
         // =====================================================
         // EMBEDDED DATA - Generated by static site generator
         // =====================================================
@@ -953,6 +1083,11 @@
                             console.log('Loading dates...');
                             updateLoadingProgress('data');
                             loadDates();
+                            
+                            // Preload coastline SVGs for all domains
+                            ['d1', 'd2', 'd3'].forEach(domain => {
+                                loadCoastlineSVG(domain).catch(e => console.warn(`Failed to preload coastline ${domain}:`, e));
+                            });
                         }, 100);
                     } else {
                         // Re-add the forecast layer after style change
@@ -1535,6 +1670,35 @@
             updateParameterDropdown();
             updateImageSource();
             preloadImages();
+            
+            // Update lazy mode if active
+            if (document.getElementById('lazyModeModal').classList.contains('active')) {
+                const lazyParamSelect = document.getElementById('lazyModeParamSelect');
+                const currentLazyParam = lazyParamSelect.value;
+                lazyParamSelect.innerHTML = '';
+                let paramsToShow = currentData.parameters;
+                if (!expertMode) {
+                    paramsToShow = basicParams.filter(p => currentData.parameters.includes(p));
+                }
+                paramsToShow.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p;
+                    option.textContent = paramInfo[p] || p;
+                    lazyParamSelect.appendChild(option);
+                });
+                if (paramsToShow.includes(currentLazyParam)) {
+                    lazyParamSelect.value = currentLazyParam;
+                } else if (paramsToShow.length > 0) {
+                    lazyParamSelect.value = paramsToShow[0];
+                }
+                // Update content
+                const content = generateLazyModeContent();
+                document.getElementById('lazyModeContent').innerHTML = content;
+                // Add event listeners
+                document.querySelectorAll('.lazy-image-click').forEach(img => {
+                    img.addEventListener('click', lazyImageClicked);
+                });
+            }
         });
         document.getElementById('timeSlider').addEventListener('input', () => {
             const slider = document.getElementById('timeSlider');
@@ -1638,6 +1802,174 @@
         document.getElementById('helpModal').addEventListener('click', (e) => {
             if (e.target.id === 'helpModal') {
                 document.getElementById('helpModal').classList.remove('active');
+            }
+        });
+        
+        // Lazy Mode
+        async function updateLazyModeCoastline(domain) {
+            try {
+                // Preload the SVG to ensure it's cached
+                await loadCoastlineSVG(domain);
+                console.log(`Coastline preloaded for domain ${domain}`);
+            } catch (e) {
+                console.error(`Failed to preload coastline for ${domain}:`, e);
+            }
+        }
+        
+        function generateLazyModeContent() {
+            // Get values from lazy mode dropdowns if they exist, otherwise from main controls
+            let param = document.getElementById('lazyModeParamSelect')?.value || document.getElementById('paramSelect').value;
+            let domain = document.getElementById('lazyModeDomainSelect')?.value || document.getElementById('domainSelect').value;
+            
+            if (!param || !domain) return '';
+            
+            const lazyDates = Object.keys(manifest).sort();
+            
+            let html = '';
+            
+            lazyDates.forEach(d => {
+                const dayData = manifest[d];
+                const dayTimes = dayData.times || [];
+                
+                // Filter for specific times: 1200, 1400, 1600
+                const lazyTimes = ['1200', '1400', '1600'].filter(t => dayTimes.includes(t));
+                
+                if (lazyTimes.length === 0) return;
+                
+                html += `<div class="lazy-day-section">
+                    <div class="lazy-day-header">${d}</div>
+                    <div class="lazy-time-group">`;
+                
+                lazyTimes.forEach(time => {
+                    let imgUrl;
+                    if (param === 'pfd_tot') {
+                        imgUrl = `${basePath}data/${d}/pfd_tot.body.webp`;
+                    } else {
+                        imgUrl = `${basePath}data/${d}/${param}.curr.${time}lst.${domain}.body.webp`;
+                    }
+                    
+                    const timeLabel = time.substring(0, 2) + ':' + time.substring(2);
+                    const timeIdx = currentData.times.indexOf(time) >= 0 ? currentData.times.indexOf(time) : 0;
+                    const lazyAspectRatio = domain === 'd1' ? '1000 / 1250' : '1 / 1';
+                    
+                    html += `<div class="lazy-time-image">
+                        <div class="lazy-time-image-inner" style="--lazy-aspect-ratio:${lazyAspectRatio};">
+                            <img src="${imgUrl}" alt="${d} ${timeLabel}" loading="lazy" 
+                                 data-date="${d}" data-time="${time}" data-time-idx="${timeIdx}"
+                                 class="forecast-img lazy-image-click">
+                            <img src="coastline_${domain}.svg" class="coastline-overlay" alt="coastline">
+                        </div>
+                        <div class="lazy-time-label">${timeLabel}</div>
+                    </div>`;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            return html;
+        }
+        
+        function lazyImageClicked(e) {
+            const img = e.target;
+            const newDate = img.dataset.date;
+            const newTime = img.dataset.time;
+            const timeIdx = parseInt(img.dataset.timeIdx);
+            
+            // Update main controls with selected values from lazy mode
+            const newParam = document.getElementById('lazyModeParamSelect').value;
+            document.getElementById('paramSelect').value = newParam;
+            localStorage.setItem('lastParam', newParam);
+            
+            const newDomain = document.getElementById('lazyModeDomainSelect').value;
+            document.getElementById('domainSelect').value = newDomain;
+            localStorage.setItem('lastDomain', newDomain);
+            
+            document.getElementById('dateSelect').value = newDate;
+            document.getElementById('timeSlider').value = timeIdx;
+            updateTimeDisplay();
+            updateImageSource();
+            document.getElementById('lazyModeModal').classList.remove('active');
+        }
+        
+        document.getElementById('lazyModeBtn').addEventListener('click', async () => {
+            const param = document.getElementById('paramSelect').value;
+            if (!param) {
+                alert('Please select a parameter first');
+                return;
+            }
+            
+            // Populate parameter dropdown
+            const lazyParamSelect = document.getElementById('lazyModeParamSelect');
+            lazyParamSelect.innerHTML = '';
+            let paramsToShow = currentData.parameters;
+            if (!expertMode) {
+                paramsToShow = basicParams.filter(p => currentData.parameters.includes(p));
+            }
+            paramsToShow.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = paramInfo[p] || p;
+                lazyParamSelect.appendChild(option);
+            });
+            // Set the value, preferring the current param if it's in the list
+            if (paramsToShow.includes(param)) {
+                lazyParamSelect.value = param;
+            } else if (paramsToShow.length > 0) {
+                lazyParamSelect.value = paramsToShow[0];
+            }
+            
+            // Populate domain dropdown
+            const lazyDomainSelect = document.getElementById('lazyModeDomainSelect');
+            lazyDomainSelect.innerHTML = '';
+            currentData.domains.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d;
+                option.textContent = d === 'd1' ? 'Domain 1 (6km)' : 'Domain 2 (2km)';
+                lazyDomainSelect.appendChild(option);
+            });
+            lazyDomainSelect.value = document.getElementById('domainSelect').value;
+            
+            // Update coastline for current domain (await it)
+            await updateLazyModeCoastline(lazyDomainSelect.value);
+            
+            const content = generateLazyModeContent();
+            document.getElementById('lazyModeContent').innerHTML = content;
+            
+            // Add event listeners to all lazy images
+            document.querySelectorAll('.lazy-image-click').forEach(img => {
+                img.addEventListener('click', lazyImageClicked);
+            });
+            
+            document.getElementById('lazyModeModal').classList.add('active');
+        });
+        
+        // Update lazy mode content when parameter or domain changes
+        document.addEventListener('change', async (e) => {
+            if (e.target.id === 'lazyModeParamSelect' || e.target.id === 'lazyModeDomainSelect') {
+                if (document.getElementById('lazyModeModal').classList.contains('active')) {
+                    // Update coastline if domain changed
+                    if (e.target.id === 'lazyModeDomainSelect') {
+                        await updateLazyModeCoastline(e.target.value);
+                    }
+                    
+                    const content = generateLazyModeContent();
+                    document.getElementById('lazyModeContent').innerHTML = content;
+                    
+                    // Add event listeners to all lazy images
+                    document.querySelectorAll('.lazy-image-click').forEach(img => {
+                        img.addEventListener('click', lazyImageClicked);
+                    });
+                }
+            }
+        }, true);
+        
+        document.getElementById('lazyModeCloseBtn').addEventListener('click', () => {
+            document.getElementById('lazyModeModal').classList.remove('active');
+        });
+        
+        document.getElementById('lazyModeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'lazyModeModal') {
+                document.getElementById('lazyModeModal').classList.remove('active');
             }
         });
         

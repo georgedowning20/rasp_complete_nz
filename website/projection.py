@@ -106,6 +106,15 @@ class LambertConformalDomain:
             'ul': (ul_lon, ul_lat),
         }
 
+        self.projected_corners = {
+            'll': (nest_ll_x, nest_ll_y),
+            'lr': (nest_ur_x, nest_ll_y),
+            'ur': (nest_ur_x, nest_ur_y),
+            'ul': (nest_ll_x, nest_ur_y),
+        }
+
+        self.projected_bounds = [[nest_ll_x, nest_ll_y], [nest_ur_x, nest_ur_y]]
+
         return {
             'bounds': [[ll_lat, ll_lon], [ur_lat, ur_lon]],
             'corners': [
@@ -113,6 +122,13 @@ class LambertConformalDomain:
                 [lr_lat, lr_lon],  # SE
                 [ur_lat, ur_lon],  # NE
                 [ul_lat, ul_lon],  # NW
+            ],
+            'projected_bounds': self.projected_bounds,
+            'projected_corners': [
+                [nest_ll_x, nest_ll_y],  # SW
+                [nest_ur_x, nest_ll_y],  # SE
+                [nest_ur_x, nest_ur_y],  # NE
+                [nest_ll_x, nest_ur_y],  # NW
             ]
         }
 
