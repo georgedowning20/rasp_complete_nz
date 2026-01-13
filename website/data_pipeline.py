@@ -88,6 +88,7 @@ def copy_images(date, dest_dir):
             ".body." in filename
             or ".head." in filename
             or ".foot." in filename
+            or ".side." in filename
             or filename.startswith("sounding")
         ):
             src_path = os.path.join(src_dir, filename)

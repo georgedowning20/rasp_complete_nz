@@ -359,6 +359,26 @@
             height: auto;
         }
         
+        .side-box {
+            position: fixed;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            z-index: 999;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 20px);
+            display: none; /* Hidden by default, shown on mobile */
+        }
+        .side-box img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            max-height: 50vh;
+        }
+        
         .time-nav {
             display: flex;
             align-items: center;
@@ -747,12 +767,30 @@
             }
         }
         
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             .controls {
                 padding: 10px 12px;
+                max-height: 40vh;
             }
             .header-box {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                transform: none;
+                border-radius: 0;
+                padding: 4px;
+            }
+            .header-box img {
+                min-height: 45px;
+            }
+            .legend-box {
                 display: none;
+            }
+            .side-box {
+                display: block;
+                left: 10px;
             }
             .legend-box img {
                 min-height: 45px;
@@ -858,6 +896,10 @@
     
     <div class="legend-box" id="legendBox">
         <img id="legendImg" src="" alt="Scale">
+    </div>
+    
+    <div class="side-box" id="sideBox">
+        <img id="sideImg" src="" alt="Side View">
     </div>
     
     <div class="sounding-popup" id="soundingPopup">
@@ -1432,18 +1474,23 @@
                 imageUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.body.webp`;
             }
             
-            // Update header and legend
-            let headerUrl, legendUrl;
+            // Update header, legend, and side
+            let headerUrl, legendUrl, sideUrl;
             if (param === 'pfd_tot') {
                 headerUrl = `${basePath}data/${date}/pfd_tot.head.webp`;
                 legendUrl = `${basePath}data/${date}/pfd_tot.foot.webp`;
+                sideUrl = ''; // No side for pfd_tot?
             } else {
                 headerUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.head.webp`;
                 legendUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.foot.webp`;
+                sideUrl = `${basePath}data/${date}/${param}.curr.${time}lst.${domain}.side.webp`;
             }
             
             document.getElementById('headerImg').src = headerUrl;
             document.getElementById('legendImg').src = legendUrl;
+            if (sideUrl) {
+                document.getElementById('sideImg').src = sideUrl;
+            }
             
             // Double-buffer update to prevent flash
             const domainInfo = domainData[domain];
