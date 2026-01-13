@@ -92,4 +92,10 @@ SOUNDING_SITES = {
     '6': {'name': 'Napier', 'lat': -39.4928, 'lon': 176.9120},
     '7': {'name': 'NewPlymouth', 'lat': -39.0556, 'lon': 174.0752},
     '8': {'name': 'Matamata', 'lat': -37.8100, 'lon': 175.7700},
+    '9': {'name': 'Thames', 'lat': -37.1386, 'lon': 175.5593},
+    '10': {'name': 'Tauranga', 'lat': -37.6861, 'lon': 176.1667},
+    '11': {'name': 'Taumarunui', 'lat': -38.8667, 'lon': 175.2833},
+    '12': {'name': 'Drury', 'lat': -37.1000, 'lon': 174.9500},
+    '13': {'name': 'Raglan', 'lat': -37.8000, 'lon': 174.8833},
+    '14': {'name': 'Turangi', 'lat': -38.9833, 'lon': 175.8000},
 }
