@@ -388,7 +388,7 @@ end
 ;
 ; PDFTOT
 ;
-function pfd()
+function pfd_old2()
 begin
     ; Uses only data files
     ; Must select files with correct date and on full hours (i.e. minutes == 00lst)
@@ -482,6 +482,88 @@ begin
 
     pfdtot@valid = True
     return(pfdtot)
+end
+
+;
+; PFDXC - Maximum achievable cross-country distance
+;
+function pfd()
+begin
+    ; Calculates maximum distance achievable from each grid point
+    ; Uses distance propagation model based on hourly xcspeed values
+    ; This models actual flight progression through space over time
+
+    filename_chars = stringtochar(getenv("ENV_NCL_FILENAME"))
+    len_filename = dimsizes(filename_chars)-2
+    datepart = chartostring(filename_chars(len_filename-18:len_filename-9))
+    dateStr = str_split(datepart, "-")
+    newdateStr = dateStr(0) + " " + toint(dateStr(1)) + " " + toint(dateStr(2))
+
+    ; Extract domain ID from current filename (e.g., d01, d02)
+    ; This makes PFD work for both domains
+    jday_dummy = 0
+    gmthr_dummy = 0.0
+    domainid_local = ""
+    getfiledate(chartostring(filename_chars), jday_dummy, gmthr_dummy, domainid_local)
+    
+    cmd_xcspeed = "grep -l '" + newdateStr + "' " + BaseDir + "/" + Region + "/OUT/xcspeed.*lst." + domainid_local + ".data"
+    xcspeed_files = systemfunc(cmd_xcspeed)
+    nfiles = dimsizes(xcspeed_files)
+    delete(cmd_xcspeed)
+
+    ; Read one file and extract nx & ny
+    f = xcspeed_files(0)
+    if(.not. fileexists(f) ) then
+        print(f + " does not exist!");
+        return(0)   ; pfdxc@valid is false!
+    end if
+    hdr = readAsciiHead(f, "Day")
+    nx = toint(extract_string_field(hdr(2), 11, " "))
+    ny = toint(extract_string_field(hdr(2), 13, " "))
+
+    ; Load all xcspeed data into 3D array [time, y, x]
+    xcspeed_all = new( (/nfiles-1, ny, nx/), float)
+    do i = 0, nfiles-2
+        f = xcspeed_files(i)
+        xcspeed_all(i,:,:) = readAsciiTable(f, nx, "float", 4)
+    end do
+
+    ; Create a soarability map (where xcspeed > 0 at any time)
+    soarable = new( (/ny, nx/), float)
+    soarable = 0.0
+    do t = 0, nfiles-2
+        soarable = where(xcspeed_all(t,:,:) .gt. 0.0, 1.0, soarable)
+    end do
+
+    ; Calculate maximum reachable distance
+    max_distance = new( (/ny, nx/), float)
+    max_distance = 0.0
+    
+    ; Accumulate xcspeed * efficiency (only contributes in soarable regions)
+    efficiency = 0.85  ; Realistic XC efficiency factor
+    do t = 0, nfiles-2
+        max_distance = max_distance + (xcspeed_all(t,:,:) * efficiency)
+    end do
+    
+    ; Apply conditional smoothing: only smooth within soarable regions
+    ; This prevents distance from spreading into non-soarable areas (sea, etc)
+    wgt = (/ 0.05, 0.1, 0.15, 0.4, 0.15, 0.1, 0.05 /)  ; Gaussian-like weights
+    wgt = wgt / sum(wgt)
+    max_distance@_FillValue = -999999
+    
+    ; Smooth multiple times, but gate by soarability
+    do smooth_pass = 0, 2
+        max_distance_smooth = wgt_runave_n_Wrap(max_distance, wgt, 1, 0)
+        max_distance_smooth = wgt_runave_n_Wrap(max_distance_smooth, wgt, 1, 1)
+        ; Only use smoothed values where it's soarable
+        max_distance = where(soarable .eq. 1.0, max_distance_smooth, 0.0)
+    end do
+
+    delete(xcspeed_all)
+    delete(soarable)
+    
+    max_distance@valid = True
+    return(max_distance)
 end
 
 
