@@ -51,7 +51,7 @@ def get_available_data(date):
         if sounding_match:
             soundings.add(sounding_match.group(1))
 
-    if os.path.exists(os.path.join(date_dir, "pfd_tot.body.webp")):
+    if os.path.exists(os.path.join(date_dir, "pfd_tot.body.png")):
         parameters.add("pfd_tot")
 
     return {
