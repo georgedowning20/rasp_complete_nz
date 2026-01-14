@@ -47,7 +47,7 @@ $LRUN_WINDOW{'NZ'} = 0 ;
 );
 
 # ADD SOUNDINGS (locations defined in rasp.region_data.ncl)
-push @{$PARAMETER_DOLIST{'NZ'}}, ( 'sounding1','sounding2','sounding3','sounding4','sounding5','sounding6','sounding7','sounding8' );
+push @{$PARAMETER_DOLIST{'NZ'}}, ( 'sounding1','sounding2','sounding3','sounding4','sounding5','sounding6','sounding7','sounding8', 'sounding9','sounding10','sounding11','sounding12','sounding13','sounding14');
 
 # New Zealand timezone settings (UTC+12 for NZST, +13 for NZDT)
 # Currently set to NZDT (summer time)
