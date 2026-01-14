@@ -2954,16 +2954,43 @@ begin
 end
 
 ; PFD_TOT
-; Process PFD for all available domains
+; Process PFD for all available domains by iterating through Files
 procedure do_pfd()
-local bparam, pfd_mag, domains, d, current_domain
+local bparam, pfd_mag, processed_domains, fnum, this_domain, already_done, pd, jday_tmp, gmthr_tmp
 begin
-	; Process PFD for both outer (d01) and inner (d02) domains
-	domains = (/"d01", "d02"/)
+	; Track which domains we've already processed
+	processed_domains = new(10, string)  ; Allow up to 10 domains
+	num_processed = 0
 	
-	do d = 0, dimsizes(domains)-1
-		current_domain = domains(d)
-		print("*** Doing PFD for domain " + current_domain)
+	; Loop through all files to find unique domains
+	do fnum = 0, dimsizes(Files)-1
+		; Extract domain from this file
+		jday_tmp = 0
+		gmthr_tmp = 0.0
+		this_domain = ""
+		getfiledate(Files(fnum), jday_tmp, gmthr_tmp, this_domain)
+		
+		; Check if we've already processed this domain
+		already_done = False
+		do pd = 0, num_processed-1
+			if(processed_domains(pd) .eq. this_domain) then
+				already_done = True
+				break
+			end if
+		end do
+		
+		if(already_done) then
+			continue
+		end if
+		
+		; Mark this domain as processed
+		processed_domains(num_processed) = this_domain
+		num_processed = num_processed + 1
+		
+		print("*** Doing PFD for domain " + this_domain)
+		
+		; Set ENV_NCL_FILENAME to this file so pfd() can find domain files
+		setenv("ENV_NCL_FILENAME", Files(fnum))
 		
 		; Ensure no leftovers
 		if(isvar("bparam")) then
@@ -2992,27 +3019,29 @@ begin
 			opts_bparam@mult = 1.0
 		end if
 
-		pfd_mag = pfd(current_domain)
+		pfd_mag = pfd()
 
 		if(.not. isatt(pfd_mag, "valid") .or. pfd_mag@valid .ne. True)
-			print("*** PFD error for domain " + current_domain + ": result not plotted (no xcspeed data?)")
+			print("*** PFD error for domain " + this_domain + ": result not plotted!")
 			continue
 		end if
 
 		; Update global domainid for write_datafile
-		domainid = current_domain
+		domainid = this_domain
 		
 		ldatafmt = plot_contour(wks, bg, pfd_mag, "pfd_tot", "", alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
 		bparam = pfd_mag
 		copy_VarAtts(atts, bparam)
 		; Set tail to include domain identifier (same format as other params)
-		bparam@tail = "." + current_domain
+		bparam@tail = "." + this_domain
 		write_datafile("pfd_tot", bparam, opts_bparam, 0)
 		
 		if(isvar("pfd_mag")) then
 			delete(pfd_mag)
 		end if
 	end do
+	
+	delete(processed_domains)
 
 end
 

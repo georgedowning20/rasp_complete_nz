@@ -486,82 +486,190 @@ end
 
 ;
 ; PFDXC - Maximum achievable cross-country distance
+; Calculates directly from WRF output files without relying on pre-computed data
 ;
-function pfd(domain_id)
+function pfd()
+local wrffiles, nfiles, pfd_result, nx_pfd, ny_pfd, nz_pfd, t, ff, \
+      vhf_pfd, pblh_pfd, hfx_pfd, tc_pfd, wstar_pfd, \
+      z_pfd, ter_pfd, ua_pfd, va_pfd, wa_pfd, pmb_pfd, td_pfd, qvapor_pfd, \
+      ppert_pfd, pb_pfd, ublavg_pfd, vblavg_pfd, windspeed_pfd, bsratio_pfd, \
+      zsfclcl_pfd, zblcl_pfd, qvaporblavg_pfd, hcrit_pfd, zsfclcldif_pfd, dglider_pfd, \
+      wconvergence_pfd, ws_pfd, w_pfd, v_cruise_pfd, sink_cruise_pfd, v_avg_pfd, \
+      soarable, max_distance, efficiency, wgt, max_distance_smooth
 begin
-    ; Calculates maximum distance achievable from each grid point
-    ; Uses distance propagation model based on hourly xcspeed values
-    ; This models actual flight progression through space over time
-    ; domain_id: "d01", "d02", etc. - specifies which domain to process
-
-    filename_chars = stringtochar(getenv("ENV_NCL_FILENAME"))
+    ; Find all WRF output files for the current domain
+    filename_env = getenv("ENV_NCL_FILENAME")
+    filename_chars = stringtochar(filename_env)
     len_filename = dimsizes(filename_chars)-2
-    datepart = chartostring(filename_chars(len_filename-18:len_filename-9))
-    dateStr = str_split(datepart, "-")
-    newdateStr = dateStr(0) + " " + toint(dateStr(1)) + " " + toint(dateStr(2))
-
-    ; Use the domain ID passed as parameter
-    domainid_local = domain_id
-    print("    PFD processing domain: " + domainid_local)
     
-    cmd_xcspeed = "grep -l '" + newdateStr + "' " + BaseDir + "/" + Region + "/OUT/xcspeed.*lst." + domainid_local + ".data"
-    xcspeed_files = systemfunc(cmd_xcspeed)
-    nfiles = dimsizes(xcspeed_files)
-    delete(cmd_xcspeed)
-
-    ; Read one file and extract nx & ny
-    f = xcspeed_files(0)
-    if(.not. fileexists(f) ) then
-        print(f + " does not exist!");
-        return(0)   ; pfdxc@valid is false!
+    ; Extract domain ID from current filename (e.g., d01, d02)
+    jday_dummy = 0
+    gmthr_dummy = 0.0
+    domainid_local = ""
+    getfiledate(chartostring(filename_chars), jday_dummy, gmthr_dummy, domainid_local)
+    
+    ; Find all wrfout files for this domain
+    cmd_wrffiles = "ls " + BaseDir + "/" + Region + "/wrfout_" + domainid_local + "_* 2>/dev/null | head -n -1"
+    wrffiles = systemfunc(cmd_wrffiles)
+    
+    if(ismissing(wrffiles(0))) then
+        print("PFD: No WRF files found for domain " + domainid_local)
+        result = 0
+        result@valid = False
+        return(result)
     end if
-    hdr = readAsciiHead(f, "Day")
-    nx = toint(extract_string_field(hdr(2), 11, " "))
-    ny = toint(extract_string_field(hdr(2), 13, " "))
-
-    ; Load all xcspeed data into 3D array [time, y, x]
-    xcspeed_all = new( (/nfiles-1, ny, nx/), float)
-    do i = 0, nfiles-2
-        f = xcspeed_files(i)
-        xcspeed_all(i,:,:) = readAsciiTable(f, nx, "float", 4)
-    end do
-
-    ; Create a soarability map (where xcspeed > 0 at any time)
-    soarable = new( (/ny, nx/), float)
-    soarable = 0.0
-    do t = 0, nfiles-2
-        soarable = where(xcspeed_all(t,:,:) .gt. 0.0, 1.0, soarable)
-    end do
-
-    ; Calculate maximum reachable distance
-    max_distance = new( (/ny, nx/), float)
+    
+    nfiles = dimsizes(wrffiles)
+    print("PFD: Found " + nfiles + " WRF files for domain " + domainid_local)
+    
+    ; Open first file to get dimensions
+    ff = addfile(wrffiles(0) + ".nc", "r")
+    z_tmp = wrf_user_getvar(ff, "z", 0)
+    paramdims = dimsizes(z_tmp)
+    nz_pfd = paramdims(0)
+    ny_pfd = paramdims(1)
+    nx_pfd = paramdims(2)
+    delete(z_tmp)
+    delete(paramdims)
+    delete(ff)
+    
+    ; Initialize accumulator arrays
+    max_distance = new((/ny_pfd, nx_pfd/), float)
     max_distance = 0.0
+    soarable = new((/ny_pfd, nx_pfd/), float)
+    soarable = 0.0
     
-    ; Accumulate xcspeed * efficiency (only contributes in soarable regions)
-    efficiency = 0.85  ; Realistic XC efficiency factor
+    ; Glider performance parameters
+    a = -0.000302016415111608
+    b = 0.0729181700942301
+    c = -5.21488508245734
+    
+    ; Process each WRF file (excluding the last one as per original logic)
     do t = 0, nfiles-2
-        max_distance = max_distance + (xcspeed_all(t,:,:) * efficiency)
+        print("PFD: Processing file " + (t+1) + " of " + (nfiles-1) + ": " + wrffiles(t))
+        
+        ff = addfile(wrffiles(t) + ".nc", "r")
+        
+        ; Load required variables
+        vhf_pfd = wrf_user_getvar(ff, "LH", 0)
+        hfx_pfd = wrf_user_getvar(ff, "HFX", 0)
+        pblh_pfd = wrf_user_getvar(ff, "PBLH", 0)
+        tc_pfd = wrf_user_getvar(ff, "tc", 0)
+        z_pfd = wrf_user_getvar(ff, "z", 0)
+        ter_pfd = wrf_user_getvar(ff, "HGT", 0)
+        ua_pfd = wrf_user_getvar(ff, "ua", 0)
+        va_pfd = wrf_user_getvar(ff, "va", 0)
+        wa_pfd = wrf_user_getvar(ff, "wa", 0)
+        pmb_pfd = wrf_user_getvar(ff, "pressure", 0)
+        td_pfd = wrf_user_getvar(ff, "td", 0)
+        qvapor_pfd = wrf_user_getvar(ff, "QVAPOR", 0)
+        
+        ; Ensure terrain >= 1
+        ter_pfd = ter_pfd > 1.0
+        
+        ; Calculate virtual heat flux
+        vhf_pfd = where(vhf_pfd .lt. 0.0, 0.0, vhf_pfd)
+        vhf_pfd = hfx_pfd + 0.000245268*(tc_pfd(0,:,:)+273.16)*vhf_pfd
+        
+        ; Calculate wstar
+        wstar_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_wstar(vhf_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, wstar_pfd)
+        
+        ; Calculate BL average wind
+        ublavg_pfd = new((/ny_pfd, nx_pfd/), float)
+        vblavg_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_blavg(ua_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, ublavg_pfd)
+        calc_blavg(va_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, vblavg_pfd)
+        windspeed_pfd = sqrt(ublavg_pfd * ublavg_pfd + vblavg_pfd * vblavg_pfd)
+        
+        ; Calculate bsratio
+        bsratio_pfd = wstar_pfd / sqrt(cdbl * (windspeed_pfd ^ 2))
+        bsratio_pfd = where(ismissing(bsratio_pfd) .or. bsratio_pfd .lt. 0.0, 0.0, bsratio_pfd)
+        bsratio_pfd = where(bsratio_pfd .gt. 10.0, 10.0, bsratio_pfd)
+        
+        ; Calculate zsfclcl
+        zsfclcl_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_sfclclheight(pmb_pfd, tc_pfd, td_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, zsfclcl_pfd)
+        
+        ; Calculate zblcl
+        qvaporblavg_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_blavg(qvapor_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, qvaporblavg_pfd)
+        zblcl_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_blclheight(pmb_pfd, tc_pfd, qvaporblavg_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, zblcl_pfd)
+        
+        ; Calculate hcrit
+        hcrit_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_hcrit(wstar_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, hcrit_pfd)
+        
+        ; Calculate dglider (hglider - terrain)
+        dglider_pfd = hcrit_pfd
+        cparam_tmp = new((/ny_pfd, nx_pfd/), float)
+        cparam_tmp = 0.0
+        min_2darrays(dglider_pfd, cparam_tmp, zsfclcl_pfd, 1.0, nx_pfd, ny_pfd)
+        min_2darrays(dglider_pfd, cparam_tmp, zblcl_pfd, 2.0, nx_pfd, ny_pfd)
+        dglider_pfd = dglider_pfd - ter_pfd
+        delete(cparam_tmp)
+        
+        ; Calculate zsfclcldif
+        zsfclcldif_pfd = pblh_pfd + ter_pfd - zsfclcl_pfd
+        
+        ; Calculate wind convergence
+        wconvergence_pfd = new((/ny_pfd, nx_pfd/), float)
+        calc_wblmaxmin(0, wa_pfd, z_pfd, ter_pfd, pblh_pfd, nx_pfd, ny_pfd, nz_pfd, wconvergence_pfd)
+        
+        ; Calculate xcspeed inline
+        ws_pfd = (wstar_pfd * 100.0) + wconvergence_pfd
+        w_pfd = ws_pfd / 100.0 - 1.0
+        w_pfd = w_pfd > 0.0
+        
+        ; Apply risk factors (simplified)
+        dg_risk = 2.0 / (1.0 + exp(-(dglider_pfd-300.0)/200.0)) - 1.0
+        cu_risk = 0.3 / (1.0 + exp(-(zsfclcldif_pfd+100.0)/50.0)) + 0.7
+        bs_risk = 2.0 / (1.0 + exp(-(bsratio_pfd-1.0)/1.5)) - 1.0
+        dg_risk = dg_risk > 0.0
+        cu_risk = cu_risk > 0.0
+        bs_risk = bs_risk > 0.0
+        
+        w_pfd = w_pfd * dg_risk * cu_risk * bs_risk
+        
+        ; Calculate average cross-country speed
+        v_cruise_pfd = sqrt((c - w_pfd) / a)
+        sink_cruise_pfd = a * v_cruise_pfd * v_cruise_pfd + b * v_cruise_pfd + c
+        v_avg_pfd = v_cruise_pfd * w_pfd / (w_pfd - sink_cruise_pfd)
+        v_avg_pfd = where(ismissing(v_avg_pfd) .or. v_avg_pfd .lt. 0.0, 0.0, v_avg_pfd)
+        v_avg_pfd = where(v_avg_pfd .gt. 200.0, 200.0, v_avg_pfd)
+        
+        ; Update soarability map
+        soarable = where(v_avg_pfd .gt. 0.0, 1.0, soarable)
+        
+        ; Accumulate distance
+        efficiency = 0.85
+        max_distance = max_distance + (v_avg_pfd * efficiency)
+        
+        ; Cleanup
+        delete([/vhf_pfd, hfx_pfd, pblh_pfd, tc_pfd, z_pfd, ter_pfd, ua_pfd, va_pfd, wa_pfd, \
+                 pmb_pfd, td_pfd, qvapor_pfd, wstar_pfd, ublavg_pfd, vblavg_pfd, windspeed_pfd, \
+                 bsratio_pfd, zsfclcl_pfd, zblcl_pfd, qvaporblavg_pfd, hcrit_pfd, dglider_pfd, \
+                 zsfclcldif_pfd, wconvergence_pfd, ws_pfd, w_pfd, dg_risk, cu_risk, bs_risk, \
+                 v_cruise_pfd, sink_cruise_pfd, v_avg_pfd/])
+        delete(ff)
     end do
     
-    ; Apply conditional smoothing: only smooth within soarable regions
-    ; This prevents distance from spreading into non-soarable areas (sea, etc)
-    wgt = (/ 0.05, 0.1, 0.15, 0.4, 0.15, 0.1, 0.05 /)  ; Gaussian-like weights
+    ; Apply conditional smoothing
+    wgt = (/ 0.05, 0.1, 0.15, 0.4, 0.15, 0.1, 0.05 /)
     wgt = wgt / sum(wgt)
     max_distance@_FillValue = -999999
     
-    ; Smooth multiple times, but gate by soarability
     do smooth_pass = 0, 2
         max_distance_smooth = wgt_runave_n_Wrap(max_distance, wgt, 1, 0)
         max_distance_smooth = wgt_runave_n_Wrap(max_distance_smooth, wgt, 1, 1)
-        ; Only use smoothed values where it's soarable
         max_distance = where(soarable .eq. 1.0, max_distance_smooth, 0.0)
     end do
-
-    delete(xcspeed_all)
+    
     delete(soarable)
+    delete(wrffiles)
     
     max_distance@valid = True
-    max_distance@domainid = domainid_local
     return(max_distance)
 end
 
