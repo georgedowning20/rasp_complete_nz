@@ -2954,49 +2954,65 @@ begin
 end
 
 ; PFD_TOT
+; Process PFD for all available domains
 procedure do_pfd()
-local bparam, pfd_mag
+local bparam, pfd_mag, domains, d, current_domain
 begin
-	; Ensure no leftovers
-	if(isvar("bparam")) then
-		delete(bparam)
-	end if
+	; Process PFD for both outer (d01) and inner (d02) domains
+	domains = (/"d01", "d02"/)
+	
+	do d = 0, dimsizes(domains)-1
+		current_domain = domains(d)
+		print("*** Doing PFD for domain " + current_domain)
+		
+		; Ensure no leftovers
+		if(isvar("bparam")) then
+			delete(bparam)
+		end if
 
-	if(isvar("opts_bparam")) then
-		delete(opts_bparam)
-	end if
-	opts_bparam = True
-	opts_bparam@mult = 1.0	; Default value; overidden as required
-	ldatafmt = 0		; Overridden as required
+		if(isvar("opts_bparam")) then
+			delete(opts_bparam)
+		end if
+		opts_bparam = True
+		opts_bparam@mult = 1.0	; Default value; overidden as required
+		ldatafmt = 0		; Overridden as required
 
-	print("*** Doing PFD")
-	opts_bparam@MainTitle = "Potential Flight Distance (Discus, 100 kg ball.)"
-	if( UNITS .eq. "american" ) then
-		opts_bparam@UnitLabel = "[mi]"
-		opts_bparam@unitString = "mi"
-		opts_bparam@ContourParameters = (/ 100., 400., 100. /)
-		qparaminfo = "Param= pfd_tot Unit= mi Mult= 1"
-		opts_bparam@mult = 0.621371192237 ; Convert to miles
-	else
-		opts_bparam@UnitLabel = "[km]"
-		opts_bparam@unitString = "km"
-		opts_bparam@ContourParameters = (/ 100., 900., 100. /)
-		qparaminfo = "Param= pfd_tot Unit= km Mult= 1"
-		opts_bparam@mult = 1.0
-	end if
+		opts_bparam@MainTitle = "Potential Flight Distance (Discus, 100 kg ball.)"
+		if( UNITS .eq. "american" ) then
+			opts_bparam@UnitLabel = "[mi]"
+			opts_bparam@unitString = "mi"
+			opts_bparam@ContourParameters = (/ 100., 400., 100. /)
+			qparaminfo = "Param= pfd_tot Unit= mi Mult= 1"
+			opts_bparam@mult = 0.621371192237 ; Convert to miles
+		else
+			opts_bparam@UnitLabel = "[km]"
+			opts_bparam@unitString = "km"
+			opts_bparam@ContourParameters = (/ 100., 900., 100. /)
+			qparaminfo = "Param= pfd_tot Unit= km Mult= 1"
+			opts_bparam@mult = 1.0
+		end if
 
-	pfd_mag = pfd()
+		pfd_mag = pfd(current_domain)
 
-	if(.not. isatt(pfd_mag, "valid") .or. pfd_mag@valid .ne. True)
-		print("*** PFD error: result not plotted!")
-		return
-	end if
+		if(.not. isatt(pfd_mag, "valid") .or. pfd_mag@valid .ne. True)
+			print("*** PFD error for domain " + current_domain + ": result not plotted (no xcspeed data?)")
+			continue
+		end if
 
-	ldatafmt = plot_contour(wks, bg, pfd_mag, "pfd_tot", "", alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
-	bparam = pfd_mag
-	copy_VarAtts(atts, bparam)
-	bparam@tail = ""
-	write_datafile("pfd_tot", bparam, opts_bparam, 0)
+		; Update global domainid for write_datafile
+		domainid = current_domain
+		
+		ldatafmt = plot_contour(wks, bg, pfd_mag, "pfd_tot", "", alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+		bparam = pfd_mag
+		copy_VarAtts(atts, bparam)
+		; Set tail to include domain identifier (same format as other params)
+		bparam@tail = "." + current_domain
+		write_datafile("pfd_tot", bparam, opts_bparam, 0)
+		
+		if(isvar("pfd_mag")) then
+			delete(pfd_mag)
+		end if
+	end do
 
 end
 

@@ -487,11 +487,12 @@ end
 ;
 ; PFDXC - Maximum achievable cross-country distance
 ;
-function pfd()
+function pfd(domain_id)
 begin
     ; Calculates maximum distance achievable from each grid point
     ; Uses distance propagation model based on hourly xcspeed values
     ; This models actual flight progression through space over time
+    ; domain_id: "d01", "d02", etc. - specifies which domain to process
 
     filename_chars = stringtochar(getenv("ENV_NCL_FILENAME"))
     len_filename = dimsizes(filename_chars)-2
@@ -499,12 +500,9 @@ begin
     dateStr = str_split(datepart, "-")
     newdateStr = dateStr(0) + " " + toint(dateStr(1)) + " " + toint(dateStr(2))
 
-    ; Extract domain ID from current filename (e.g., d01, d02)
-    ; This makes PFD work for both domains
-    jday_dummy = 0
-    gmthr_dummy = 0.0
-    domainid_local = ""
-    getfiledate(chartostring(filename_chars), jday_dummy, gmthr_dummy, domainid_local)
+    ; Use the domain ID passed as parameter
+    domainid_local = domain_id
+    print("    PFD processing domain: " + domainid_local)
     
     cmd_xcspeed = "grep -l '" + newdateStr + "' " + BaseDir + "/" + Region + "/OUT/xcspeed.*lst." + domainid_local + ".data"
     xcspeed_files = systemfunc(cmd_xcspeed)
@@ -563,6 +561,7 @@ begin
     delete(soarable)
     
     max_distance@valid = True
+    max_distance@domainid = domainid_local
     return(max_distance)
 end
 
