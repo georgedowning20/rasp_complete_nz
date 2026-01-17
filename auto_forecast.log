@@ -25747,3 +25747,110 @@ To test locally:
   python -m http.server 8080
   Open http://localhost:8080
 Pushing to git...
+Preventing sleep during forecast (caffeinate PID: 55935)
+Running immediately (forced mode)...
+Starting at Sun Jan 18 05:12:21 NZDT 2026
+Cleaning results/OUT folder...
+  Removed all files from results/OUT
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-17
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-18 05:12:24
+==========================================
+Cannot connect to the Docker daemon at unix:///Users/georgedowning/.docker/run/docker.sock. Is the docker daemon running?
+✗ Day 0 forecast failed with exit code 1
+  Duration: 00:00:01
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-18 05:12:25
+==========================================
+Cannot connect to the Docker daemon at unix:///Users/georgedowning/.docker/run/docker.sock. Is the docker daemon running?
+✗ Day 1 forecast failed with exit code 1
+  Duration: 00:00:00
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-18 05:12:25
+==========================================
+Cannot connect to the Docker daemon at unix:///Users/georgedowning/.docker/run/docker.sock. Is the docker daemon running?
+✗ Day 2 forecast failed with exit code 1
+  Duration: 00:00:00
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-18 05:12:25
+==========================================
+Cannot connect to the Docker daemon at unix:///Users/georgedowning/.docker/run/docker.sock. Is the docker daemon running?
+✗ Day 3 forecast failed with exit code 1
+  Duration: 00:00:01
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 00:00:02
+Finished at: 2026-01-18 05:12:26
+==========================================
+Running generate_static_site_mapbox_gl.py...
+Generating d1 coastline...
+Domain d1 bounds: lat [-41.15, -35.79], lon [173.17, 178.83]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d1.svg
+Generating d2 coastline...
+Domain d2 bounds: lat [-39.17, -36.45], lon [174.02, 177.50]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d2.svg
+Generating d3 coastline...
+Domain d3 bounds: lat [-37.32, -36.96], lon [175.33, 175.79]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d3.svg
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+📸 Creating favicon...
+📸 Favicon created
+�️  Generating coastline overlays...
+�📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 0
+   🖼️  Images: 0
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
