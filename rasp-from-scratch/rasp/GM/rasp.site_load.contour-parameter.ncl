@@ -26,9 +26,9 @@ if( plot_param .eq. "pfd_tot" ) then
 end if
 
 if( plot_param .eq. "rain1" ) then
-  ; opts_bparam@ContourParameters = (/ 0.1, 4.9, 0.1 /)
+  opts_bparam@ContourParameters = (/ 0.05, 4.9, 0.05 /)
   ; opts_bparam@ExplicitLevels = (/ 0.0, 0.1, 0.33, 0.5, 0.75, 1.0, 3.30, 5.0, 7.50, 10.0 /)
-   opts_bparam@ExplicitLevels = (/ 0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0 /)
+;    opts_bparam@ExplicitLevels = (/ 0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0 /)
   ; opts_cn@ExplicitLevels = (/ 0.0, 0.1, 0.33, 0.5, 0.75, 1.0, 3.30, 5.0, 7.50, 10.0 /)
 end if
 
