@@ -55,13 +55,13 @@ $LOCALTIME_ID{'NZ'}  = 'NZDT';
 $LOCALTIME_ADJ{'NZ'} = 13;
 
 # SET GRIB FILE PROCESSING
-# For 10am-7pm NZDT forecast, we need:
-#   10:00 NZDT = 21:00 UTC (previous day)
-#   19:00 NZDT = 06:00 UTC
-# This is a 9-hour forecast period crossing midnight UTC
+# For 8am-8pm NZDT forecast, we need:
+#   08:00 NZDT = 19:00 UTC (previous day)
+#   20:00 NZDT = 07:00 UTC
+# This is a 12-hour forecast period crossing midnight UTC
 
 # SET DOMAIN PARAMETERS FOR STAGE1 [NON-WINDOW] ITERATION
-$FORECAST_PERIODHRS{'NZ'}[0]              = 9;   # 9-hour run (22Z to 07Z)
+$FORECAST_PERIODHRS{'NZ'}[0]              = 12;   # 12-hour run (19Z to 07Z)
 $NDOWN_BOUNDARY_UPDATE_PERIODHRS{'NZ'}[0] = 0;   # should always be 0 for non-windowed case
 
 # SET DOMAIN START/END TIMES
@@ -88,23 +88,26 @@ if(defined $ENV{'OFFSET_HOUR'}) {
     $offset = int($ENV{'OFFSET_HOUR'});
 }
 
-# FORECAST TIMES: 10am-7pm NZDT = 21Z-06Z UTC
+# FORECAST TIMES: 8am-8pm NZDT = 19Z-07Z UTC
 # Since NZ is UTC+13 (NZDT summer time):
+#   08:00 NZDT = 19:00 UTC previous day
+#   09:00 NZDT = 20:00 UTC previous day
 #   10:00 NZDT = 21:00 UTC previous day
 #   11:00 NZDT = 22:00 UTC previous day
 #   12:00 NZDT = 23:00 UTC previous day
 #   13:00 NZDT = 00:00 UTC
 #   ...
 #   19:00 NZDT = 06:00 UTC
+#   20:00 NZDT = 07:00 UTC
 # 
 # START_DAY controls which day to forecast:
-#   START_DAY=0: Today (NZ time) - uses forecast hours 21-30
-#   START_DAY=1: Tomorrow (NZ time) - uses forecast hours 45-54 (21+24)
-#   START_DAY=2: Day after tomorrow - uses forecast hours 69-78 (21+48)
+#   START_DAY=0: Today (NZ time) - uses forecast hours 19-31
+#   START_DAY=1: Tomorrow (NZ time) - uses forecast hours 43-55 (19+24)
+#   START_DAY=2: Day after tomorrow - uses forecast hours 67-79 (19+48)
 #   etc.
 # Each additional day adds 24 hours to the forecast hour offset
-$hourBegin = 21 + ($day * 24);  # Base hour 21, plus 24 hours per day offset
-$hourEnd = $hourBegin + 9;
+$hourBegin = 19 + ($day * 24);  # Base hour 19, plus 24 hours per day offset
+$hourEnd = $hourBegin + 12;
 
 # Determine if we can use hourly GRIB files (available up to hour 120)
 # or need 3-hourly files (after hour 120)
@@ -112,22 +115,22 @@ if ($hourEnd <= 120) {
     # Use hourly GRIB files for better resolution (first ~4 days)
     $grib_interval = 1;
     $BOUNDARY_UPDATE_PERIODHRS{'NZ'}[0] = 1;   # Hourly boundary updates
-    $GRIBFILES_PER_FORECAST_PERIOD{'NZ'} = 10;  # 10 files for 9-hour period
+    $GRIBFILES_PER_FORECAST_PERIOD{'NZ'} = 13;  # 13 files for 12-hour period
     print "START_DAY=$day: Using HOURLY GRIB files (hours $hourBegin to $hourEnd)\n";
 } else {
     # Use 3-hourly GRIB files for extended forecasts
     $grib_interval = 3;
     $BOUNDARY_UPDATE_PERIODHRS{'NZ'}[0] = 3;   # 3-hourly boundary updates
-    $GRIBFILES_PER_FORECAST_PERIOD{'NZ'} = 4;   # 4 files for 9-hour period
+    $GRIBFILES_PER_FORECAST_PERIOD{'NZ'} = 5;   # 5 files for 11-hour period
     print "START_DAY=$day: Using 3-HOURLY GRIB files (hours $hourBegin to $hourEnd)\n";
 }
 
-$DOMAIN1_STARTHH{'NZ'}[0]         = '21';
-$DOMAIN1_ENDHH{'NZ'}[0]           = '06';
+$DOMAIN1_STARTHH{'NZ'}[0]         = '19';
+$DOMAIN1_ENDHH{'NZ'}[0]           = '07';
 
-# PLOT_HHMMLIST: Every hour from 21Z to 06Z (10am-7pm NZDT) - 10 output times
-@{$PLOT_HHMMLIST{'NZ'}[0]} =       ( '2100','2200','2300','0000','0100','0200','0300','0400','0500','0600' );
-@{$SAVE_PLOT_HHMMLIST{'NZ'}[0]} =  ( '2100','2200','2300','0000','0100','0200','0300','0400','0500','0600' );
+# PLOT_HHMMLIST: Skip first 2 hours (8-9am NZDT) for system stabilization, start plotting from 10am NZDT (21Z) - 11 output times
+@{$PLOT_HHMMLIST{'NZ'}[0]} =       ( '2100','2200','2300','0000','0100','0200','0300','0400','0500','0600','0700' );
+@{$SAVE_PLOT_HHMMLIST{'NZ'}[0]} =  ( '2100','2200','2300','0000','0100','0200','0300','0400','0500','0600','0700' );
 
 # Build GRIB file list based on interval
 @grib_hours = ();
