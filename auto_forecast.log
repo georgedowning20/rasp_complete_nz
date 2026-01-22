@@ -46214,3 +46214,154 @@ To test locally:
   python -m http.server 8080
   Open http://localhost:8080
 Pushing to git...
+Preventing sleep during forecast (caffeinate PID: 54442)
+Running immediately (forced mode)...
+Starting at Fri Jan 23 05:13:14 NZDT 2026
+Cleaning results/OUT folder...
+  Removed all files from results/OUT
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-22
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-23 05:13:17
+==========================================
+time="2026-01-23T05:13:17+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-f64106b378ef rasp-from-scratch-rasp-run-fbc391cb2b30 rasp-from-scratch-rasp-run-d54410f177ed rasp-from-scratch-rasp-run-c8dfbfb3be3d rasp-from-scratch-rasp-run-2e0a92c7f131 rasp-from-scratch-rasp-run-cdbd2b55ef5a rasp-from-scratch-rasp-run-ee48e6cd3cb5 rasp-from-scratch-rasp-run-de069f97c047 rasp-from-scratch-rasp-run-bd190fefdccf rasp-from-scratch-rasp-run-16e157cb9810 rasp-from-scratch-rasp-run-68a4a244596f rasp-from-scratch-rasp-run-44f778dd0936 rasp-from-scratch-rasp-run-843ea148f0e1 rasp-from-scratch-rasp-run-846ad3c2089c rasp-from-scratch-rasp-run-1f6b9cfa5740 rasp-from-scratch-rasp-run-d33a215fb198 rasp-from-scratch-rasp-run-a1b6a8a35251 rasp-from-scratch-rasp-run-684ca3266dc9 rasp-from-scratch-rasp-run-10dfd1c9b77b rasp-from-scratch-rasp-run-dce98ad624b9 rasp-from-scratch-rasp-run-b2e47313092e rasp-from-scratch-rasp-run-847433cbb8ba rasp-from-scratch-rasp-run-99f3ce81e3ff rasp-from-scratch-rasp-run-9b1a2d30696d]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-23
+Checking for existing results for forecast day 2026-01-23
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+Running meteogram on Fri Jan 23 06:00:03 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-23
+Started running rasp for forecast 2026-01-23 at 04-56, ended at 2026-01-23_06-02
+✓ Day 0 forecast completed successfully
+  Duration: 00:49:42
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-23 06:02:59
+==========================================
+time="2026-01-23T06:02:59+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-f64106b378ef rasp-from-scratch-rasp-run-fbc391cb2b30 rasp-from-scratch-rasp-run-d54410f177ed rasp-from-scratch-rasp-run-c8dfbfb3be3d rasp-from-scratch-rasp-run-2e0a92c7f131 rasp-from-scratch-rasp-run-cdbd2b55ef5a rasp-from-scratch-rasp-run-ee48e6cd3cb5 rasp-from-scratch-rasp-run-de069f97c047 rasp-from-scratch-rasp-run-bd190fefdccf rasp-from-scratch-rasp-run-16e157cb9810 rasp-from-scratch-rasp-run-68a4a244596f rasp-from-scratch-rasp-run-44f778dd0936 rasp-from-scratch-rasp-run-843ea148f0e1 rasp-from-scratch-rasp-run-846ad3c2089c rasp-from-scratch-rasp-run-1f6b9cfa5740 rasp-from-scratch-rasp-run-d33a215fb198 rasp-from-scratch-rasp-run-a1b6a8a35251 rasp-from-scratch-rasp-run-684ca3266dc9 rasp-from-scratch-rasp-run-10dfd1c9b77b rasp-from-scratch-rasp-run-dce98ad624b9 rasp-from-scratch-rasp-run-b2e47313092e rasp-from-scratch-rasp-run-847433cbb8ba rasp-from-scratch-rasp-run-99f3ce81e3ff rasp-from-scratch-rasp-run-9b1a2d30696d]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-24
+Checking for existing results for forecast day 2026-01-24
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Fri Jan 23 06:51:56 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-24
+Started running rasp for forecast 2026-01-24 at 06-03, ended at 2026-01-23_06-54
+✓ Day 1 forecast completed successfully
+  Duration: 00:51:53
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-23 06:54:53
+==========================================
+time="2026-01-23T06:54:53+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-f64106b378ef rasp-from-scratch-rasp-run-fbc391cb2b30 rasp-from-scratch-rasp-run-d54410f177ed rasp-from-scratch-rasp-run-c8dfbfb3be3d rasp-from-scratch-rasp-run-2e0a92c7f131 rasp-from-scratch-rasp-run-cdbd2b55ef5a rasp-from-scratch-rasp-run-ee48e6cd3cb5 rasp-from-scratch-rasp-run-de069f97c047 rasp-from-scratch-rasp-run-bd190fefdccf rasp-from-scratch-rasp-run-16e157cb9810 rasp-from-scratch-rasp-run-68a4a244596f rasp-from-scratch-rasp-run-44f778dd0936 rasp-from-scratch-rasp-run-843ea148f0e1 rasp-from-scratch-rasp-run-846ad3c2089c rasp-from-scratch-rasp-run-1f6b9cfa5740 rasp-from-scratch-rasp-run-d33a215fb198 rasp-from-scratch-rasp-run-a1b6a8a35251 rasp-from-scratch-rasp-run-684ca3266dc9 rasp-from-scratch-rasp-run-10dfd1c9b77b rasp-from-scratch-rasp-run-dce98ad624b9 rasp-from-scratch-rasp-run-b2e47313092e rasp-from-scratch-rasp-run-847433cbb8ba rasp-from-scratch-rasp-run-99f3ce81e3ff rasp-from-scratch-rasp-run-9b1a2d30696d]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-25
+Checking for existing results for forecast day 2026-01-25
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+Running meteogram on Fri Jan 23 07:43:02 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-25
+Started running rasp for forecast 2026-01-25 at 06-54, ended at 2026-01-23_07-46
+✓ Day 2 forecast completed successfully
+  Duration: 00:51:09
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-23 07:46:02
+==========================================
+time="2026-01-23T07:46:02+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-f64106b378ef rasp-from-scratch-rasp-run-fbc391cb2b30 rasp-from-scratch-rasp-run-d54410f177ed rasp-from-scratch-rasp-run-c8dfbfb3be3d rasp-from-scratch-rasp-run-2e0a92c7f131 rasp-from-scratch-rasp-run-cdbd2b55ef5a rasp-from-scratch-rasp-run-ee48e6cd3cb5 rasp-from-scratch-rasp-run-de069f97c047 rasp-from-scratch-rasp-run-bd190fefdccf rasp-from-scratch-rasp-run-16e157cb9810 rasp-from-scratch-rasp-run-68a4a244596f rasp-from-scratch-rasp-run-44f778dd0936 rasp-from-scratch-rasp-run-843ea148f0e1 rasp-from-scratch-rasp-run-846ad3c2089c rasp-from-scratch-rasp-run-1f6b9cfa5740 rasp-from-scratch-rasp-run-d33a215fb198 rasp-from-scratch-rasp-run-a1b6a8a35251 rasp-from-scratch-rasp-run-684ca3266dc9 rasp-from-scratch-rasp-run-10dfd1c9b77b rasp-from-scratch-rasp-run-dce98ad624b9 rasp-from-scratch-rasp-run-b2e47313092e rasp-from-scratch-rasp-run-847433cbb8ba rasp-from-scratch-rasp-run-99f3ce81e3ff rasp-from-scratch-rasp-run-9b1a2d30696d]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-26
+Checking for existing results for forecast day 2026-01-26
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+Running meteogram on Fri Jan 23 08:35:36 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-26
+Started running rasp for forecast 2026-01-26 at 07-46, ended at 2026-01-23_08-38
+✓ Day 3 forecast completed successfully
+  Duration: 00:52:44
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 03:25:29
+Finished at: 2026-01-23 08:38:46
+==========================================
+Running generate_static_site_mapbox_gl.py...
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+   Processing 2026-01-23...
+      Copied 3872 images
+   Processing 2026-01-24...
+      Copied 3872 images
+   Processing 2026-01-25...
+      Copied 3872 images
+   Processing 2026-01-26...
+Generating d1 coastline...
+Domain d1 bounds: lat [-41.15, -35.79], lon [173.17, 178.83]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d1.svg
+Generating d2 coastline...
+Domain d2 bounds: lat [-39.17, -36.45], lon [174.02, 177.50]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d2.svg
+Generating d3 coastline...
+Domain d3 bounds: lat [-37.32, -36.96], lon [175.33, 175.79]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d3.svg
+      Copied 3872 images
+📸 Creating favicon...
+📸 Favicon created
+�️  Generating coastline overlays...
+�📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 4
+   🖼️  Images: 15488
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
