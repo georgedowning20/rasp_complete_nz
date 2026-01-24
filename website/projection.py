@@ -69,6 +69,7 @@ class LambertConformalDomain:
             nest_ll_y = parent_ll_y + (self.j_parent_start - 1) * self.parent.dy
             nest_ur_x = nest_ll_x + (self.e_we - 1) * self.dx
             nest_ur_y = nest_ll_y + (self.e_sn - 1) * self.dy
+            nest_ur_y -= self.dy * 2 
         elif self.parent is not None and self.use_custom_center:
             # Use custom center point for domains with explicit ref_lat/ref_lon
             half_x = (self.e_we - 1) * self.dx / 2.0
@@ -78,6 +79,7 @@ class LambertConformalDomain:
             nest_ll_y = ref_y - half_y
             nest_ur_x = ref_x + half_x
             nest_ur_y = ref_y + half_y
+            nest_ur_y -= self.dy * 2 
         else:
             half_x = (self.e_we - 1) * self.dx / 2.0
             half_y = (self.e_sn - 1) * self.dy / 2.0
@@ -88,11 +90,13 @@ class LambertConformalDomain:
                 nest_ll_y = ref_y - half_extent
                 nest_ur_x = ref_x + half_extent
                 nest_ur_y = ref_y + half_extent
+                nest_ur_y -= self.dy * 2 
             else:
                 nest_ll_x = ref_x - half_x
                 nest_ll_y = ref_y - half_y
                 nest_ur_x = ref_x + half_x
                 nest_ur_y = ref_y + half_y
+                nest_ur_y -= self.dy * 2 
 
         ll_lon, ll_lat = self.transformer_to_latlon.transform(nest_ll_x, nest_ll_y)
         ur_lon, ur_lat = self.transformer_to_latlon.transform(nest_ur_x, nest_ur_y)

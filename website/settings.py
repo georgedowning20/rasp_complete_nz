@@ -82,7 +82,14 @@ PARAMETER_INFO = {
     'xcspeed': 'XC Speed',
     'pfd_tot': 'Potential Flight Distance (Total)',
     'ridgelift': 'Ridge Lift (Vertical Velocity ~300ft AGL)',
+    'sh2o': 'Soil Moisture content',
+    'smcrel': 'Soil Moisture Relative',
+    'sfcmoist': 'Surface Soil Moisture',
+    'qfx': 'Surface Moisture Flux',
+    'dbz': 'Radar Reflectivity',
 }
+
+# 'qfx', 'sfcmoist'', 'sh2o', 'smcrel' 
 
 # Sounding locations
 # 1,Auckland,d1,174.7633,-36.8485,
