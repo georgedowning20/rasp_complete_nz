@@ -52713,3 +52713,154 @@ To test locally:
   python -m http.server 8080
   Open http://localhost:8080
 Pushing to git...
+Preventing sleep during forecast (caffeinate PID: 84495)
+Running immediately (forced mode)...
+Starting at Sun Jan 25 05:13:12 NZDT 2026
+Cleaning results/OUT folder...
+  Removed all files from results/OUT
+Running run_forecast.sh...
+==========================================
+RASP Multi-Day Forecast Runner
+==========================================
+
+Cleaning up old date folders...
+  Removing old folder: 2026-01-24
+
+==========================================
+Running forecast for START_DAY=0
+Started at: 2026-01-25 05:13:17
+==========================================
+time="2026-01-25T05:13:17+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-fc9f00df4b79]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 0, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-25
+Checking for existing results for forecast day 2026-01-25
+Running runGM on area NZ, startDay = 0 and hour offset = 0
+Running meteogram on Sun Jan 25 05:14:36 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-25
+Started running rasp for forecast 2026-01-25 at 05-14, ended at 2026-01-25_05-14
+✓ Day 0 forecast completed successfully
+  Duration: 00:01:21
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=1
+Started at: 2026-01-25 05:14:38
+==========================================
+time="2026-01-25T05:14:38+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-fc9f00df4b79]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 1, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-26
+Checking for existing results for forecast day 2026-01-26
+Running runGM on area NZ, startDay = 1 and hour offset = 0
+Running meteogram on Sun Jan 25 05:14:40 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-26
+Started running rasp for forecast 2026-01-26 at 05-14, ended at 2026-01-25_05-14
+✓ Day 1 forecast completed successfully
+  Duration: 00:00:03
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=2
+Started at: 2026-01-25 05:14:41
+==========================================
+time="2026-01-25T05:14:41+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-fc9f00df4b79]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 2, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-27
+Checking for existing results for forecast day 2026-01-27
+Running runGM on area NZ, startDay = 2 and hour offset = 0
+Running meteogram on Sun Jan 25 05:14:43 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-27
+Started running rasp for forecast 2026-01-27 at 05-14, ended at 2026-01-25_05-14
+✓ Day 2 forecast completed successfully
+  Duration: 00:00:04
+  Cleaning up logs...
+
+==========================================
+Running forecast for START_DAY=3
+Started at: 2026-01-25 05:14:45
+==========================================
+time="2026-01-25T05:14:45+13:00" level=warning msg="Found orphan containers ([rasp-from-scratch-rasp-run-fc9f00df4b79]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+Starting RASP forecast for region: NZ
+Start day: 3, Offset hour: 0
+Running RASP forecast...
+Forecast date (NZ time): 2026-01-28
+Checking for existing results for forecast day 2026-01-28
+Running runGM on area NZ, startDay = 3 and hour offset = 0
+Running meteogram on Sun Jan 25 05:14:47 NZDT 2026
+Moving output files to date directory: /root/rasp/NZ/OUT/2026-01-28
+Started running rasp for forecast 2026-01-28 at 05-14, ended at 2026-01-25_05-14
+✓ Day 3 forecast completed successfully
+  Duration: 00:00:03
+  Cleaning up logs...
+
+==========================================
+All forecasts complete!
+Total time: 00:01:31
+Finished at: 2026-01-25 05:14:48
+==========================================
+Running generate_static_site_mapbox_gl.py...
+Generating d1 coastline...
+Domain d1 bounds: lat [-41.15, -35.90], lon [173.17, 178.83]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d1.svg
+Generating d2 coastline...
+Domain d2 bounds: lat [-39.17, -36.49], lon [174.02, 177.50]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d2.svg
+Generating d3 coastline...
+Domain d3 bounds: lat [-37.32, -36.97], lon [175.33, 175.79]
+Loading Natural Earth coastline data...
+Trying to download from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip...
+Successfully loaded NZ coastline data from https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries.zip
+  Saved to /Users/georgedowning/Desktop/Rasp_complete/docs/coastline_d3.svg
+🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)
+============================================================
+📁 Cleaning existing docs folder...
+📐 Calculating domain bounds...
+📅 Scanning available forecast data...
+   Processing 2026-01-25...
+      Copied 0 images
+   Processing 2026-01-26...
+      Copied 0 images
+   Processing 2026-01-27...
+      Copied 0 images
+   Processing 2026-01-28...
+      Copied 0 images
+📸 Creating favicon...
+📸 Favicon created
+�️  Generating coastline overlays...
+�📖 Loading help text...
+📝 Generating index.html with Mapbox GL Lambert projection...
+============================================================
+✅ Static site generated successfully!
+   📁 Output: /Users/georgedowning/Desktop/Rasp_complete/docs
+   📅 Dates: 4
+   🖼️  Images: 0
+   🗺️  Projection: Lambert Conformal Conic
+
+Features:
+  • Mapbox GL with native Lambert Conformal projection
+  • Proper geographic registration of WRF forecast imagery
+  • No image warping - uses correct map projection
+
+To deploy to GitHub Pages:
+  1. Push this repo to GitHub
+  2. Go to Settings > Pages
+  3. Set Source to 'Deploy from a branch'
+  4. Select 'main' branch and '/docs' folder
+  5. Save and wait for deployment
+
+To test locally:
+  cd /Users/georgedowning/Desktop/Rasp_complete/docs
+  python -m http.server 8080
+  Open http://localhost:8080
+Pushing to git...
