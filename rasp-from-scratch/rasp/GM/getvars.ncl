@@ -29,6 +29,14 @@ swdown   = wrf_user_getvar(f, "SWDOWN", time)   ; Only == bparam !!			115
 rqcblten = wrf_user_getvar(f, "RQCBLTEN", time) ; for d(QC)/dt				133
 pblh     = wrf_user_getvar(f, "PBLH", time)     ; bl depth (metres)			141
 hfx      = wrf_user_getvar(f, "HFX", time)      ; for sfc. sensible heat flux in w/m2	142
+lh       = wrf_user_getvar(f, "LH", time)       ; latent heat flux in w/m2		143  
+qfx      = wrf_user_getvar(f, "QFX", time)      ; upward moisture flux in kg/m2/s	
+smois    = wrf_user_getvar(f, "SMOIS", time)    ; soil moisture content (m^3/m^3) 4 levels	144
+sh2o     = wrf_user_getvar(f, "SH2O", time)     ; soil liquid water (m^3/m^3) 4 levels
+smcrel   = wrf_user_getvar(f, "SMCREL", time)   ; relative soil moisture (0-1)
+dbz      = wrf_user_getvar(f, "dbz", time)      ; simulated radar reflectivity (dBZ)
+rainc    = wrf_user_getvar(f, "RAINC", time)    ; accumulated convective precipitation mm	145
+rainnc   = wrf_user_getvar(f, "RAINNC", time)   ; accumulated grid-scale precipitation mm	146
 rh       = wrf_user_getvar(f, "rh", time)       ; relative humidity in percent		QVAPOR (51); P (26); PB (27); T (15); 
 td2      = wrf_user_getvar(f, "td2", time)      ; 2m dew point temp in C		Q2 (32); P (26); PB (27);
 td       = wrf_user_getvar(f, "td", time)       ; dew point temperature (C)		QVAPOR (51); P (26); PB (27); 

@@ -357,6 +357,41 @@ begin
 	return(rainTot)
 end
 
+
+;
+; SFCMOIST - Surface Soil Moisture (Top Layer Only)
+; Shows ONLY the top 0-10cm layer - most responsive to rain
+; Use this to see rain shower effects and rapid surface drying
+; Updates quickly with precipitation and evaporation
+;
+function sfcmoist(smois, isize, jsize)
+begin
+	; Focus entirely on surface layer for maximum rain sensitivity
+	; This layer responds immediately to precipitation
+	; and dries fastest through evaporation
+	
+	bparam = new( (/jsize, isize/), float)
+	
+	; Extract ONLY top soil layer (0-10cm depth)
+	bparam = smois(0,:,:) * 100.0  ; Convert to percentage
+	
+	; This will show:
+	; - Immediate wetting from rain showers
+	; - Quick drying in sunny conditions
+	; - Spatial variation from localized showers
+	; - Runoff accumulation in low areas
+	
+	; Values typically range:
+	; 0-15%:   Very dry surface
+	; 15-25%:  Dry surface
+	; 25-35%:  Moist surface
+	; 35-45%:  Wet surface (recent rain or poor drainage)
+	; 45-55%:  Saturated surface (active rain or flooding)
+	
+	return(bparam)
+end
+
+
 ;
 ; SFCSUN
 ;

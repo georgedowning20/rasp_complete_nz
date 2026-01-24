@@ -1850,6 +1850,74 @@ begin
 			continue
 		end if
 
+; QFX
+		if( params(p) .eq. "qfx" ) then
+			opts_bparam@unitString = "kg/m~S~2~N~/s"
+			opts_bparam@MainTitle = "Upward Moisture Flux"
+			qfx_mag = qfx
+			ldatafmt = plot_contour(wks, bg, qfx_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+			bparam = qfx_mag
+			copy_VarAtts(atts, bparam)
+			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
+
+			continue
+		end if
+
+
+; SFCMOIST
+		if( params(p) .eq. "sfcmoist" ) then
+			opts_bparam@unitString = "%"
+			opts_bparam@MainTitle = "Surface Moisture ~I~(Top Layer - Rain Sensitive)~P~"
+			opts_bparam@ContourParameters = (/ 10.0, 50.0, 1.0 /)
+			sfcmoist_mag = sfcmoist(smois, nx, ny)
+			ldatafmt = plot_contour(wks, bg, sfcmoist_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+			bparam = sfcmoist_mag
+			copy_VarAtts(atts, bparam)
+			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
+
+			continue
+		end if
+
+; SH2O
+		if( params(p) .eq. "sh2o" ) then
+			opts_bparam@unitString = "%"
+			opts_bparam@MainTitle = "Soil Liquid Water ~I~(Weighted Multi-Layer)~P~"
+			opts_bparam@ContourParameters = (/ 10.0, 50.0, 1.0 /)
+			sh2o_mag = soilmoist(sh2o, nx, ny)
+			ldatafmt = plot_contour(wks, bg, sh2o_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+			bparam = sh2o_mag
+			copy_VarAtts(atts, bparam)
+			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
+
+			continue
+		end if
+
+; SMCREL
+		if( params(p) .eq. "smcrel" ) then
+			opts_bparam@unitString = "%"
+			opts_bparam@MainTitle = "Relative Soil Moisture ~I~(Weighted Multi-Layer)~P~"
+			opts_bparam@ContourParameters = (/ 10.0, 100.0, 2.0 /)
+			smcrel_mag = soilmoist(smcrel, nx, ny)
+			ldatafmt = plot_contour(wks, bg, smcrel_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+			bparam = smcrel_mag
+			copy_VarAtts(atts, bparam)
+			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
+
+			continue
+		end if
+
+; DBZ
+		if( params(p) .eq. "dbz" ) then
+			opts_bparam@unitString = "dBZ"
+			opts_bparam@MainTitle = "Simulated Radar Reflectivity ~I~(Max Column)~P~"
+			opts_bparam@ContourParameters = (/ 5.0, 65.0, 5.0 /)
+			dbz_mag = dim_max_n(dbz, 0)
+			ldatafmt = plot_contour(wks, bg, dbz_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+		bparam = dbz_mag
+			continue
+		end if
+
+
 ; HBL
 		if( params(p) .eq. "hbl" ) then
 			opts_bparam@MainTitle = "Height of BL Top"
