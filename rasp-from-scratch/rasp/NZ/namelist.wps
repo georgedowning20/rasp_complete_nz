@@ -14,7 +14,7 @@
  j_parent_start       = 1,   38,
  e_we                 = 80,  151,
  e_sn                 = 100, 151,
- geog_data_res        = 'gtopo_30s+usgs_30s+30s+ncep+default+default', 'gtopo_30s+usgs_30s+30s+ncep+default+default',
+ geog_data_res        = 'gmted2010_30s+modis_30s_lake+default+default', 'gmted2010_30s+modis_30s_lake+default+default',
  dx                   = 6000,
  dy                   = 6000,
  map_proj             = 'lambert',
@@ -23,7 +23,7 @@
  truelat1  = -35.00,
  truelat2  = -42.00,
  stand_lon = 176.00,
- geog_data_path       = '/root/rasp/geog'
+ geog_data_path       = '/root/rasp/WPS_GEOG'
  opt_geogrid_tbl_path = '.'
 /
 

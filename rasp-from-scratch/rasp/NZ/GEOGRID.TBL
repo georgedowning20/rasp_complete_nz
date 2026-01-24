@@ -23,7 +23,7 @@ name = HGT_M
         rel_path =      gtopo_5m:topo_5m/
         rel_path =     gtopo_10m:topo_10m/
         rel_path =        lowres:topo_gmted2010_5m/
-        rel_path =       default:topo_30s/
+        rel_path =       default:topo_gmted2010_30s/
 ===============================
 name=LANDUSEF
         priority=1
@@ -148,13 +148,11 @@ name=ALBEDO12M
         masked = water
         fill_missing = 8.
         interp_option=albedo_modis:four_pt+average_4pt+average_16pt+search
-        interp_option=albedo_ncep:four_pt+average_4pt+average_16pt+search
         interp_option= lowres:four_pt+wt_average_4pt+wt_average_16pt+search
         interp_option=default:four_pt+average_4pt+average_16pt+search
         rel_path=albedo_modis:albedo_modis/
-        rel_path=albedo_ncep:albedo_ncep/
         rel_path= lowres:albedo_modis/
-        rel_path=default:albedo_ncep/
+        rel_path=default:albedo_modis/
 ===============================
 name=GREENFRAC
         priority=1
@@ -169,7 +167,7 @@ name=GREENFRAC
         rel_path=modis_fpar:greenfrac_fpar_modis/
         rel_path=nesdis_greenfrac:greenfrac/
         rel_path= lowres:greenfrac_fpar_modis_5m/
-        rel_path=default:greenfrac/
+        rel_path=default:greenfrac_fpar_modis/
 ===============================
 name=LAI12M
         priority=1
@@ -182,22 +180,20 @@ name=LAI12M
         fill_missing = 0.
         rel_path=modis_lai:lai_modis_30s/
         rel_path= lowres:lai_modis_10m/
-        rel_path=default:greenfrac/
+        rel_path=default:lai_modis_30s/
         flag_in_output=FLAG_LAI12M
 ===============================
 name=SNOALB
         priority=1
         dest_type=continuous
         interp_option=maxsnowalb_modis:four_pt+average_4pt+average_16pt+search
-        interp_option=maxsnowalb_ncep:four_pt+average_4pt+average_16pt+search
         interp_option= lowres:four_pt+wt_average_4pt+wt_average_16pt+search
         interp_option=default:four_pt+average_4pt+average_16pt+search
         masked = water
         fill_missing = 0.
         rel_path=maxsnowalb_modis:maxsnowalb_modis/
-        rel_path=maxsnowalb_ncep:maxsnowalb/
         rel_path= lowres:maxsnowalb_modis/
-        rel_path=default:maxsnowalb/
+        rel_path=default:maxsnowalb_modis/
 ===============================
 name = CON
         priority = 1
