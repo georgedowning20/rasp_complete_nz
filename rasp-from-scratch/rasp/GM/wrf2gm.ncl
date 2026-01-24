@@ -148,13 +148,13 @@ end do
 
 ; Now do params that run once only for the whole F/C
 do p = 0, dimsizes(ParamList)-1
-	if(ParamList(p) .eq. "avgstars")
+	if(ParamList(p) .eq. "avgstars") then
 		print("*** Doing avgstars")
 		do_avgstars()
 	end if
-	if(ParamList(p) .eq. "pfd_tot")
+	if(ParamList(p) .eq. "pfd_tot") then
 		print("*** Doing pfd_tot")
-		do_pfd()
+		do_pfd(Files)
 	end if
 end do
 
