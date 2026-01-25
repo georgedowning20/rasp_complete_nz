@@ -358,7 +358,46 @@ begin
 end
 
 
+
 ;
+; SOILMOIST - Enhanced Soil Moisture Content
+; Uses weighted average of multiple soil layers for better detail
+; Shows overall moisture distribution including drainage effects
+; WRF SMOIS has 4 layers: 0-10cm, 10-40cm, 40-100cm, 100-200cm
+;
+function soilmoist(smois, isize, jsize)
+local layer0, layer1, layer2, layer3, weighted_moist
+begin
+	; SMOIS is volumetric soil moisture content (m^3/m^3) with 4 vertical levels
+	; Use weighted average emphasizing upper layers but including deeper moisture
+	; This shows both surface wetness and subsurface moisture reserves
+	
+	bparam = new( (/jsize, isize/), float)
+	
+	; Extract all soil layers
+	layer0 = smois(0,:,:)  ; 0-10cm (surface)
+	layer1 = smois(1,:,:)  ; 10-40cm 
+	layer2 = smois(2,:,:)  ; 40-100cm
+	layer3 = smois(3,:,:)  ; 100-200cm (deep)
+	
+	; Weighted average: emphasize surface but include deeper layers
+	; Surface moisture is most important, but deep moisture affects surface through capillary rise
+	weighted_moist = (0.50 * layer0) + (0.30 * layer1) + (0.15 * layer2) + (0.05 * layer3)
+	
+	; Convert to percentage for easier interpretation
+	bparam = weighted_moist * 100.0
+	
+	; Values typically range:
+	; 0-10%:   Very dry soil (drought)
+	; 10-20%:  Dry soil  
+	; 20-30%:  Moderate moisture
+	; 30-40%:  Moist soil (good for thermals)
+	; 40-50%:  Saturated/very wet soil (recent rain, poor drainage)
+	
+	return(bparam)
+end
+
+
 ; SFCMOIST - Surface Soil Moisture (Top Layer Only)
 ; Shows ONLY the top 0-10cm layer - most responsive to rain
 ; Use this to see rain shower effects and rapid surface drying
