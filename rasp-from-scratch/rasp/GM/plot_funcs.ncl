@@ -1896,10 +1896,8 @@ begin
 		if( params(p) .eq. "smcrel" ) then
 			opts_bparam@unitString = "%"
 			opts_bparam@MainTitle = "Relative Soil Moisture ~I~(Weighted Multi-Layer)~P~"
-			opts_bparam@ContourParameters = (/ 10.0, 100.0, 2.0 /)
-			smcrel_mag = soilmoist(smcrel, nx, ny)
-			ldatafmt = plot_contour(wks, bg, smcrel_mag, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
-			bparam = smcrel_mag
+			opts_bparam@ContourParameters = (/ 0.0, 1.0, 0.05 /)
+			ldatafmt = plot_contour(wks, bg, smcrel, params(p), tail, alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
 			copy_VarAtts(atts, bparam)
 			write_datafile(params(p), bparam, opts_bparam, ldatafmt)
 

@@ -42,8 +42,8 @@ $LRUN_WINDOW{'NZ'} = 0 ;
     'cfracl', 'cfracm', 'cfrach',             # Low/mid/high cloud fraction
     'rain1', 'cape', 'dbz',                         # Rain and CAPE
     'press950', 'press850', 'press700', 'press500',  # Pressure level winds
-     'stars', 'xcspeed', 'ridgelift',
-     'qfx', 'sfcmoist'', 'sh2o', 'smcrel'                               # Ridge lift (vertical velocity ~300ft AGL)
+    'stars', 'xcspeed', 'ridgelift',
+    'qfx', 'sfcmoist', 'sh2o', 'smcrel'                               # Ridge lift (vertical velocity ~300ft AGL)
 );
 
 # ADD SOUNDINGS (locations defined in rasp.region_data.ncl)
