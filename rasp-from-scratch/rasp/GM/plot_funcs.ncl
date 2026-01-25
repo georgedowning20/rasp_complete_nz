@@ -3113,38 +3113,38 @@ end
 
 ; end
 
-; AVGSTARS
-procedure do_avgstars()
-local bparam, avgstars_mag
-begin
-	; Ensure no leftovers
-	if(isvar("bparam")) then
-		delete(bparam)
-	end if
+; ; AVGSTARS
+; procedure do_avgstars()
+; local bparam, avgstars_mag
+; begin
+; 	; Ensure no leftovers
+; 	if(isvar("bparam")) then
+; 		delete(bparam)
+; 	end if
 
-	if(isvar("opts_bparam")) then
-		delete(opts_bparam)
-	end if
-	opts_bparam = True
-	opts_bparam@mult = 1.0	; Default value; overidden as required
-	ldatafmt = 0		; Overridden as required
+; 	if(isvar("opts_bparam")) then
+; 		delete(opts_bparam)
+; 	end if
+; 	opts_bparam = True
+; 	opts_bparam@mult = 1.0	; Default value; overidden as required
+; 	ldatafmt = 0		; Overridden as required
 
-	opts_bparam@MainTitle = "Average Star Rating for Day"
-	opts_bparam@unitString = "Stars"
-	ldatafmt = 2
-	opts_bparam@ContourParameters = (/ 1., 5., 1. /)
+; 	opts_bparam@MainTitle = "Average Star Rating for Day"
+; 	opts_bparam@unitString = "Stars"
+; 	ldatafmt = 2
+; 	opts_bparam@ContourParameters = (/ 1., 5., 1. /)
 
-	avgstars_mag = avgstars()
+; 	avgstars_mag = avgstars()
 
-	if(.not. isatt(avgstars_mag, "valid") .or. avgstars_mag@valid .ne. True)
-		print("*** AVGstars error: result not plotted!")
-		return
-	end if
+; 	if(.not. isatt(avgstars_mag, "valid") .or. avgstars_mag@valid .ne. True)
+; 		print("*** AVGstars error: result not plotted!")
+; 		return
+; 	end if
 
-	ldatafmt = plot_contour(wks, bg, avgstars_mag, "avgstars", "", alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
-	bparam = avgstars_mag
-	copy_VarAtts(atts, bparam)
-	bparam@tail = ""
-	write_datafile("avgstars_tot", bparam, opts_bparam, 0)
+; 	ldatafmt = plot_contour(wks, bg, avgstars_mag, "avgstars", "", alat, alon, gridspacingkm, opts_cn, opts_bparam, opts_bg, ldatafmt)
+; 	bparam = avgstars_mag
+; 	copy_VarAtts(atts, bparam)
+; 	bparam@tail = ""
+; 	write_datafile("avgstars_tot", bparam, opts_bparam, 0)
 
-end
+; end
