@@ -6,3 +6,10 @@
 !docs/**
 !website/
 !website/**
+__/pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+.DS_Store
