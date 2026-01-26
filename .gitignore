@@ -1,33 +1,7 @@
-# Results folder (large forecast data)
-results/
-
-# Compressed archives
-*.tar.gz
-*.tgz
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-.venv/
-venv/
-env/
-.env
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Jupyter
-.ipynb_checkpoints/
-
-.DS_Store
+*
+!.gitignore
+!.github/
+!.auto_forecast.log
+!.auto_forecast.sh
+!.schedule_forecast.sh
+!docs/
