@@ -1,7 +1,8 @@
 *
 !.gitignore
 !.github/
-!.auto_forecast.log
-!.auto_forecast.sh
-!.schedule_forecast.sh
+!.github/**
 !docs/
+!docs/**
+!website/
+!website/**
