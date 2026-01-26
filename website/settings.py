@@ -9,7 +9,7 @@ DOCS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/docs'
 # Get your access token from https://account.mapbox.com/access-tokens/
 MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZ2VvcmdlZG93bmluZyIsImEiOiJjbWZlMzBndzYwMmhxMmpyNWFqcnkzdjJmIn0.L9RHEN7ySukYIhsKKu4-Rw'
 
-# WRF Domain configuration - Lambert Conformal projection
+# WRF Domain configuration - Mercator projection
 WRF_CONFIG = {
     'ref_lat': -38.50,
     'ref_lon': 176.00,

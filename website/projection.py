@@ -12,8 +12,8 @@ except ImportError:  # pragma: no cover - runtime install if missing
 from settings import WRF_CONFIG
 
 
-class LambertConformalDomain:
-    """Calculate WRF Lambert Conformal Conic domain bounds."""
+class MercatorDomain:
+    """Calculate WRF Mercator domain bounds."""
 
     def __init__(self, ref_lat, ref_lon, truelat1, truelat2, stand_lon,
                  dx, dy, e_we, e_sn, parent=None, i_parent_start=1, j_parent_start=1,
@@ -34,10 +34,8 @@ class LambertConformalDomain:
         self.use_custom_center = use_custom_center
 
         self.proj = pyproj.Proj(
-            proj='lcc',
-            lat_1=truelat1,
-            lat_2=truelat2,
-            lat_0=ref_lat,
+            proj='merc',
+            lat_ts=truelat1,
             lon_0=stand_lon,
             x_0=0,
             y_0=0,
@@ -48,16 +46,17 @@ class LambertConformalDomain:
         self.transformer_to_latlon = pyproj.Transformer.from_proj(
             self.proj, self.proj_latlon, always_xy=True
         )
-        self.transformer_to_lcc = pyproj.Transformer.from_proj(
+        self.transformer_to_merc = pyproj.Transformer.from_proj(
             self.proj_latlon, self.proj, always_xy=True
         )
 
     def get_domain_bounds(self, use_square_image=False):
-        ref_x, ref_y = self.transformer_to_lcc.transform(self.ref_lon, self.ref_lat)
+        ref_x, ref_y = self.transformer_to_merc.transform(self.ref_lon, self.ref_lat)
 
         if self.parent is not None and not self.use_custom_center:
             # Use parent-based offset calculation for standard nested domains
-            parent_ref_x, parent_ref_y = self.transformer_to_lcc.transform(
+            # WRF: e_we stagger points means (e_we-1) mass points spanning (e_we-1)*dx
+            parent_ref_x, parent_ref_y = self.transformer_to_merc.transform(
                 self.parent.ref_lon, self.parent.ref_lat
             )
             parent_half_x = (self.parent.e_we - 1) * self.parent.dx / 2.0
@@ -65,13 +64,18 @@ class LambertConformalDomain:
             parent_ll_x = parent_ref_x - parent_half_x
             parent_ll_y = parent_ref_y - parent_half_y
 
+            # i_parent_start is 1-indexed, so subtract 1 for offset
             nest_ll_x = parent_ll_x + (self.i_parent_start - 1) * self.parent.dx
             nest_ll_y = parent_ll_y + (self.j_parent_start - 1) * self.parent.dy
             nest_ur_x = nest_ll_x + (self.e_we - 1) * self.dx
             nest_ur_y = nest_ll_y + (self.e_sn - 1) * self.dy
-            nest_ur_y -= self.dy * 2 
+            
+            # Adjust for WRF staggered grid: move left edge right and top edge down by one grid cell
+            nest_ll_x += self.dx
+            nest_ur_y -= self.dy
         elif self.parent is not None and self.use_custom_center:
             # Use custom center point for domains with explicit ref_lat/ref_lon
+            # Domain spans (e_we-1) mass points, total width = (e_we-1)*dx
             half_x = (self.e_we - 1) * self.dx / 2.0
             half_y = (self.e_sn - 1) * self.dy / 2.0
 
@@ -79,8 +83,13 @@ class LambertConformalDomain:
             nest_ll_y = ref_y - half_y
             nest_ur_x = ref_x + half_x
             nest_ur_y = ref_y + half_y
-            nest_ur_y -= self.dy * 2 
+            
+            # Adjust for WRF staggered grid: move left edge right and top edge down by one grid cell
+            nest_ll_x += self.dx
+            nest_ur_y -= self.dy
         else:
+            # Root domain (d1) - no parent adjustment needed
+            # Domain spans (e_we-1) mass points, total width = (e_we-1)*dx
             half_x = (self.e_we - 1) * self.dx / 2.0
             half_y = (self.e_sn - 1) * self.dy / 2.0
 
@@ -90,13 +99,11 @@ class LambertConformalDomain:
                 nest_ll_y = ref_y - half_extent
                 nest_ur_x = ref_x + half_extent
                 nest_ur_y = ref_y + half_extent
-                nest_ur_y -= self.dy * 2 
             else:
                 nest_ll_x = ref_x - half_x
                 nest_ll_y = ref_y - half_y
                 nest_ur_x = ref_x + half_x
                 nest_ur_y = ref_y + half_y
-                nest_ur_y -= self.dy * 2 
 
         ll_lon, ll_lat = self.transformer_to_latlon.transform(nest_ll_x, nest_ll_y)
         ur_lon, ur_lat = self.transformer_to_latlon.transform(nest_ur_x, nest_ur_y)
@@ -139,7 +146,7 @@ class LambertConformalDomain:
 
 def create_domains():
     """Create domain objects with proper projection."""
-    d1 = LambertConformalDomain(
+    d1 = MercatorDomain(
         ref_lat=WRF_CONFIG['ref_lat'],
         ref_lon=WRF_CONFIG['ref_lon'],
         truelat1=WRF_CONFIG['truelat1'],
@@ -151,7 +158,7 @@ def create_domains():
         e_sn=WRF_CONFIG['d1']['e_sn'],
     )
 
-    d2 = LambertConformalDomain(
+    d2 = MercatorDomain(
         ref_lat=WRF_CONFIG['ref_lat'],
         ref_lon=WRF_CONFIG['ref_lon'],
         truelat1=WRF_CONFIG['truelat1'],
@@ -167,7 +174,7 @@ def create_domains():
         parent_grid_ratio=WRF_CONFIG['d2']['parent_grid_ratio'],
     )
 
-    d3 = LambertConformalDomain(
+    d3 = MercatorDomain(
         ref_lat=WRF_CONFIG['d3'].get('ref_lat', WRF_CONFIG['ref_lat']),
         ref_lon=WRF_CONFIG['d3'].get('ref_lon', WRF_CONFIG['ref_lon']),
         truelat1=WRF_CONFIG['truelat1'],

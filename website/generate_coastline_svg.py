@@ -111,7 +111,7 @@ def generate_coastline_for_domain(domain='d2'):
     proj_max_x, proj_max_y = projected_bounds[1]
     domain_box = box(proj_min_x, proj_min_y, proj_max_x, proj_max_y)
 
-    projected_geom = transform(domain_obj.transformer_to_lcc.transform, nz_geom)
+    projected_geom = transform(domain_obj.transformer_to_merc.transform, nz_geom)
     clipped = projected_geom.intersection(domain_box)
     
     # Determine target SVG dimensions based on domain

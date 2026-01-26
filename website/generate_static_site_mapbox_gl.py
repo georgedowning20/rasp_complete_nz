@@ -2,7 +2,7 @@
 """
 Static Site Generator for RASP Weather Viewer
 Generates a GitHub Pages compatible static site from forecast data.
-Uses Mapbox GL with Lambert Conformal Conic projection for proper geographic display.
+Uses Mapbox GL with Mercator projection for proper geographic display.
 
 Usage:
     python generate_static_site_mapbox_gl.py
@@ -33,7 +33,7 @@ from templating import generate_html
 
 def generate_static_site():
     """Generate the complete static site."""
-    print("🌤️  RASP Static Site Generator (Mapbox GL with Lambert Projection)")
+    print("🌤️  RASP Static Site Generator (Mapbox GL with Mercator Projection)")
     print("=" * 60)
 
     cname_content = None
@@ -88,7 +88,7 @@ def generate_static_site():
     help_file_path = Path(__file__).parent / 'help.txt'
     help_text = help_file_path.read_text() if help_file_path.exists() else "Help file not found."
 
-    print("📝 Generating index.html with Mapbox GL Lambert projection...")
+    print("📝 Generating index.html with Mapbox GL Mercator projection...")
     if MAPBOX_ACCESS_TOKEN == 'YOUR_MAPBOX_ACCESS_TOKEN_HERE':
         print("⚠️  WARNING: Using placeholder Mapbox token!")
         print("   Get your token from: https://account.mapbox.com/access-tokens/")
@@ -111,10 +111,10 @@ def generate_static_site():
     print(f"   📁 Output: {DOCS_DIR}")
     print(f"   📅 Dates: {len(dates)}")
     print(f"   🖼️  Images: {total_images}")
-    print("   🗺️  Projection: Lambert Conformal Conic")
+    print("   🗺️  Projection: Mercator")
     print()
     print("Features:")
-    print("  • Mapbox GL with native Lambert Conformal projection")
+    print("  • Mapbox GL with native Mercator projection")
     print("  • Proper geographic registration of WRF forecast imagery")
     print("  • No image warping - uses correct map projection")
     print()
