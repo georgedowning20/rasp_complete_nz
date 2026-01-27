@@ -611,9 +611,11 @@
             color: #fff;
         }
         .weather-popup .weather-item.temp .value { color: #fbbf24; }
+        .weather-popup .weather-item.dewpoint .value { color: #f59e0b; }
         .weather-popup .weather-item.wind .value { color: #60a5fa; }
         .weather-popup .weather-item.humidity .value { color: #4ade80; }
         .weather-popup .weather-item.pressure .value { color: #c084fc; }
+        .weather-popup .weather-item.cloudbase .value { color: #38bdf8; }
         .weather-popup .last-updated {
             font-size: 0.7em;
             color: #666;
@@ -1168,6 +1170,10 @@
                 <div class="label">Temperature</div>
                 <div class="value" id="wxTemp">--°C</div>
             </div>
+            <div class="weather-item dewpoint">
+                <div class="label">Dew Point</div>
+                <div class="value" id="wxDewPoint">--°C</div>
+            </div>
             <div class="weather-item wind">
                 <div class="label">Wind Speed</div>
                 <div class="value" id="wxWind">-- km/h</div>
@@ -1187,6 +1193,10 @@
             <div class="weather-item pressure">
                 <div class="label">Pressure</div>
                 <div class="value" id="wxPressure">-- hPa</div>
+            </div>
+            <div class="weather-item cloudbase">
+                <div class="label">Est. Cloud Base</div>
+                <div class="value" id="wxCloudBase">--</div>
             </div>
         </div>
         <div class="last-updated" id="wxLastUpdated">Updated: --</div>
@@ -2583,6 +2593,36 @@
             return `<svg width="32" height="32" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle; transform: rotate(${degrees}deg);"><path d="M8 2 L12 10 L8 8 L4 10 Z" fill="currentColor"/></svg>`;
         }
         
+        // Calculate dew point from temperature and relative humidity using Magnus formula
+        function calculateDewPoint(tempC, humidity) {
+            if (tempC === null || tempC === undefined || humidity === null || humidity === undefined) {
+                return null;
+            }
+            const a = 17.27;
+            const b = 237.7;
+            const alpha = ((a * tempC) / (b + tempC)) + Math.log(humidity / 100);
+            const dewPoint = (b * alpha) / (a - alpha);
+            return dewPoint;
+        }
+        
+        // Calculate cloud base from temperature and dew point using approximation formula
+        // Standard rule: 1°C spread ≈ 400 feet altitude (or ~122 meters)
+        // This approximates the convergence rate of temperature and dew point with altitude
+        function calculateCloudBase(tempC, dewPointC) {
+            if (tempC === null || tempC === undefined || dewPointC === null || dewPointC === undefined) {
+                return null;
+            }
+            const spread = tempC - dewPointC;
+            // Only calculate if spread is positive and reasonable (< 30°C)
+            if (spread <= 0 || spread > 30) {
+                return null;
+            }
+            // Cloud base in meters AGL (Above Ground Level)
+            // Each degree C of spread = approximately 400 feet = 122 meters
+            const cloudBaseMeters = spread * 122;
+            return cloudBaseMeters;
+        }
+        
         async function preloadWeatherData() {
             if (!weatherStationsConfig.enabled || weatherLoading) {
                 return;
@@ -2626,15 +2666,22 @@
                         const humidity = getLatest(data.rh);
                         const pressure = getLatest(data.pressure); // Pa
                         
+                        // Calculate dew point and cloud base
+                        const temperature = tempK !== null ? tempK - 273.15 : null;
+                        const dewPoint = calculateDewPoint(temperature, humidity);
+                        const cloudBase = calculateCloudBase(temperature, dewPoint);
+                        
                         return {
                             id: stationId,
                             name: header.name || stationId,
-                            temperature: tempK !== null ? tempK - 273.15 : null,
+                            temperature: temperature,
                             windSpeed: windSpeed !== null ? windSpeed * 3.6 : null, // m/s to km/h
                             windDirection: windDir,
                             windGust: windGust !== null ? windGust * 3.6 : null,
                             humidity: humidity,
                             pressure: pressure !== null ? pressure / 100 : null, // Pa to hPa
+                            dewPoint: dewPoint,
+                            cloudBase: cloudBase,
                             lastUpdated: Date.now()
                         };
                     } catch (e) {
@@ -2847,11 +2894,13 @@
             
             // Show loading state for on-demand fetch
             document.getElementById('wxTemp').textContent = 'Loading...';
+            document.getElementById('wxDewPoint').textContent = 'Loading...';
             document.getElementById('wxWind').textContent = 'Loading...';
             document.getElementById('wxWindDir').textContent = 'Loading...';
             document.getElementById('wxGust').textContent = 'Loading...';
             document.getElementById('wxHumidity').textContent = 'Loading...';
             document.getElementById('wxPressure').textContent = 'Loading...';
+            document.getElementById('wxCloudBase').textContent = 'Loading...';
             document.getElementById('wxLastUpdated').textContent = 'Loading...';
             
             // Position popup near click (for symbol layer clicks)
@@ -2890,15 +2939,22 @@
                 const humidity = getLatest(obs.rh);
                 const pressure = getLatest(obs.pressure); // Pa
                 
+                // Calculate dew point and cloud base
+                const temperature = tempK !== null ? tempK - 273.15 : null;
+                const dewPoint = calculateDewPoint(temperature, humidity);
+                const cloudBase = calculateCloudBase(temperature, dewPoint);
+                
                 const stationData = {
                     id: id,
                     name: header.name || id,
-                    temperature: tempK !== null ? tempK - 273.15 : null,
+                    temperature: temperature,
                     windSpeed: windSpeed !== null ? windSpeed * 3.6 : null,
                     windDirection: windDir,
                     windGust: windGust !== null ? windGust * 3.6 : null,
                     humidity: humidity,
                     pressure: pressure !== null ? pressure / 100 : null,
+                    dewPoint: dewPoint,
+                    cloudBase: cloudBase,
                     lastUpdated: Date.now()
                 };
                 
@@ -2911,9 +2967,11 @@
             } catch (error) {
                 console.error('Error fetching weather data for station', id, error);
                 document.getElementById('wxTemp').textContent = '--';
+                document.getElementById('wxDewPoint').textContent = '--';
                 document.getElementById('wxWind').textContent = '--';
                 document.getElementById('wxHumidity').textContent = '--';
                 document.getElementById('wxPressure').textContent = '--';
+                document.getElementById('wxCloudBase').textContent = '--';
                 document.getElementById('wxLastUpdated').textContent = 'Error loading data';
                 if (gustEl) gustEl.textContent = '';
             }
@@ -2922,7 +2980,12 @@
         function updateWeatherPopup(data) {
             document.getElementById('wxTemp').textContent = 
                 (data.temperature !== undefined && data.temperature !== null) 
-                    ? `${Math.round(data.temperature)}°C` 
+                    ? `${data.temperature.toFixed(1)}°C` 
+                    : '--';
+            
+            document.getElementById('wxDewPoint').textContent = 
+                (data.dewPoint !== undefined && data.dewPoint !== null) 
+                    ? `${data.dewPoint.toFixed(1)}°C` 
                     : '--';
             
             document.getElementById('wxWind').textContent = 
@@ -2952,6 +3015,15 @@
                 (data.pressure !== undefined && data.pressure !== null) 
                     ? `${Math.round(data.pressure)} hPa` 
                     : '--';
+            
+            // Cloud base estimation
+            if (data.cloudBase !== undefined && data.cloudBase !== null) {
+                const cloudBaseFt = Math.round(data.cloudBase * 3.28084); // Convert meters to feet
+                const cloudBaseM = Math.round(data.cloudBase);
+                document.getElementById('wxCloudBase').textContent = `${cloudBaseFt} ft (${cloudBaseM} m)`;
+            } else {
+                document.getElementById('wxCloudBase').textContent = '--';
+            }
             
             // Show when data was fetched
             const time = data.lastUpdated 
