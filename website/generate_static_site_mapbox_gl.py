@@ -24,11 +24,15 @@ from settings import (
     MAPBOX_ACCESS_TOKEN,
     PARAMETER_INFO,
     SOUNDING_SITES,
+    WEATHER_STATIONS,
+    WEBCAMS,
+    NORTH_ISLAND_BOUNDS,
 )
 from projection import create_domains
 from favicon import create_favicon
 from data_pipeline import copy_images, get_available_data, get_available_dates
 from templating import generate_html
+from fetch_live_data import fetch_weather_station_ids, fetch_webcams_from_api
 
 
 def generate_static_site():
@@ -88,6 +92,10 @@ def generate_static_site():
     help_file_path = Path(__file__).parent / 'help.txt'
     help_text = help_file_path.read_text() if help_file_path.exists() else "Help file not found."
 
+    # Fetch weather station IDs and webcams from APIs (using shared bounds)
+    weather_config = fetch_weather_station_ids(WEATHER_STATIONS, NORTH_ISLAND_BOUNDS)
+    webcams_config = fetch_webcams_from_api(WEBCAMS, NORTH_ISLAND_BOUNDS)
+
     print("📝 Generating index.html with Mapbox GL Mercator projection...")
     if MAPBOX_ACCESS_TOKEN == 'YOUR_MAPBOX_ACCESS_TOKEN_HERE':
         print("⚠️  WARNING: Using placeholder Mapbox token!")
@@ -101,6 +109,9 @@ def generate_static_site():
         MAPBOX_ACCESS_TOKEN,
         PARAMETER_INFO,
         SOUNDING_SITES,
+        None,  # No satellite config
+        weather_config,
+        webcams_config,
     )
     (Path(DOCS_DIR) / 'index.html').write_text(html)
 

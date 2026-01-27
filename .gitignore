@@ -13,3 +13,9 @@ __/pycache__/
 *.pyd
 *.swp
 .DS_Store
+
+# Environment variables and secrets
+.env
+website/.env
+secrets.py
+website/secrets.py

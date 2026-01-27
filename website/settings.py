@@ -1,5 +1,17 @@
 """Shared configuration for the static site generator."""
 
+import os
+from pathlib import Path
+
+# Load environment variables from .env file if it exists
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    load_dotenv(dotenv_path=env_path)
+except ImportError:
+    # python-dotenv not installed, will use system environment variables
+    pass
+
 # Configuration
 RESULTS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/results'
 OUT_DIR = f"{RESULTS_DIR}/OUT"
@@ -7,7 +19,8 @@ DOCS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/docs'
 
 # Mapbox Configuration
 # Get your access token from https://account.mapbox.com/access-tokens/
-MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZ2VvcmdlZG93bmluZyIsImEiOiJjbWZlMzBndzYwMmhxMmpyNWFqcnkzdjJmIn0.L9RHEN7ySukYIhsKKu4-Rw'
+# Load from environment variable for security
+MAPBOX_ACCESS_TOKEN = os.getenv('MAPBOX_ACCESS_TOKEN', '')
 
 # WRF Domain configuration - Mercator projection
 WRF_CONFIG = {
@@ -90,6 +103,39 @@ PARAMETER_INFO = {
 }
 
 # 'qfx', 'sfcmoist'', 'sh2o', 'smcrel' 
+
+# Shared North Island bounding box (used for both webcams and weather stations)
+# Now matches the D1 WRF domain bounds
+NORTH_ISLAND_BOUNDS = {
+    'min_lat': -41.01066327796043,  # D1 domain south boundary
+    'max_lat': -35.89790999813298,  # D1 domain north boundary
+    'min_lon': 173.40382569922718,  # D1 domain west boundary
+    'max_lon': 178.59617430077282   # D1 domain east boundary
+}
+
+# Weather Station Data Configuration
+# Uses Windy Stations API - station IDs are discovered during site generation
+WEATHER_STATIONS = {
+    'enabled': True,
+    # Station IDs will be populated during site generation by scanning the Windy API
+    'station_ids': [],  # Populated at build time
+    # Windy Staos.getenv('WEATHER_STATIONS_API_KEY', '')
+    'api_key': '9e293a6becb034b720f7dc36d5cdbb68b3e681d46667169fb83b49750a0390cf',
+    'api_url': 'https://stations.windy.com/api/v2',
+    'refresh_interval': 300000,  # 5 minutes in milliseconds
+}
+
+# Webcam Configuration
+# Uses Windy Webcam API to fetch webcams during site generation
+WEBCAMS = {
+    'enabled': True,
+    'cameras': {},  # Will be populated from API during site generation
+    # Windy Webcam API configuration
+    'api_key': os.getenv('WEBCAMS_API_KEY', ''),
+    'api_mode': True,  # Fetch webcams from API during site generation
+    'max_webcams': 50,  # Max allowed is 50 per request per search point
+    # Uses NORTH_ISLAND_BOUNDS for filtering and calculating search points
+}
 
 # Sounding locations
 # 1,Auckland,d1,174.7633,-36.8485,
