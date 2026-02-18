@@ -23,12 +23,24 @@ DOCS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/docs'
 MAPBOX_ACCESS_TOKEN = os.getenv('MAPBOX_ACCESS_TOKEN', '')
 
 # WRF Domain configuration - Mercator projection
+#  ref_lat   = -44.50,
+#  ref_lon   = 170.00,
+#  truelat1  = -42.00,
+#  truelat2  = -47.00,
+#  stand_lon = 170.00,
+
 WRF_CONFIG = {
-    'ref_lat': -38.50,
-    'ref_lon': 176.00,
-    'truelat1': -35.00,
-    'truelat2': -42.00,
-    'stand_lon': 176.00,
+    # 'ref_lat': -38.50,
+    # 'ref_lon': 176.00,
+    # 'truelat1': -35.00,
+    # 'truelat2': -42.00,
+    # 'stand_lon': 176.00,
+    'ref_lat': -44.50,
+    'ref_lon': 170.00,
+    'truelat1': -42.00,
+    'truelat2': -47.00,
+    'stand_lon': 170.00,
+
     'd1': {
         'dx': 6000, 'dy': 6000,
         'e_we': 80, 'e_sn': 100,
@@ -106,11 +118,11 @@ PARAMETER_INFO = {
 
 # Shared North Island bounding box (used for both webcams and weather stations)
 # Now matches the D1 WRF domain bounds
-NORTH_ISLAND_BOUNDS = {
-    'min_lat': -41.01066327796043,  # D1 domain south boundary
-    'max_lat': -35.89790999813298,  # D1 domain north boundary
-    'min_lon': 173.40382569922718,  # D1 domain west boundary
-    'max_lon': 178.59617430077282   # D1 domain east boundary
+ISLAND_BOUNDS = {
+    'min_lat': -46.4132,  # Southernmost sounding site (Invercargill)
+    'max_lat': -42.5270,  # Northernmost sounding site (Hanmer Springs)
+    'min_lon': 167.7180,  # Westernmost sounding site (Te Anau)
+    'max_lon': 172.8290   # Easternmost sounding site (Hanmer Springs)
 }
 
 # Weather Station Data Configuration
@@ -134,7 +146,7 @@ WEBCAMS = {
     'api_key': os.getenv('WEBCAMS_API_KEY', ''),
     'api_mode': True,  # Fetch webcams from API during site generation
     'max_webcams': 50,  # Max allowed is 50 per request per search point
-    # Uses NORTH_ISLAND_BOUNDS for filtering and calculating search points
+    # Uses ISLAND_BOUNDS for filtering and calculating search points
 }
 
 # Sounding locations
@@ -152,19 +164,53 @@ WEBCAMS = {
 # 12,Taumarunui,d1,175.2833,-38.8667,
 # 13,Raglan,d1,174.8833,-37.8000,
 # 14,Turangi,d1,175.8000,-38.9833,
+# SOUNDING_SITES = {
+#     '1': {'name': 'Auckland', 'lat': -36.8485, 'lon': 174.7633},
+#     '2': {'name': 'Wellington', 'lat': -41.2865, 'lon': 174.7762},
+#     '3': {'name': 'Hamilton', 'lat': -37.7870, 'lon': 175.2793},
+#     '4': {'name': 'Taupo', 'lat': -38.6857, 'lon': 176.0702},
+#     '5': {'name': 'Rotorua', 'lat': -38.1368, 'lon': 176.2497},
+#     '6': {'name': 'Napier', 'lat': -39.4928, 'lon': 176.9120},
+#     '7': {'name': 'NewPlymouth', 'lat': -39.0556, 'lon': 174.0752},
+#     '8': {'name': 'Matamata', 'lat': -37.8100, 'lon': 175.7700},
+#     '9': {'name': 'Drury', 'lat': -37.1000, 'lon': 174.9500},
+#     '10': {'name': 'Thames', 'lat': -37.1386, 'lon': 175.5593},
+#     '11': {'name': 'Tauranga', 'lat': -37.6861, 'lon': 176.1667},
+#     '12': {'name': 'Taumarunui', 'lat': -38.8667, 'lon': 175.2833},
+#     '13': {'name': 'Raglan', 'lat': -37.8000, 'lon': 174.8833},
+#     '14': {'name': 'Turangi', 'lat': -38.9833, 'lon': 175.8000},
+# }
+
+
+# 1,Omarama,d1,169.9650,-44.4860,
+# 2,Queenstown,d1,168.7332,-45.0312,
+# 3,Wanaka,d1,169.2430,-44.7000,
+# 4,MtCook,d1,170.0980,-43.7350,
+# 5,Christchurch,d1,172.5320,-43.4895,
+# 6,Ashburton,d1,171.7470,-43.9060,
+# 7,Timaru,d1,171.2540,-44.3960,
+# 8,Tekapo,d1,170.4770,-44.0050,
+# 9,Alexandra,d1,169.3800,-45.2490,
+# 10,Geraldine,d1,171.2460,-44.0910,
+# 11,HanmerSprings,d1,172.8290,-42.5270,
+# 12,Springfield,d1,171.9310,-43.3470,
+# 13,Invercargill,d1,168.3538,-46.4132,
+# 14,TeAnau,d1,167.7180,-45.4145,
+
 SOUNDING_SITES = {
-    '1': {'name': 'Auckland', 'lat': -36.8485, 'lon': 174.7633},
-    '2': {'name': 'Wellington', 'lat': -41.2865, 'lon': 174.7762},
-    '3': {'name': 'Hamilton', 'lat': -37.7870, 'lon': 175.2793},
-    '4': {'name': 'Taupo', 'lat': -38.6857, 'lon': 176.0702},
-    '5': {'name': 'Rotorua', 'lat': -38.1368, 'lon': 176.2497},
-    '6': {'name': 'Napier', 'lat': -39.4928, 'lon': 176.9120},
-    '7': {'name': 'NewPlymouth', 'lat': -39.0556, 'lon': 174.0752},
-    '8': {'name': 'Matamata', 'lat': -37.8100, 'lon': 175.7700},
-    '9': {'name': 'Drury', 'lat': -37.1000, 'lon': 174.9500},
-    '10': {'name': 'Thames', 'lat': -37.1386, 'lon': 175.5593},
-    '11': {'name': 'Tauranga', 'lat': -37.6861, 'lon': 176.1667},
-    '12': {'name': 'Taumarunui', 'lat': -38.8667, 'lon': 175.2833},
-    '13': {'name': 'Raglan', 'lat': -37.8000, 'lon': 174.8833},
-    '14': {'name': 'Turangi', 'lat': -38.9833, 'lon': 175.8000},
+    '1': {'name': 'Omarama', 'lat': -44.4860, 'lon': 169.9650},
+    '2': {'name': 'Queenstown', 'lat': -45.0312, 'lon': 168.7332},
+    '3': {'name': 'Wanaka', 'lat': -44.7000, 'lon': 169.2430},
+    '4': {'name': 'Mt Cook', 'lat': -43.7350, 'lon': 170.0980},
+    '5': {'name': 'Christchurch', 'lat': -43.4895, 'lon': 172.5320},
+    '6': {'name': 'Ashburton', 'lat': -43.9060, 'lon': 171.7470},
+    '7': {'name': 'Timaru', 'lat': -44.3960, 'lon': 171.2540},
+    '8': {'name': 'Tekapo', 'lat': -44.0050, 'lon': 170.4770},
+    '9': {'name': 'Alexandra', 'lat': -45.2490, 'lon': 169.3800},
+    '10': {'name': 'Geraldine', 'lat': -44.0910, 'lon': 171.2460},
+    '11': {'name': 'Hanmer Springs', 'lat': -42.5270, 'lon': 172.8290},
+    '12': {'name': 'Springfield', 'lat': -43.3470, 'lon': 171.9310},
+    '13': {'name': 'Invercargill', 'lat': -46.4132, 'lon': 168.3538},
+    '14': {'name': 'Te Anau', 'lat': -45.4145, 'lon': 167.7180},
 }
+
