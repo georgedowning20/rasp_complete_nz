@@ -26,7 +26,7 @@ from settings import (
     SOUNDING_SITES,
     WEATHER_STATIONS,
     WEBCAMS,
-    NORTH_ISLAND_BOUNDS,
+    ISLAND_BOUNDS,
 )
 from projection import create_domains
 from favicon import create_favicon
@@ -93,8 +93,8 @@ def generate_static_site():
     help_text = help_file_path.read_text() if help_file_path.exists() else "Help file not found."
 
     # Fetch weather station IDs and webcams from APIs (using shared bounds)
-    weather_config = fetch_weather_station_ids(WEATHER_STATIONS, NORTH_ISLAND_BOUNDS)
-    webcams_config = fetch_webcams_from_api(WEBCAMS, NORTH_ISLAND_BOUNDS)
+    weather_config = fetch_weather_station_ids(WEATHER_STATIONS, ISLAND_BOUNDS)
+    webcams_config = fetch_webcams_from_api(WEBCAMS, ISLAND_BOUNDS)
 
     print("📝 Generating index.html with Mapbox GL Mercator projection...")
     if MAPBOX_ACCESS_TOKEN == 'YOUR_MAPBOX_ACCESS_TOKEN_HERE':
