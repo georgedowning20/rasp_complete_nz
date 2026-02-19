@@ -498,6 +498,241 @@
             border-radius: 50%;
         }
         
+        /* Live Data Toggle Buttons */
+        .live-data-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .live-data-btn {
+            flex: 1;
+            min-width: 80px;
+            background: #0f3460;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 8px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .live-data-btn:hover {
+            border-color: #e94560;
+            color: #fff;
+        }
+        .live-data-btn.active {
+            background: rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+            color: #e94560;
+        }
+        .live-data-btn .icon {
+            font-size: 1.1em;
+        }
+        .live-data-btn .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #666;
+            margin-left: 3px;
+        }
+        .live-data-btn.active .status-dot {
+            background: #4ade80;
+            animation: status-blink 2s infinite;
+        }
+        .live-data-btn.loading .status-dot {
+            background: #fbbf24;
+            animation: status-blink 0.5s infinite;
+        }
+        @keyframes status-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Weather Station Popup */
+        .weather-popup {
+            position: fixed;
+            z-index: 2000;
+            background: rgba(22, 33, 62, 0.98);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+            min-width: 220px;
+            max-width: 300px;
+            display: none;
+        }
+        .weather-popup.active {
+            display: block;
+        }
+        .weather-popup h3 {
+            color: #e94560;
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .weather-popup .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+        .weather-popup .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .weather-popup .weather-item {
+            background: rgba(15, 52, 96, 0.5);
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .weather-popup .weather-item .label {
+            font-size: 0.7em;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        .weather-popup .weather-item .value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+        }
+        .weather-popup .weather-item.temp .value { color: #fbbf24; }
+        .weather-popup .weather-item.dewpoint .value { color: #f59e0b; }
+        .weather-popup .weather-item.wind .value { color: #60a5fa; }
+        .weather-popup .weather-item.humidity .value { color: #4ade80; }
+        .weather-popup .weather-item.pressure .value { color: #c084fc; }
+        .weather-popup .weather-item.cloudbase .value { color: #38bdf8; }
+        .weather-popup .last-updated {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 10px;
+            text-align: right;
+        }
+        
+        /* Satellite Layer Control */
+        .satellite-control {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+        }
+        .satellite-control label {
+            display: block;
+            font-size: 0.75em;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        /* Webcam Markers */
+        .webcam-marker {
+            width: 28px;
+            height: 28px;
+            background: rgba(22, 33, 62, 0.95);
+            border: 2px solid #f59e0b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .webcam-marker:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border-color: #fbbf24;
+        }
+        
+        /* Webcam Popup */
+        .webcam-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(22, 33, 62, 0.98);
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+            display: none;
+            max-width: min(700px, calc(100vw - 20px));
+            max-height: calc(100vh - 20px);
+            overflow: hidden;
+        }
+        .webcam-popup.active {
+            display: block;
+        }
+        .webcam-popup h3 {
+            color: #f59e0b;
+            margin: 0 0 6px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-right: 35px;
+        }
+        .webcam-popup .close-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1em;
+            z-index: 10;
+        }
+        .webcam-popup .webcam-content {
+            text-align: center;
+        }
+        .webcam-popup .webcam-image {
+            width: 100%;
+            max-height: calc(100vh - 100px);
+            border-radius: 6px;
+            object-fit: contain;
+        }
+        .webcam-popup .webcam-loading {
+            color: #aaa;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        .webcam-popup .webcam-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 0.75em;
+            color: #888;
+        }
+        .webcam-popup .webcam-timestamp {
+            color: #666;
+        }
+        .webcam-popup .webcam-external-link {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        .webcam-popup .webcam-external-link:hover {
+            text-decoration: underline;
+        }
+        
         .help-modal {
             position: fixed;
             top: 0;
@@ -883,6 +1118,24 @@
             <input type="range" id="opacitySlider" min="0" max="100" value="70">
         </div>
         
+        <div class="control-group satellite-control">
+            <label>Live Data</label>
+            <div class="live-data-controls">
+                <button class="live-data-btn" id="soundingBtn" title="Toggle skew-T diagrams">
+                    <span class="icon"><svg width="28" height="28" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="4" fill="white" fill-opacity="0.95" stroke="#e94560" stroke-width="2"/><line x1="8" y1="40" x2="16" y2="8" stroke="#e94560" stroke-opacity="0.25" stroke-width="0.8"/><line x1="17" y1="40" x2="25" y2="8" stroke="#e94560" stroke-opacity="0.25" stroke-width="0.8"/><line x1="26" y1="40" x2="34" y2="8" stroke="#e94560" stroke-opacity="0.25" stroke-width="0.8"/><line x1="35" y1="40" x2="43" y2="8" stroke="#e94560" stroke-opacity="0.25" stroke-width="0.8"/><polyline points="34,40 28,32 34,26 26,18 22,10" fill="none" stroke="#e94560" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="24,40 24,32 17,28 16,18 14,10" fill="none" stroke="#0b00d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,2"/></svg></span>
+                    <span class="status-dot"></span>
+                </button>
+                <button class="live-data-btn" id="weatherBtn" title="Toggle weather stations">
+                    <span class="icon"><svg width="28" height="28" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="4" fill="white" fill-opacity="0.95" stroke="#1f2937" stroke-width="2"/><circle cx="24" cy="32" r="6" fill="#1f2937"/><rect x="21" y="12" width="6" height="20" fill="#1f2937"/><circle cx="24" cy="32" r="4.5" fill="white"/><rect x="22.5" y="13.5" width="3" height="18.5" fill="white"/><circle cx="24" cy="32" r="3.5" fill="#ef4444"/><rect x="23.25" y="16" width="1.5" height="16" fill="#ef4444"/><line x1="27.5" y1="15" x2="31" y2="15" stroke="#1f2937" stroke-width="1"/><line x1="27.5" y1="19" x2="31" y2="19" stroke="#1f2937" stroke-width="1"/><line x1="27.5" y1="23" x2="31" y2="23" stroke="#1f2937" stroke-width="1"/><line x1="27.5" y1="27" x2="31" y2="27" stroke="#1f2937" stroke-width="1"/></svg></span>
+                    <span class="status-dot"></span>
+                </button>
+                <button class="live-data-btn" id="webcamBtn" title="Toggle webcams">
+                    <span class="icon"><svg width="28" height="28" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="4" fill="white" fill-opacity="0.95" stroke="#3b82f6" stroke-width="2"/><rect x="8" y="12" width="32" height="24" rx="3" fill="#3b82f6"/><rect x="19" y="8" width="10" height="6" fill="#3b82f6"/><circle cx="24" cy="26" r="9" fill="#1f2937"/><circle cx="24" cy="26" r="5" fill="#93c5fd"/><circle cx="22" cy="24" r="2" fill="white" fill-opacity="0.6"/></svg></span>
+                    <span class="status-dot"></span>
+                </button>
+            </div>
+        </div>
+        
         <button class="help-btn" id="lazyModeBtn">🚀 Lazy RASP</button>
         <button class="help-btn" id="helpBtn">❓ Parameter Help</button>
     </div>
@@ -907,6 +1160,58 @@
         <button class="close-btn" id="closeSounding">×</button>
         <h3 id="soundingTitle">Sounding</h3>
         <img id="soundingImg" src="" alt="Sounding">
+    </div>
+    
+    <div class="weather-popup" id="weatherPopup">
+        <button class="close-btn" id="closeWeather">×</button>
+        <h3 id="weatherPopupTitle">🌡️ Weather Station</h3>
+        <div class="weather-grid" id="weatherGrid">
+            <div class="weather-item temp">
+                <div class="label">Temperature</div>
+                <div class="value" id="wxTemp">--°C</div>
+            </div>
+            <div class="weather-item dewpoint">
+                <div class="label">Dew Point</div>
+                <div class="value" id="wxDewPoint">--°C</div>
+            </div>
+            <div class="weather-item wind">
+                <div class="label">Wind Speed</div>
+                <div class="value" id="wxWind">-- km/h</div>
+            </div>
+            <div class="weather-item wind-dir">
+                <div class="label">Wind Direction</div>
+                <div class="value" id="wxWindDir">--</div>
+            </div>
+            <div class="weather-item gust">
+                <div class="label">Wind Gust</div>
+                <div class="value" id="wxGust">-- km/h</div>
+            </div>
+            <div class="weather-item humidity">
+                <div class="label">Humidity</div>
+                <div class="value" id="wxHumidity">--%</div>
+            </div>
+            <div class="weather-item pressure">
+                <div class="label">Pressure</div>
+                <div class="value" id="wxPressure">-- hPa</div>
+            </div>
+            <div class="weather-item cloudbase">
+                <div class="label">Est. Cloud Base</div>
+                <div class="value" id="wxCloudBase">--</div>
+            </div>
+        </div>
+        <div class="last-updated" id="wxLastUpdated">Updated: --</div>
+    </div>
+    
+    <div class="webcam-popup" id="webcamPopup">
+        <button class="close-btn" id="closeWebcam">×</button>
+        <h3 id="webcamPopupTitle">📷 Webcam</h3>
+        <div class="webcam-content" id="webcamContent">
+            <div class="webcam-loading">Loading webcam...</div>
+        </div>
+        <div class="webcam-footer">
+            <span class="webcam-timestamp" id="webcamTimestamp">Updated: --</span>
+            <a href="#" target="_blank" class="webcam-external-link" id="webcamWindyLink">🔗 Open in Windy</a>
+        </div>
     </div>
     
     <div class="help-modal" id="lazyModeModal">
@@ -980,10 +1285,13 @@
         
         const paramInfo = {"wstar": "Thermal Updraft Velocity (W*)", "bsratio": "Buoyancy/Shear Ratio", "wstar_bsratio": "W* with B/S Ratio", "hglider": "Thermalling Height (MSL)", "dglider": "Thermalling Height (AGL)", "hwcrit": "Height of Critical Updraft (MSL)", "dwcrit": "Height of Critical Updraft (AGL)", "hbl": "BL Top Height (MSL)", "dbl": "BL Depth (AGL)", "bltopvariab": "BL Top Variability", "wblmaxmin": "Convergence", "zwblmaxmin": "Height of Max BL Up/Down", "sfcsunpct": "Surface Sun %", "sfcshf": "Surface Heat Flux", "sfctemp": "Surface Temperature", "sfcdewpt": "Surface Dewpoint", "sfcwind0": "Surface Wind", "blwind": "BL Average Wind", "bltopwind": "BL Top Wind", "blwindshear": "BL Wind Shear", "zsfclcl": "Sfc LCL Height", "zsfclcldif": "Sfc Cu Cloudbase (AGL)", "zsfclclmask": "Sfc Cu Potential", "zblcl": "BL Top LCL Height", "zblcldif": "OD Cu Cloudbase (AGL)", "zblclmask": "OD Cu Potential", "blicw": "BL Cloud Ice+Water", "blcwbase": "BL Cloud Base", "blcloudpct": "BL Cloud %", "cfracl": "Low Cloud Fraction", "cfracm": "Mid Cloud Fraction", "cfrach": "High Cloud Fraction", "rain1": "1hr Rain", "cape": "CAPE", "press950": "Wave 950mb (~2,000ft)", "press850": "Wave 850mb (~5,000ft)", "press700": "Wave 700mb (~10,000ft)", "press500": "Wave 500mb (~18,000ft)", "stars": "Star Rating", "xcspeed": "XC Speed", "pfd_tot": "Potential Flight Distance (Total)", "ridgelift": "Ridge Lift (Vertical Velocity ~300ft AGL)", "sh2o": "Soil Moisture content", "smcrel": "Soil Moisture Relative", "sfcmoist": "Surface Soil Moisture", "qfx": "Surface Moisture Flux", "dbz": "Radar Reflectivity"};
         const basicParams = ['hglider', 'pfd_tot', 'xcspeed', 'wstar', 'sfcwind0', 'blcloudpct', 'zsfclclmask', 'stars', 'wblmaxmin', 'ridgelift', 'press850', 'press700'];
-        const domainData = {"d1": {"bounds": [[-41.01066327796043, 172.74656638257585], [-35.89790999813298, 179.25343361742415]], "corners": [[-41.01066327796043, 172.74656638257585], [-41.01066327796043, 179.25343361742415], [-35.89790999813298, 179.25343361742415], [-35.89790999813298, 172.74656638257585]], "projected_bounds": [[-297000.0, -4088690.0772599517], [297000.0, -3494690.0772599517]], "projected_corners": [[-297000.0, -4088690.0772599517], [297000.0, -4088690.0772599517], [297000.0, -3494690.0772599517], [-297000.0, -3494690.0772599517]]}, "d2": {"bounds": [[-39.14270281004483, 174.14871959143204], [-36.554688592692244, 177.41310753080037]], "corners": [[-39.14270281004483, 174.14871959143204], [-39.14270281004483, 177.41310753080037], [-36.554688592692244, 177.41310753080037], [-36.554688592692244, 174.14871959143204]], "projected_bounds": [[-169000.0, -3866690.0772599517], [129000.0, -3568690.0772599517]], "projected_corners": [[-169000.0, -3866690.0772599517], [129000.0, -3866690.0772599517], [129000.0, -3568690.0772599517], [-169000.0, -3568690.0772599517]]}, "d3": {"bounds": [[-37.31379358667448, 175.3456907220883], [-36.96739137418028, 175.77838643888379]], "corners": [[-37.31379358667448, 175.3456907220883], [-37.31379358667448, 175.77838643888379], [-36.96739137418028, 175.77838643888379], [-36.96739137418028, 175.3456907220883]], "projected_bounds": [[-59730.696363070645, -3655014.4285382014], [-20230.696363070645, -3615514.4285382014]], "projected_corners": [[-59730.696363070645, -3655014.4285382014], [-20230.696363070645, -3655014.4285382014], [-20230.696363070645, -3615514.4285382014], [-59730.696363070645, -3615514.4285382014]]}};
-        const soundingSites = {"1": {"name": "Auckland", "lat": -36.8485, "lon": 174.7633}, "2": {"name": "Wellington", "lat": -41.2865, "lon": 174.7762}, "3": {"name": "Hamilton", "lat": -37.787, "lon": 175.2793}, "4": {"name": "Taupo", "lat": -38.6857, "lon": 176.0702}, "5": {"name": "Rotorua", "lat": -38.1368, "lon": 176.2497}, "6": {"name": "Napier", "lat": -39.4928, "lon": 176.912}, "7": {"name": "NewPlymouth", "lat": -39.0556, "lon": 174.0752}, "8": {"name": "Matamata", "lat": -37.81, "lon": 175.77}, "9": {"name": "Drury", "lat": -37.1, "lon": 174.95}, "10": {"name": "Thames", "lat": -37.1386, "lon": 175.5593}, "11": {"name": "Tauranga", "lat": -37.6861, "lon": 176.1667}, "12": {"name": "Taumarunui", "lat": -38.8667, "lon": 175.2833}, "13": {"name": "Raglan", "lat": -37.8, "lon": 174.8833}, "14": {"name": "Turangi", "lat": -38.9833, "lon": 175.8}};
-        const manifest = {"2026-01-27": {"parameters": [], "times": [], "domains": [], "soundings": []}, "2026-01-28": {"parameters": [], "times": [], "domains": [], "soundings": []}, "2026-01-29": {"parameters": [], "times": [], "domains": [], "soundings": []}, "2026-01-30": {"parameters": [], "times": [], "domains": [], "soundings": []}};
+        const domainData = {"d1": {"bounds": [[-47.00879404887374, 166.41524115992695], [-41.87761580899351, 173.58475884007308]], "corners": [[-47.00879404887374, 166.41524115992695], [-47.00879404887374, 173.58475884007308], [-41.87761580899351, 173.58475884007308], [-41.87761580899351, 166.41524115992695]], "projected_bounds": [[-297000.0, -4400250.471073115], [297000.0, -3806250.471073115]], "projected_corners": [[-297000.0, -4400250.471073115], [297000.0, -4400250.471073115], [297000.0, -3806250.471073115], [-297000.0, -3806250.471073115]]}, "d2": {"bounds": [[-45.14425390318806, 167.96018773073286], [-42.54161742491464, 171.55701646589034]], "corners": [[-45.14425390318806, 167.96018773073286], [-45.14425390318806, 171.55701646589034], [-42.54161742491464, 171.55701646589034], [-42.54161742491464, 167.96018773073286]], "projected_bounds": [[-169000.0, -4178250.4710731152], [129000.0, -3880250.4710731152]], "projected_corners": [[-169000.0, -4178250.4710731152], [129000.0, -4178250.4710731152], [129000.0, -3880250.4710731152], [-169000.0, -3880250.4710731152]]}, "d3": {"bounds": [[-37.331612025202766, 175.3239370458538], [-36.949933873129304, 175.8006979016884]], "corners": [[-37.331612025202766, 175.3239370458538], [-37.331612025202766, 175.8006979016884], [-36.949933873129304, 175.8006979016884], [-36.949933873129304, 175.3239370458538]], "projected_bounds": [[441092.2388816379, -3319044.2786346516], [480592.2388816379, -3279544.2786346516]], "projected_corners": [[441092.2388816379, -3319044.2786346516], [480592.2388816379, -3319044.2786346516], [480592.2388816379, -3279544.2786346516], [441092.2388816379, -3279544.2786346516]]}};
+        const soundingSites = {"1": {"name": "Omarama", "lat": -44.486, "lon": 169.965}, "2": {"name": "Queenstown", "lat": -45.0312, "lon": 168.7332}, "3": {"name": "Wanaka", "lat": -44.7, "lon": 169.243}, "4": {"name": "Mt Cook", "lat": -43.735, "lon": 170.098}, "5": {"name": "Christchurch", "lat": -43.4895, "lon": 172.532}, "6": {"name": "Ashburton", "lat": -43.906, "lon": 171.747}, "7": {"name": "Timaru", "lat": -44.396, "lon": 171.254}, "8": {"name": "Tekapo", "lat": -44.005, "lon": 170.477}, "9": {"name": "Alexandra", "lat": -45.249, "lon": 169.38}, "10": {"name": "Geraldine", "lat": -44.091, "lon": 171.246}, "11": {"name": "Hanmer Springs", "lat": -42.527, "lon": 172.829}, "12": {"name": "Springfield", "lat": -43.347, "lon": 171.931}, "13": {"name": "Invercargill", "lat": -46.4132, "lon": 168.3538}, "14": {"name": "Te Anau", "lat": -45.4145, "lon": 167.718}};
+        const manifest = {"2026-02-18": {"parameters": ["blcloudpct", "blcwbase", "blicw", "bltopvariab", "bltopwind", "blwind", "blwindshear", "bsratio", "cape", "cfrach", "cfracl", "cfracm", "dbl", "dbz", "dglider", "dwcrit", "hbl", "hglider", "hwcrit", "press500", "press700", "press850", "press950", "qfx", "rain1", "ridgelift", "sfcdewpt", "sfcmoist", "sfcshf", "sfcsunpct", "sfctemp", "sfcwind0", "sh2o", "smcrel", "stars", "wblmaxmin", "wstar", "wstar_bsratio", "xcspeed", "zblcl", "zblcldif", "zblclmask", "zsfclcl", "zsfclcldif", "zsfclclmask", "zwblmaxmin"], "times": ["1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"], "domains": ["d1", "d2"], "soundings": ["1", "10", "12", "13", "14", "2", "3", "4", "5", "6", "7", "8", "9"]}};
         const helpText = "Pleas note this site is in beta stages. I will try and run forcasts every day.\nAny Issues/Bugs/Suggestions please email me: george.downing20@icloud.com.\n\n\n\n================================================================================\n                    RASP (Randomly Accurate Soaring Predictions)\n                              PARAMETER REFERENCE GUIDE\n================================================================================\n\nThis document describes the meteorological parameters available in RASP forecasts,\nprimarily used for soaring flight planning (gliding, paragliding, hang gliding).\n\n================================================================================\n                           THERMAL PARAMETERS\n================================================================================\n\nwstar (Thermal Updraft Velocity)\n    Unit: ft/min\n    The average dry thermal updraft strength near the top of the usable boundary\n    layer. Subtract 200 ft/min to get a more realistic in-flight climb rate.\n    Values < 200 ft/min = weak/no thermals, 400-600 ft/min = moderate, > 800 ft/min = strong.\n\nhbl (BL Top / Thermal Height)\n    Unit: ft AGL\n    Height of the top of the mixing layer (boundary layer). This represents the\n    expected maximum height of dry thermals. NOT the cloudbase height.\n\ndbl (BL Depth)\n    Unit: ft\n    Depth/thickness of the boundary layer. Represents the vertical extent\n    of the convective mixing layer from the surface to the BL top.\n\nhglider (Thermalling Height)\n    Unit: ft AGL\n    Max thermalling height, which is the minimum of the BL top and the\n    overdevelopment cloudbase. This is the practical ceiling for glider pilots.\n\ndglider (Thermalling Depth)\n    Unit: ft\n    The expected depth/thickness of usable thermals for soaring. Calculated as\n    hglider minus the height where thermals become too weak to use.\n\nhwcrit (Critical Height)\n    Unit: ft AGL\n    Height at which the thermal updraft strength falls below a critical threshold\n    (typically 220 ft/min). Useful for determining minimum working altitude.\n\ndwcrit (Critical Depth)\n    Unit: ft\n    Depth of thermals above the critical updraft threshold. The altitude band\n    where thermals are strong enough to be usable for climbing.\n\nbltopvariab (BL Top Variability)\n    Unit: ft\n    Spatial variability of the boundary layer top height. High values indicate\n    inconsistent thermal heights across the region.\n\nwblmaxmin (BL Max/Min W)\n    Unit: ft/min\n    Maximum grid-area-loss updraft strength at BL top. A negative value indicates\n    overall sinking motion. Positive values suggest stronger thermals possible.\n\nzwblmaxmin (Height of BL Max/Min W)\n    Unit: ft AGL\n    Height at which the wblmaxmin value occurs. Useful for understanding the\n    vertical structure of thermals.\n\n================================================================================\n                         THERMAL QUALITY PARAMETERS\n================================================================================\n\nbsratio (Buoyancy/Shear Ratio)\n    Unit: dimensionless\n    Ratio of thermal strength to wind shear. Indicates thermal quality:\n    < 5 = broken/sheared thermals, 5-7 = moderate, > 7 = good organized thermals.\n    Low values mean thermals will be tilted and harder to work.\n\nwstar_bsratio (Combined Thermal Index)\n    Combined display of wstar and bsratio for quick assessment of both thermal\n    strength and quality in one parameter.\n\nsfcshf (Surface Heat Flux)\n    Unit: W/m\u00b2\n    Surface sensible heat flux - the rate at which heat is transferred from the\n    surface to the atmosphere. Higher values indicate stronger thermal generation.\n    Negative values indicate heat transfer to the ground (cooling).\n\nsfcsunpct (Surface Sun Percentage)\n    Unit: %\n    Percentage of full sunshine reaching the surface. Reduced by clouds.\n    100% = clear sky, lower values indicate cloud shadowing.\n\n================================================================================\n                         CLOUD PARAMETERS\n================================================================================\n\nzsfclcl (Surface LCL Height)\n    Unit: ft AGL\n    Lifting Condensation Level based on surface conditions. The height where\n    cumulus clouds would form if air is lifted from the surface.\n\nzsfclclmask (Surface LCL Masked)\n    Unit: ft AGL\n    Same as zsfclcl but masked (not shown) where cumulus are not expected to form.\n\nzsfclcldif (Cu Potential)\n    Unit: ft\n    Difference between the BL top and the surface LCL. Positive values indicate\n    good potential for cumulus cloud formation (Cu overdevelopment possible).\n\nzblcl (BL Cloud Height)\n    Unit: ft AGL\n    Height of cloud base from BL-mean values. More representative of actual\n    cloudbase than surface-based LCL during well-mixed conditions.\n\nzblclmask (BL Cloud Height Masked)\n    Unit: ft AGL\n    Same as zblcl but masked where cumulus clouds are not expected.\n\nzblcldif (BL Cu Potential)\n    Unit: ft\n    BL-based cumulus potential. Positive values indicate cumulus expected.\n\nblcloudpct (BL Cloud Cover)\n    Unit: %\n    Percentage of the sky expected to be covered by cumulus clouds forming\n    at the top of the thermals. High values may indicate overdevelopment.\n\nblicw (BL Integrated Cloud Water)\n    Unit: kg/m\u00b2\n    Integrated cloud water content within the boundary layer. Indicates\n    the total amount of condensed water in BL clouds.\n\nblcwbase (BL Cloud Water Base)\n    Unit: ft AGL\n    Height of the base of clouds containing significant cloud water.\n    Can indicate where actual visible cloudbase will be.\n\ncfracl / wrf=CFRACL (Low Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by low-level clouds (below ~3.5km).\n\ncfracm / wrf=CFRACM (Mid Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by mid-level clouds (~3.5-8km).\n\ncfrach / wrf=CFRACH (High Cloud Fraction)\n    Unit: %\n    Fraction of sky covered by high-level clouds (above ~8km).\n    High cirrus can reduce surface heating and weaken thermals.\n\n================================================================================\n                           WIND PARAMETERS\n================================================================================\n\nsfcwind0 (Surface Wind)\n    Unit: knots\n    Wind speed and direction at the surface (10m AGL). Important for\n    takeoff/landing assessment and ridge soaring potential.\n\nblwind (BL Average Wind)\n    Unit: knots\n    Average wind speed and direction through the boundary layer.\n    Represents the overall wind affecting thermal drift.\n\nbltopwind (BL Top Wind)\n    Unit: knots\n    Wind at the top of the boundary layer. Important for assessing\n    thermal drift at cloudbase and high-altitude conditions.\n\nblwindshear (BL Wind Shear)\n    Unit: knots per 1000ft\n    Vertical wind shear through the boundary layer. High shear tilts\n    thermals and makes them harder to work. Affects thermal quality.\n\n================================================================================\n                         SURFACE PARAMETERS\n================================================================================\n\nsfctemp (Surface Temperature)\n    Unit: \u00b0C\n    Air temperature at 2m above ground level. Important for thermal\n    triggering and pilot comfort.\n\nsfcdewpt (Surface Dew Point)\n    Unit: \u00b0C\n    Dew point temperature at 2m AGL. Indicates moisture content.\n    Closer to sfctemp = higher humidity = lower cloudbase potential.\n\nrain1 (1-hour Precipitation)\n    Unit: inches\n    Accumulated precipitation over the previous hour. Indicates\n    shower/storm activity that will suppress thermal activity.\n\ncape (Convective Available Potential Energy)\n    Unit: J/kg\n    Energy available for convection. High CAPE (>500 J/kg) indicates\n    potential for strong thunderstorm development. Be cautious!\n    0-500 = weak, 500-1500 = moderate, >1500 = strong instability.\n\n================================================================================\n                      PRESSURE LEVEL PARAMETERS\n================================================================================\n\npress950 / press955 (950/955 hPa Level)\n    Conditions at approximately 500m/450m ASL. Shows wind, temperature\n    at low levels above ground.\n\npress850 / press899 / press846 (850 hPa Level)\n    Conditions at approximately 1500m ASL. Standard level for synoptic\n    analysis of lower troposphere.\n\npress795 (795 hPa Level)\n    Conditions at approximately 2000m ASL.\n\npress700 / press701 (700 hPa Level)\n    Conditions at approximately 3000m ASL. Important for mountain flying\n    and assessing mid-level conditions.\n\npress616 / press540 (600-500 hPa Level)\n    Conditions at approximately 4000-5500m ASL. Upper-level analysis.\n\npress500 (500 hPa Level)\n    Conditions at approximately 5500m ASL. Standard level for synoptic\n    analysis of mid-troposphere.\n\n================================================================================\n                         CONVERGENCE PARAMETERS\n================================================================================\n\nwblmaxmin (BL Max Upward/Downward Motion)\n    Unit: ft/min\n    Maximum upward or downward vertical motion within the boundary layer,\n    indicating areas of wind convergence (positive/lifting) or divergence\n    (negative/sinking). Convergence zones can enhance thermal lift and mark\n    areas where thermals are more likely to form or strengthen.\n    Positive values = convergence/lift, negative = divergence/sink.\n\nzwblmaxmin (Height of BL Max W)\n    Unit: ft AGL\n    Height at which the maximum boundary layer vertical motion (wblmaxmin)\n    occurs. Helps understand where in the boundary layer the convergence\n    or divergence is strongest.\n\n================================================================================\n                      CROSS-COUNTRY PERFORMANCE PARAMETERS\n================================================================================\n\npfd_tot (Potential Flight Distance Total)\n    Unit: km\n    Estimated achievable cross-country flight distance based on thermal\n    conditions, averaged over the forecast period. Higher = better soaring day.\n\nxcspeed (Cross-Country Speed)\n    Unit: km/h\n    Expected achievable cross-country speed based on thermal strength and\n    spacing. Accounts for time spent climbing and gliding between thermals.\n    Higher values indicate faster XC potential and better soaring conditions.\n    Is based on a Discus glider polar.\n\nstars (Star Rating)\n    Unit: 0-5 stars\n    Overall soaring quality rating combining thermal strength, height, and \n    conditions. Quick visual indicator of expected soaring conditions:\n    0-1 = poor/unsoarable, 2 = marginal, 3 = moderate, 4 = good, 5 = excellent.\n\n================================================================================\n                         SOUNDING PARAMETERS\n================================================================================\n\nsounding1, sounding2, etc.\n    Atmospheric soundings (skew-T diagrams) at specified locations.\n    Shows vertical profile of temperature, dew point, and wind.\n    Essential for detailed analysis of atmospheric stability.\n\n================================================================================\n                         RIDGE LIFT PARAMETERS\n================================================================================\n\nridgelift (Ridge Lift / Orographic Lift)\n    Unit: ft/min (or cm/s depending on display)\n    Vertical velocity of air at approximately 300ft (100m) above ground level.\n    This is extracted directly from the WRF model's computed vertical velocity\n    field, which accounts for airflow over and around terrain features.\n    \n    Positive values indicate rising air (useful for ridge soaring), while\n    negative values indicate sinking air. Best used in conjunction with\n    surface wind direction to identify ridges that are \"working\".\n    \n    Interpretation:\n    \u2022 > 200 ft/min = Good ridge lift potential\n    \u2022 100-200 ft/min = Marginal ridge lift\n    \u2022 < 100 ft/min = Weak or no ridge lift\n    \u2022 Negative values = Sink / lee side turbulence\n    \n    Note: Actual ridge lift experienced will depend on local terrain features\n    that may be smaller than the model grid resolution (~2km).\n\n================================================================================\n                    EXPERIMENTAL/ADVANCED PARAMETERS\n================================================================================\n\nexperimental1\n    Custom or experimental parameter. Check documentation for specific\n    implementation details.\n\n================================================================================\n                         PARAMETER INTERPRETATION TIPS\n================================================================================\n\nGOOD SOARING CONDITIONS:\n\u2022 wstar > 500 ft/min\n\u2022 hbl > 5000 ft AGL\n\u2022 bsratio > 5\n\u2022 blcloudpct 10-40% (scattered Cu)\n\u2022 Low wind shear\n\u2022 cape < 500 J/kg (avoid thunderstorms)\n\nMARGINAL CONDITIONS:\n\u2022 wstar 200-400 ft/min\n\u2022 bsratio 3-5\n\u2022 High wind shear\n\u2022 Very low or very high cloudbase\n\nPOOR/DANGEROUS CONDITIONS:\n\u2022 wstar < 200 ft/min\n\u2022 bsratio < 3\n\u2022 blcloudpct > 60% (overdevelopment)\n\u2022 cape > 1500 J/kg (thunderstorm risk)\n\u2022 rain1 > 0 in forecast area\n\n================================================================================\n                         UNITS REFERENCE\n================================================================================\n\nIMPLEMENTED UNITS:\n\u2022 Heights: feet (ft) AGL\n\u2022 Vertical Speed: feet/minute (ft/min)\n\u2022 Wind Speed: knots (kt)\n\u2022 Temperature: Celsius (\u00b0C)\n\u2022 Precipitation: inches\n\u2022 Distance: km\n\u2022 Energy: J/kg\n\n================================================================================\n                         ADDITIONAL RESOURCES\n================================================================================\n\nDrJack's RASP Documentation:\nhttp://www.drjack.info/twiki/bin/view/RASPop/RunParametersDescription\n\nRASP Interpretation Guide:\nhttp://www.drjack.info/BLIP/INFO/\n\n================================================================================\n                              END OF DOCUMENT\n================================================================================\n\n\nNote this is AI generated. ";
+        const satelliteConfig = {};
+        const weatherStationsConfig = {"enabled": true, "station_ids": ["f06ce207", "1f07ceca8", "f0082b49", "f0fd1ccc", "f0c4d57e", "f0566811", "f0956332", "f09363a3", "f087467d"], "api_key": "9e293a6becb034b720f7dc36d5cdbb68b3e681d46667169fb83b49750a0390cf", "api_url": "https://stations.windy.com/api/v2", "refresh_interval": 300000, "station_locations": [{"id": "f06ce207", "name": "Ettrick Dalmuir Rd", "lat": -45.6393, "lon": 169.3476}, {"id": "1f07ceca8", "name": "White Street, Rangiora", "lat": -43.299233789916165, "lon": 172.58480250835422}, {"id": "f0082b49", "name": "Canterbury Seismic Instruments Weather Station", "lat": -43.522476657662274, "lon": 172.58575201034546}, {"id": "f0fd1ccc", "name": "Oxford Canterbury", "lat": -43.28792020575139, "lon": 172.21374975363554}, {"id": "f0c4d57e", "name": "562-Loburn", "lat": -43.179219343697135, "lon": 172.50571059761572}, {"id": "f0566811", "name": "Levi Rolleston", "lat": -43.592866257993435, "lon": 172.39564676771215}, {"id": "f0956332", "name": "Rangiora Weather Station", "lat": -43.30173602336159, "lon": 172.56696099029799}, {"id": "f09363a3", "name": "Waltham", "lat": -43.553096933400646, "lon": 172.64887511730197}, {"id": "f087467d", "name": "ICASHMER2", "lat": -43.574334, "lon": 172.637773}]};
+        const webcamsConfig = {"enabled": true, "cameras": {"1556830271": {"name": "Waitaki District \u203a East: SH8 Twizel North, South Canterbury", "lat": -44.29043, "lon": 170.08438, "image": "https://imgproxy.windy.com/_/preview/plain/current/1556830271/original.jpg"}, "1496397168": {"name": "Twizel \u203a North: Lakestone Lodge - Lake Pukaki - Mount Cook - Aoraki/Mount Cook National Park - South Island - New Zealand", "lat": -44.17757, "lon": 170.16081, "image": "https://imgproxy.windy.com/_/preview/plain/current/1496397168/original.jpg"}, "1556830268": {"name": "Burkes Pass \u203a East: SH8 - South Canterbury", "lat": -44.08991, "lon": 170.60173, "image": "https://imgproxy.windy.com/_/preview/plain/current/1556830268/original.jpg"}, "1402805050": {"name": "Fairlie: Kimbell - Albury", "lat": -44.11042, "lon": 170.71724, "image": "https://imgproxy.windy.com/_/preview/plain/current/1402805050/original.jpg"}, "1714455867": {"name": "Mackenzie District: University of Canterbury Mt John Observatory", "lat": -43.98577, "lon": 170.46453, "image": "https://imgproxy.windy.com/_/preview/plain/current/1714455867/original.jpg"}, "1686715947": {"name": "Mackenzie District \u203a South", "lat": -43.98574, "lon": 170.4651, "image": "https://imgproxy.windy.com/_/preview/plain/current/1686715947/original.jpg"}, "1653825830": {"name": "Lake Tekapo \u203a South-east: Tekapo", "lat": -43.9, "lon": 170.5, "image": "https://imgproxy.windy.com/_/preview/plain/current/1653825830/original.jpg"}, "1654430682": {"name": "Lake Tekapo \u203a South-west: Mount John", "lat": -43.9, "lon": 170.5, "image": "https://imgproxy.windy.com/_/preview/plain/current/1654430682/original.jpg"}, "1653825866": {"name": "Lake Tekapo \u203a North-west: Tekapo", "lat": -43.9, "lon": 170.5, "image": "https://imgproxy.windy.com/_/preview/plain/current/1653825866/original.jpg"}, "1657454598": {"name": "Lake Tekapo \u203a North: Tekapo", "lat": -43.9, "lon": 170.5, "image": "https://imgproxy.windy.com/_/preview/plain/current/1657454598/original.jpg"}, "1653825812": {"name": "Lake Tekapo \u203a North-east: Tekapo", "lat": -43.9, "lon": 170.5, "image": "https://imgproxy.windy.com/_/preview/plain/current/1653825812/original.jpg"}, "1706765717": {"name": "Mackenzie District \u203a North", "lat": -43.94224, "lon": 170.66198, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706765717/original.jpg"}, "1706765790": {"name": "Mackenzie District \u203a North-west", "lat": -43.94297, "lon": 170.66485, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706765790/original.jpg"}, "1656750641": {"name": "Waimate \u203a South-east: Ikawai", "lat": -44.85012, "lon": 170.92986, "image": "https://imgproxy.windy.com/_/preview/plain/current/1656750641/original.jpg"}, "1656932252": {"name": "Mackenzie District \u203a South: Farm Barn Cafe - Mount Michael Road - Fairlie - Geraldine-Fairlie Highway", "lat": -44.05758, "lon": 170.88875, "image": "https://imgproxy.windy.com/_/preview/plain/current/1656932252/original.jpg"}, "1639950290": {"name": "Maniototo Community \u203a South-west: Danseys Pass", "lat": -45.09308, "lon": 170.39617, "image": "https://imgproxy.windy.com/_/preview/plain/current/1639950290/original.jpg"}, "1402805515": {"name": "Geraldine: Waitohi - Pleasant Point - Levels - Richard Pearse Airport - Seadown - Timaru", "lat": -44.14834, "lon": 171.05009, "image": "https://imgproxy.windy.com/_/preview/plain/current/1402805515/original.jpg"}, "1708258012": {"name": "Lauder \u203a South-east", "lat": -45, "lon": 169.7, "image": "https://imgproxy.windy.com/_/preview/plain/current/1708258012/original.jpg"}, "1707653324": {"name": "Lauder \u203a South-west", "lat": -45, "lon": 169.7, "image": "https://imgproxy.windy.com/_/preview/plain/current/1707653324/original.jpg"}, "1707653338": {"name": "Lauder \u203a North-west", "lat": -45, "lon": 169.7, "image": "https://imgproxy.windy.com/_/preview/plain/current/1707653338/original.jpg"}, "1707653265": {"name": "Lauder \u203a North-east", "lat": -45, "lon": 169.7, "image": "https://imgproxy.windy.com/_/preview/plain/current/1707653265/original.jpg"}, "1707653253": {"name": "Lauder \u203a North", "lat": -45, "lon": 169.7, "image": "https://imgproxy.windy.com/_/preview/plain/current/1707653253/original.jpg"}, "1413332260": {"name": "Mackenzie District: Lake Opuha: Lake Opuha Fairlie", "lat": -43.96479, "lon": 170.90005, "image": "https://imgproxy.windy.com/_/preview/plain/current/1413332260/original.jpg"}, "1564034571": {"name": "Scarborough \u203a North: Timaru", "lat": -44.42443, "lon": 171.24191, "image": "https://imgproxy.windy.com/_/preview/plain/current/1564034571/original.jpg"}, "1588915288": {"name": "Temuka \u203a South-west", "lat": -44.3039, "lon": 171.22429, "image": "https://imgproxy.windy.com/_/preview/plain/current/1588915288/original.jpg"}, "1706766209": {"name": "Mackenzie District \u203a North-east", "lat": -43.82425, "lon": 170.65372, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706766209/original.jpg"}, "1706766289": {"name": "Mackenzie District \u203a East", "lat": -43.8192, "lon": 170.6603, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706766289/original.jpg"}, "1706766121": {"name": "Mackenzie District \u203a South-west", "lat": -43.81705, "lon": 170.66562, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706766121/original.jpg"}, "1678140410": {"name": "Mackenzie District \u203a North-east", "lat": -43.76589, "lon": 170.13418, "image": "https://imgproxy.windy.com/_/preview/plain/current/1678140410/original.jpg"}, "1592952482": {"name": "Mackenzie District \u203a North", "lat": -43.7358, "lon": 170.09552, "image": "https://imgproxy.windy.com/_/preview/plain/current/1592952482/original.jpg"}, "1591924151": {"name": "Mackenzie District: The Hermitage Hotel", "lat": -43.7327, "lon": 170.09318, "image": "https://imgproxy.windy.com/_/preview/plain/current/1591924151/original.jpg"}, "1754691836": {"name": "Mackenzie District \u203a West: Sir Edmund Hillary Cafe & Bar", "lat": -43.73271, "lon": 170.09284, "image": "https://imgproxy.windy.com/_/preview/plain/current/1754691836/original.jpg"}, "1754691631": {"name": "Mackenzie District \u203a North-east: Mount Wakefield", "lat": -43.73128, "lon": 170.09977, "image": "https://imgproxy.windy.com/_/preview/plain/current/1754691631/original.jpg"}, "1754691411": {"name": "Mackenzie District \u203a North: Aoraki / Mount Cook", "lat": -43.73114, "lon": 170.09726, "image": "https://imgproxy.windy.com/_/preview/plain/current/1754691411/original.jpg"}, "1564807317": {"name": "Wanaka \u203a East: Otago, New Zealand", "lat": -44.7233, "lon": 169.2475, "image": "https://imgproxy.windy.com/_/preview/plain/current/1564807317/original.jpg"}, "1609790681": {"name": "Wanaka \u203a South-east", "lat": -44.72219, "lon": 169.24625, "image": "https://imgproxy.windy.com/_/preview/plain/current/1609790681/original.jpg"}, "1593847540": {"name": "Wanaka \u203a South-west", "lat": -44.72321, "lon": 169.24452, "image": "https://imgproxy.windy.com/_/preview/plain/current/1593847540/original.jpg"}, "1577409548": {"name": "Wanaka \u203a North", "lat": -44.72314, "lon": 169.24416, "image": "https://imgproxy.windy.com/_/preview/plain/current/1577409548/original.jpg"}, "1680376965": {"name": "Wanaka \u203a North-west", "lat": -44.72271, "lon": 169.24344, "image": "https://imgproxy.windy.com/_/preview/plain/current/1680376965/original.jpg"}, "1687557960": {"name": "Vincent Community \u203a South", "lat": -45.04034, "lon": 169.41758, "image": "https://imgproxy.windy.com/_/preview/plain/current/1687557960/original.jpg"}, "1570750187": {"name": "Queenstown-Lakes District \u203a North-east: Lake W\u0101naka", "lat": -44.69202, "lon": 169.04883, "image": "https://imgproxy.windy.com/_/preview/plain/current/1570750187/original.jpg"}, "1570750367": {"name": "Wanaka \u203a North-east: Lake Hawea", "lat": -44.69453, "lon": 169.04913, "image": "https://imgproxy.windy.com/_/preview/plain/current/1570750367/original.jpg"}, "1570750452": {"name": "Wanaka \u203a North: Roys Peak - Roys Peak Track - Lake W\u0101naka", "lat": -44.7, "lon": 169.05, "image": "https://imgproxy.windy.com/_/preview/plain/current/1570750452/original.jpg"}, "1570750271": {"name": "Wanaka \u203a North-west: Mount Aspiring", "lat": -44.7, "lon": 169.05, "image": "https://imgproxy.windy.com/_/preview/plain/current/1570750271/original.jpg"}, "1687660179": {"name": "Cromwell Community \u203a South-east", "lat": -45.03285, "lon": 169.19178, "image": "https://imgproxy.windy.com/_/preview/plain/current/1687660179/original.jpg"}, "1690662475": {"name": "Cromwell Community \u203a West", "lat": -45.04937, "lon": 169.20731, "image": "https://imgproxy.windy.com/_/preview/plain/current/1690662475/original.jpg"}, "1630491986": {"name": "Gibson \u203a East: Alexandra -> East", "lat": -45.21673, "lon": 169.36933, "image": "https://imgproxy.windy.com/_/preview/plain/current/1630491986/original.jpg"}, "1724232977": {"name": "Vincent Community \u203a West: Alexandra -> West", "lat": -45.21673, "lon": 169.36933, "image": "https://imgproxy.windy.com/_/preview/plain/current/1724232977/original.jpg"}, "1630491981": {"name": "Gibson \u203a North: Alexandra -> North", "lat": -45.21673, "lon": 169.36933, "image": "https://imgproxy.windy.com/_/preview/plain/current/1630491981/original.jpg"}, "1605125985": {"name": "Queenstown-Lakes District \u203a South-west", "lat": -44.40497, "lon": 168.88689, "image": "https://imgproxy.windy.com/_/preview/plain/current/1605125985/original.jpg"}, "1630491956": {"name": "Albany \u203a North: Bannockburn -> North", "lat": -45.09086, "lon": 169.10785, "image": "https://imgproxy.windy.com/_/preview/plain/current/1630491956/original.jpg"}, "1750628294": {"name": "Arrowtown: Cardrona Alpine Resort - McDougall's Chondola - Upper", "lat": -44.87277, "lon": 168.94878, "image": "https://imgproxy.windy.com/_/preview/plain/current/1750628294/original.jpg"}, "1750628600": {"name": "Arrowtown: Cardrona Alpine Resort", "lat": -44.86139, "lon": 168.94361, "image": "https://imgproxy.windy.com/_/preview/plain/current/1750628600/original.jpg"}, "1753219358": {"name": "Arrowtown \u203a North-west", "lat": -44.9468, "lon": 168.836, "image": "https://imgproxy.windy.com/_/preview/plain/current/1753219358/original.jpg"}, "1612910278": {"name": "Jacks Point \u203a North", "lat": -45.06267, "lon": 168.82175, "image": "https://imgproxy.windy.com/_/preview/plain/current/1612910278/original.jpg"}, "1706766528": {"name": "Queenstown \u203a North-east", "lat": -45.05749, "lon": 168.81762, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706766528/original.jpg"}, "1684523488": {"name": "Queenstown", "lat": -45.05354, "lon": 168.81402, "image": "https://imgproxy.windy.com/_/preview/plain/current/1684523488/original.jpg"}, "1706767523": {"name": "Arrowtown \u203a South", "lat": -44.91754, "lon": 168.74105, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706767523/original.jpg"}, "1706767589": {"name": "Arrowtown \u203a North-west", "lat": -44.92716, "lon": 168.73802, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706767589/original.jpg"}, "1706767417": {"name": "Arrowtown \u203a East", "lat": -44.92687, "lon": 168.73656, "image": "https://imgproxy.windy.com/_/preview/plain/current/1706767417/original.jpg"}, "1697066158": {"name": "Boydtown: Kelvin Heights", "lat": -45.03083, "lon": 168.68098, "image": "https://imgproxy.windy.com/_/preview/plain/current/1697066158/original.jpg"}, "1393842392": {"name": "Queenstown-Lakes District: Mt Aspiring", "lat": -44.40043, "lon": 168.87718, "image": "https://imgproxy.windy.com/_/preview/plain/current/1393842392/original.jpg"}, "1760047288": {"name": "Ardlussa Community \u203a North-west", "lat": -45.56853, "lon": 169.00625, "image": "https://imgproxy.windy.com/_/preview/plain/current/1760047288/original.jpg"}, "1597094035": {"name": "Queenstown-Lakes District \u203a South-west: Routeburn Track - Hollyford Valley", "lat": -44.7151, "lon": 168.18366, "image": "https://imgproxy.windy.com/_/preview/plain/current/1597094035/original.jpg"}, "1624318887": {"name": "Queenstown-Lakes District \u203a West: Darran Mountains", "lat": -44.71591, "lon": 168.1828, "image": "https://imgproxy.windy.com/_/preview/plain/current/1624318887/original.jpg"}, "1526850586": {"name": "Southland District \u203a North: Gertrude Valley Lookout", "lat": -44.76563, "lon": 167.99383, "image": "https://imgproxy.windy.com/_/preview/plain/current/1526850586/original.jpg"}, "1710903424": {"name": "Ardlussa Community \u203a South-east", "lat": -45.75837, "lon": 168.81216, "image": "https://imgproxy.windy.com/_/preview/plain/current/1710903424/original.jpg"}, "1723685899": {"name": "Northern Community \u203a North-east", "lat": -45.44723, "lon": 168.13648, "image": "https://imgproxy.windy.com/_/preview/plain/current/1723685899/original.jpg"}, "1572407376": {"name": "Southland District \u203a West: Southern Discoveries - Milford Sound Visitor Centre - Milford Sound / Piopiotahi - Mitre Peak - Fiordland", "lat": -44.67198, "lon": 167.92602, "image": "https://imgproxy.windy.com/_/preview/plain/current/1572407376/original.jpg"}, "1793873094": {"name": "Northern Community \u203a North-west: Balfour -> NNW", "lat": -45.77279, "lon": 168.51385, "image": "https://imgproxy.windy.com/_/preview/plain/current/1793873094/original.jpg"}, "1669628218": {"name": "Northern Community \u203a South-east: Balfour -> SSE", "lat": -45.77279, "lon": 168.51385, "image": "https://imgproxy.windy.com/_/preview/plain/current/1669628218/original.jpg"}, "1630492007": {"name": "Broadwood \u203a North-east: Balfour -> NE", "lat": -45.77279, "lon": 168.51385, "image": "https://imgproxy.windy.com/_/preview/plain/current/1630492007/original.jpg"}, "1498983430": {"name": "Fiordland Community \u203a South-east: Clinton River", "lat": -44.80245, "lon": 167.7754, "image": "https://imgproxy.windy.com/_/preview/plain/current/1498983430/original.jpg"}, "1639704925": {"name": "Fiordland Community \u203a North: Mackinnon Pass - Mount Elliot", "lat": -44.80245, "lon": 167.77524, "image": "https://imgproxy.windy.com/_/preview/plain/current/1639704925/original.jpg"}, "1546480555": {"name": "Southland District: St. Anne's Point: Entrance to Milford Sound, NZ", "lat": -44.57301, "lon": 167.78161, "image": "https://imgproxy.windy.com/_/preview/plain/current/1546480555/original.jpg"}, "1758835716": {"name": "Gore \u203a South: Waikaka River Hamilton Park", "lat": -46.09186, "lon": 168.96786, "image": "https://imgproxy.windy.com/_/preview/plain/current/1758835716/original.jpg"}, "1693215462": {"name": "Tintinara \u203a North-west: NZAS - Ashburton -> Facing North-West", "lat": -43.90175, "lon": 171.79611, "image": "https://imgproxy.windy.com/_/preview/plain/current/1693215462/original.jpg"}, "1693301883": {"name": "Tintinara \u203a South-east: NZAS - Ashburton -> Facing SSE", "lat": -43.90175, "lon": 171.79611, "image": "https://imgproxy.windy.com/_/preview/plain/current/1693301883/original.jpg"}, "1724281040": {"name": "Ashburton \u203a West: Ashburton-Canterbury Airport", "lat": -43.90175, "lon": 171.79611, "image": "https://imgproxy.windy.com/_/preview/plain/current/1724281040/original.jpg"}, "1724281019": {"name": "Ashburton \u203a South-east: Ashburton-Canterbury Airport", "lat": -43.90447, "lon": 171.8045, "image": "https://imgproxy.windy.com/_/preview/plain/current/1724281019/original.jpg"}, "1724280977": {"name": "Ashburton \u203a North-west: Ashburton-Canterbury Airport", "lat": -43.90447, "lon": 171.8045, "image": "https://imgproxy.windy.com/_/preview/plain/current/1724280977/original.jpg"}, "1593130886": {"name": "Methven \u203a East: Mt Hutt Ski Area", "lat": -43.49521, "lon": 171.53933, "image": "https://imgproxy.windy.com/_/preview/plain/current/1593130886/original.jpg"}, "1728821262": {"name": "West Melton \u203a North: Greendale", "lat": -43.6, "lon": 172.1, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728821262/original.jpg"}, "1728821276": {"name": "West Melton \u203a North-east: Greendale", "lat": -43.6, "lon": 172.1, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728821276/original.jpg"}, "1728821310": {"name": "West Melton \u203a North-west: Greendale", "lat": -43.6, "lon": 172.1, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728821310/original.jpg"}, "1728821297": {"name": "West Melton \u203a South-east: Greendale", "lat": -43.6, "lon": 172.1, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728821297/original.jpg"}, "1728821301": {"name": "West Melton \u203a South-west: Greendale", "lat": -43.6, "lon": 172.1, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728821301/original.jpg"}, "1598246953": {"name": "Selwyn District \u203a North", "lat": -43.38366, "lon": 171.90839, "image": "https://imgproxy.windy.com/_/preview/plain/current/1598246953/original.jpg"}, "1793898919": {"name": "Selwyn District", "lat": -43.16215, "lon": 171.63074, "image": "https://imgproxy.windy.com/_/preview/plain/current/1793898919/original.jpg"}, "1602648833": {"name": "Fendalton-Waimari-Harewood Community \u203a South: Mandeville North", "lat": -43.38754, "lon": 172.52552, "image": "https://imgproxy.windy.com/_/preview/plain/current/1602648833/original.jpg"}, "1669667884": {"name": "Linwood-Central-Heathcote Community \u203a West", "lat": -43.58948, "lon": 172.71625, "image": "https://imgproxy.windy.com/_/preview/plain/current/1669667884/original.jpg"}, "1483169397": {"name": "Arthur's Pass: Canterbury, New Zealand", "lat": -42.94527, "lon": 171.56349, "image": "https://imgproxy.windy.com/_/preview/plain/current/1483169397/original.jpg"}, "1723844415": {"name": "Selwyn District: Arthur's Pass Village", "lat": -42.93677, "lon": 171.56055, "image": "https://imgproxy.windy.com/_/preview/plain/current/1723844415/original.jpg"}, "1672279274": {"name": "Coastal-Burwood Community", "lat": -43.53361, "lon": 172.73675, "image": "https://imgproxy.windy.com/_/preview/plain/current/1672279274/original.jpg"}, "1688419697": {"name": "Westland District \u203a East", "lat": -42.90515, "lon": 171.554, "image": "https://imgproxy.windy.com/_/preview/plain/current/1688419697/original.jpg"}, "1623991479": {"name": "Linwood-Central-Heathcote Community \u203a South: Taylors Mistake Beach", "lat": -43.58229, "lon": 172.77549, "image": "https://imgproxy.windy.com/_/preview/plain/current/1623991479/original.jpg"}, "1387498206": {"name": "Christchurch: Taylors Mistake Bay", "lat": -43.58174, "lon": 172.77671, "image": "https://imgproxy.windy.com/_/preview/plain/current/1387498206/original.jpg"}, "1645955415": {"name": "Dunedin \u203a South", "lat": -45.8505, "lon": 170.51377, "image": "https://imgproxy.windy.com/_/preview/plain/current/1645955415/original.jpg"}, "1655336050": {"name": "Dunedin: Dunedin Hospital Heliport", "lat": -45.86889, "lon": 170.50971, "image": "https://imgproxy.windy.com/_/preview/plain/current/1655336050/original.jpg"}, "1719897862": {"name": "Dunedin \u203a West: Vauxhall", "lat": -45.88214, "lon": 170.53041, "image": "https://imgproxy.windy.com/_/preview/plain/current/1719897862/original.jpg"}, "1728464351": {"name": "Dunedin \u203a West: Vauxhall - Roslyn - Maori Hill", "lat": -45.8822, "lon": 170.53004, "image": "https://imgproxy.windy.com/_/preview/plain/current/1728464351/original.jpg"}, "1694630890": {"name": "Dunedin", "lat": -45.87492, "lon": 170.50436, "image": "https://imgproxy.windy.com/_/preview/plain/current/1694630890/original.jpg"}, "1341857441": {"name": "Dunedin: Otago House", "lat": -45.87692, "lon": 170.50507, "image": "https://imgproxy.windy.com/_/preview/plain/current/1341857441/original.jpg"}, "1758447395": {"name": "Janefield \u203a North: NZTI - Otago -> Facing North", "lat": -45.86148, "lon": 170.36252, "image": "https://imgproxy.windy.com/_/preview/plain/current/1758447395/original.jpg"}, "1758447383": {"name": "Janefield \u203a South-west: NZTI - Otago -> Facing South-West", "lat": -45.86148, "lon": 170.36252, "image": "https://imgproxy.windy.com/_/preview/plain/current/1758447383/original.jpg"}, "1793899426": {"name": "Janefield \u203a North-east: NZTI - Otago -> Facing North-East", "lat": -45.86148, "lon": 170.36252, "image": "https://imgproxy.windy.com/_/preview/plain/current/1793899426/original.jpg"}, "1577604040": {"name": "Dunedin \u203a West", "lat": -45.90348, "lon": 170.4498, "image": "https://imgproxy.windy.com/_/preview/plain/current/1577604040/original.jpg"}, "1694631177": {"name": "East Taieri", "lat": -45.90009, "lon": 170.351, "image": "https://imgproxy.windy.com/_/preview/plain/current/1694631177/original.jpg"}, "1648970900": {"name": "Brighton", "lat": -46.05707, "lon": 170.19625, "image": "https://imgproxy.windy.com/_/preview/plain/current/1648970900/original.jpg"}}, "api_key": "9JYFretSytNdwcnOlG2e10zAADfnu39l", "api_mode": true, "max_webcams": 50, "fetched_from_api": true};
         
         console.log('Manifest loaded:', Object.keys(manifest));
         
@@ -1326,7 +1634,8 @@
                     'icon-allow-overlap': true,
                     'icon-ignore-placement': true,
                     'icon-pitch-alignment': 'viewport',
-                    'icon-rotation-alignment': 'viewport'
+                    'icon-rotation-alignment': 'viewport',
+                    'visibility': soundingsEnabled ? 'visible' : 'none'
                 }
             });
             
@@ -1339,9 +1648,10 @@
                     'text-field': ['get', 'name'],
                     'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
                     'text-size': 11,
-                    'text-offset': [0, 1.8],
+                    'text-offset': [0, 2.3],
                     'text-anchor': 'top',
-                    'text-allow-overlap': false
+                    'text-allow-overlap': false,
+                    'visibility': soundingsEnabled ? 'visible' : 'none'
                 },
                 paint: {
                     'text-color': '#ffffff',
@@ -1352,6 +1662,10 @@
             
             // Add click handler for markers
             map.on('click', 'sounding-markers', (e) => {
+                lastMarkerClickTime = Date.now();
+                e.preventDefault(); // Prevent event bubbling to map
+                e.originalEvent?.preventDefault();
+                e.originalEvent?.stopPropagation();
                 if (e.features && e.features.length > 0) {
                     const feature = e.features[0];
                     const siteId = feature.properties.id;
@@ -1370,6 +1684,18 @@
             });
             
             console.log(`Added ${soundingGeoJSON.features.length} sounding markers using symbol layer`);
+        }
+        
+        function removeSoundingMarkers() {
+            if (map.getLayer('sounding-labels')) {
+                map.removeLayer('sounding-labels');
+            }
+            if (map.getLayer('sounding-markers')) {
+                map.removeLayer('sounding-markers');
+            }
+            if (map.getSource('sounding-sites')) {
+                map.removeSource('sounding-sites');
+            }
         }
         
         function showSounding(siteId, siteName) {
@@ -1822,6 +2148,11 @@
         });
         
         document.getElementById('map').addEventListener('click', (e) => {
+            // Don't advance time if a marker was clicked recently (within 100ms)
+            if (Date.now() - lastMarkerClickTime < 100) {
+                return;
+            }
+            
             // On small screens, collapse controls first without advancing time
             if (isMobile() && controlState === 'big') {
                 setControlState('little');
@@ -2244,9 +2575,867 @@
             }
         });
         
+        let lastMarkerClickTime = 0;
+        
+        // =====================================================
+        // LIVE WEATHER STATION DATA - Windy Stations API (real observations)
+        // =====================================================
+        
+        let weatherEnabled = false;
+        let weatherData = {};  // Store pre-loaded weather data
+        let weatherLoading = false;  // Track if data is being pre-loaded
+        
+        let soundingsEnabled = false;
+        
+        function getWindArrow(degrees) {
+            // Return SVG arrow rotated to exact direction wind is coming FROM
+            // Wind direction is reported as the direction FROM which wind blows
+            return `<svg width="32" height="32" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle; transform: rotate(${degrees}deg);"><path d="M8 2 L12 10 L8 8 L4 10 Z" fill="currentColor"/></svg>`;
+        }
+        
+        // Calculate dew point from temperature and relative humidity using Magnus formula
+        function calculateDewPoint(tempC, humidity) {
+            if (tempC === null || tempC === undefined || humidity === null || humidity === undefined) {
+                return null;
+            }
+            const a = 17.27;
+            const b = 237.7;
+            const alpha = ((a * tempC) / (b + tempC)) + Math.log(humidity / 100);
+            const dewPoint = (b * alpha) / (a - alpha);
+            return dewPoint;
+        }
+        
+        // Calculate cloud base from temperature and dew point using approximation formula
+        // Standard rule: 1°C spread ≈ 400 feet altitude (or ~122 meters)
+        // This approximates the convergence rate of temperature and dew point with altitude
+        function calculateCloudBase(tempC, dewPointC) {
+            if (tempC === null || tempC === undefined || dewPointC === null || dewPointC === undefined) {
+                return null;
+            }
+            const spread = tempC - dewPointC;
+            // Only calculate if spread is positive and reasonable (< 30°C)
+            if (spread <= 0 || spread > 30) {
+                return null;
+            }
+            // Cloud base in meters AGL (Above Ground Level)
+            // Each degree C of spread = approximately 400 feet = 122 meters
+            const cloudBaseMeters = spread * 122;
+            return cloudBaseMeters;
+        }
+        
+        async function preloadWeatherData() {
+            if (!weatherStationsConfig.enabled || weatherLoading) {
+                return;
+            }
+            
+            weatherLoading = true;
+            const btn = document.getElementById('weatherBtn');
+            btn.classList.add('loading');  // Add orange loading indicator
+            
+            const apiKey = weatherStationsConfig.api_key;
+            const apiUrl = weatherStationsConfig.api_url || 'https://stations.windy.com/api/v2';
+            const stationIds = weatherStationsConfig.station_ids || [];
+            
+            if (stationIds.length === 0) {
+                console.warn('No station IDs configured');
+                weatherLoading = false;
+                btn.classList.remove('loading');
+                return;
+            }
+            
+            console.log(`Pre-loading weather data for ${stationIds.length} stations...`);
+            
+            try {
+                // Fetch observations for all configured stations
+                const fetchPromises = stationIds.map(async (stationId) => {
+                    try {
+                        const obsResponse = await fetch(`${apiUrl}/opendata/station/${stationId}/observation?key=${apiKey}`);
+                        if (!obsResponse.ok) return null;
+                        
+                        const obsData = await obsResponse.json();
+                        const header = obsData.header || {};
+                        const data = obsData.data || {};
+                        
+                        // Get latest values (last element of each array)
+                        const getLatest = (arr) => arr && arr.length > 0 ? arr[arr.length - 1] : null;
+                        
+                        const tempK = getLatest(data.temp);
+                        const windSpeed = getLatest(data.wind); // m/s
+                        const windDir = getLatest(data.wind_dir); // degrees
+                        const windGust = getLatest(data.wind_gust); // m/s
+                        const humidity = getLatest(data.rh);
+                        const pressure = getLatest(data.pressure); // Pa
+                        
+                        // Calculate dew point and cloud base
+                        const temperature = tempK !== null ? tempK - 273.15 : null;
+                        const dewPoint = calculateDewPoint(temperature, humidity);
+                        const cloudBase = calculateCloudBase(temperature, dewPoint);
+                        
+                        return {
+                            id: stationId,
+                            name: header.name || stationId,
+                            temperature: temperature,
+                            windSpeed: windSpeed !== null ? windSpeed * 3.6 : null, // m/s to km/h
+                            windDirection: windDir,
+                            windGust: windGust !== null ? windGust * 3.6 : null,
+                            humidity: humidity,
+                            pressure: pressure !== null ? pressure / 100 : null, // Pa to hPa
+                            dewPoint: dewPoint,
+                            cloudBase: cloudBase,
+                            lastUpdated: Date.now()
+                        };
+                    } catch (e) {
+                        console.warn('Failed to fetch observations for station', stationId);
+                        return null;
+                    }
+                });
+                
+                const results = await Promise.all(fetchPromises);
+                
+                // Store valid results
+                results.forEach(r => {
+                    if (r && r.id) {
+                        weatherData[r.id] = r;
+                    }
+                });
+                
+                console.log('Weather data pre-loaded:', Object.keys(weatherData).length, 'stations');
+                
+            } catch (error) {
+                console.error('Error pre-loading weather data:', error);
+            } finally {
+                weatherLoading = false;
+                btn.classList.remove('loading');  // Remove orange loading indicator
+            }
+        }
+        
+        function getWeatherIcon(clouds) {
+            // Estimate weather from cloud cover
+            if (clouds === undefined || clouds === null) return '🌤️';
+            if (clouds < 10) return '☀️';
+            if (clouds < 30) return '🌤️';
+            if (clouds < 60) return '⛅';
+            if (clouds < 90) return '🌥️';
+            return '☁️';
+        }
+        
+        function createWeatherMarkersIfNeeded() {
+            // Only create markers if they don't already exist
+            if (map.getSource('weather-sites') || !weatherStationsConfig.station_locations) {
+                return;
+            }
+            
+            // Get station locations from config
+            const stationLocations = weatherStationsConfig.station_locations;
+            
+            // Create GeoJSON for weather stations (locations only, no data yet)
+            const weatherGeoJSON = {
+                type: 'FeatureCollection',
+                features: stationLocations.map((station) => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [station.lon, station.lat]
+                    },
+                    properties: {
+                        id: station.id,
+                        name: station.name,
+                        lat: station.lat,
+                        lon: station.lon
+                    }
+                }))
+            };
+            
+            // Create custom weather station icon (thermometer - same style as skew-T)
+            const iconSize = 48;
+            const canvas = document.createElement('canvas');
+            canvas.width = iconSize;
+            canvas.height = iconSize;
+            const ctx = canvas.getContext('2d');
+            
+            // Helper function for rounded rectangle
+            function drawRoundedRect(ctx, x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.arcTo(x + width, y, x + width, y + radius, radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+                ctx.lineTo(x + radius, y + height);
+                ctx.arcTo(x, y + height, x, y + height - radius, radius);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+            }
+            
+            // Draw background (same as skew-T)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#1f2937';
+            ctx.lineWidth = 2;
+            drawRoundedRect(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw thermometer outer tube (black outline)
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(iconSize/2, 32, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillRect(21, 12, 6, 20);
+            
+            // Draw thermometer inner (white background)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(iconSize/2, 32, 4.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillRect(22.5, 13.5, 3, 18.5);
+            
+            // Draw mercury bulb (bottom)
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(iconSize/2, 32, 3.5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw mercury tube
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(23.25, 16, 1.5, 16);
+            
+            // Draw temperature markings (black)
+            ctx.strokeStyle = '#1f2937';
+            ctx.lineWidth = 1;
+            const markingYs = [15, 19, 23, 27];
+            for (const y of markingYs) {
+                ctx.beginPath();
+                ctx.moveTo(27.5, y);
+                ctx.lineTo(31, y);
+                ctx.stroke();
+            }
+            
+            const imageData = ctx.getImageData(0, 0, iconSize, iconSize);
+            
+            if (!map.hasImage('weather-icon')) {
+                map.addImage('weather-icon', imageData, { pixelRatio: 2 });
+            }
+            
+            // Add source
+            map.addSource('weather-sites', {
+                type: 'geojson',
+                data: weatherGeoJSON
+            });
+            
+            // Add symbol layer for markers (start hidden)
+            map.addLayer({
+                id: 'weather-markers',
+                type: 'symbol',
+                source: 'weather-sites',
+                layout: {
+                    'icon-image': 'weather-icon',
+                    'icon-size': 1.0,
+                    'icon-allow-overlap': false,
+                    'icon-ignore-placement': false,
+                    'icon-pitch-alignment': 'viewport',
+                    'icon-rotation-alignment': 'viewport',
+                    'visibility': 'none'
+                }
+            });
+            
+            // Add click handler for markers
+            map.on('click', 'weather-markers', (e) => {
+                lastMarkerClickTime = Date.now();
+                e.preventDefault();
+                e.originalEvent?.preventDefault();
+                e.originalEvent?.stopPropagation();
+                if (e.features && e.features.length > 0) {
+                    const feature = e.features[0];
+                    const props = feature.properties;
+                    showWeatherPopup(props.id, props, e);
+                }
+            });
+            
+            // Change cursor on hover
+            map.on('mouseenter', 'weather-markers', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            
+            map.on('mouseleave', 'weather-markers', () => {
+                map.getCanvas().style.cursor = '';
+            });
+            
+            console.log('Weather markers created during initialization:', weatherGeoJSON.features.length);
+        }
+        
+        async function showWeatherPopup(id, data, event) {
+            const popup = document.getElementById('weatherPopup');
+            const title = document.getElementById('weatherPopupTitle');
+            
+            title.innerHTML = `🌡️ ${data.name}`;
+            
+            // Check if we have pre-loaded data for this station
+            if (weatherData[id]) {
+                const stationData = weatherData[id];
+                
+                // Position popup near click
+                if (event && event.point) {
+                    const rect = map.getCanvas().getBoundingClientRect();
+                    popup.style.left = Math.min(event.point.x + rect.left, window.innerWidth - 240) + 'px';
+                    popup.style.top = Math.max(event.point.y + rect.top + 10, 10) + 'px';
+                } else {
+                    popup.style.left = '50%';
+                    popup.style.top = '50%';
+                    popup.style.transform = 'translate(-50%, -50%)';
+                }
+                
+                popup.classList.add('active');
+                
+                // Use pre-loaded data
+                updateWeatherPopup(stationData);
+                return;
+            }
+            
+            // Show loading state for on-demand fetch
+            document.getElementById('wxTemp').textContent = 'Loading...';
+            document.getElementById('wxDewPoint').textContent = 'Loading...';
+            document.getElementById('wxWind').textContent = 'Loading...';
+            document.getElementById('wxWindDir').textContent = 'Loading...';
+            document.getElementById('wxGust').textContent = 'Loading...';
+            document.getElementById('wxHumidity').textContent = 'Loading...';
+            document.getElementById('wxPressure').textContent = 'Loading...';
+            document.getElementById('wxCloudBase').textContent = 'Loading...';
+            document.getElementById('wxLastUpdated').textContent = 'Loading...';
+            
+            // Position popup near click (for symbol layer clicks)
+            if (event && event.point) {
+                const rect = map.getCanvas().getBoundingClientRect();
+                popup.style.left = Math.min(event.point.x + rect.left, window.innerWidth - 240) + 'px';
+                popup.style.top = Math.max(event.point.y + rect.top + 10, 10) + 'px';
+            } else {
+                // Fallback positioning
+                popup.style.left = '50%';
+                popup.style.top = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+            }
+            
+            popup.classList.add('active');
+            
+            // Fetch live data for this specific station (fallback)
+            try {
+                const apiKey = weatherStationsConfig.api_key;
+                const apiUrl = weatherStationsConfig.api_url || 'https://stations.windy.com/api/v2';
+                
+                const obsResponse = await fetch(`${apiUrl}/opendata/station/${id}/observation?key=${apiKey}`);
+                if (!obsResponse.ok) throw new Error('Failed to fetch observations');
+                
+                const obsData = await obsResponse.json();
+                const header = obsData.header || {};
+                const obs = obsData.data || {};
+                
+                // Get latest values (last element of each array)
+                const getLatest = (arr) => arr && arr.length > 0 ? arr[arr.length - 1] : null;
+                
+                const tempK = getLatest(obs.temp);
+                const windSpeed = getLatest(obs.wind); // m/s
+                const windDir = getLatest(obs.wind_dir); // degrees
+                const windGust = getLatest(obs.wind_gust); // m/s
+                const humidity = getLatest(obs.rh);
+                const pressure = getLatest(obs.pressure); // Pa
+                
+                // Calculate dew point and cloud base
+                const temperature = tempK !== null ? tempK - 273.15 : null;
+                const dewPoint = calculateDewPoint(temperature, humidity);
+                const cloudBase = calculateCloudBase(temperature, dewPoint);
+                
+                const stationData = {
+                    id: id,
+                    name: header.name || id,
+                    temperature: temperature,
+                    windSpeed: windSpeed !== null ? windSpeed * 3.6 : null,
+                    windDirection: windDir,
+                    windGust: windGust !== null ? windGust * 3.6 : null,
+                    humidity: humidity,
+                    pressure: pressure !== null ? pressure / 100 : null,
+                    dewPoint: dewPoint,
+                    cloudBase: cloudBase,
+                    lastUpdated: Date.now()
+                };
+                
+                // Store for future use
+                weatherData[id] = stationData;
+                
+                // Update popup with fetched data
+                updateWeatherPopup(stationData);
+                
+            } catch (error) {
+                console.error('Error fetching weather data for station', id, error);
+                document.getElementById('wxTemp').textContent = '--';
+                document.getElementById('wxDewPoint').textContent = '--';
+                document.getElementById('wxWind').textContent = '--';
+                document.getElementById('wxHumidity').textContent = '--';
+                document.getElementById('wxPressure').textContent = '--';
+                document.getElementById('wxCloudBase').textContent = '--';
+                document.getElementById('wxLastUpdated').textContent = 'Error loading data';
+                if (gustEl) gustEl.textContent = '';
+            }
+        }
+        
+        function updateWeatherPopup(data) {
+            document.getElementById('wxTemp').textContent = 
+                (data.temperature !== undefined && data.temperature !== null) 
+                    ? `${data.temperature.toFixed(1)}°C` 
+                    : '--';
+            
+            document.getElementById('wxDewPoint').textContent = 
+                (data.dewPoint !== undefined && data.dewPoint !== null) 
+                    ? `${data.dewPoint.toFixed(1)}°C` 
+                    : '--';
+            
+            document.getElementById('wxWind').textContent = 
+                (data.windSpeed !== undefined && data.windSpeed !== null) 
+                    ? `${Math.round(data.windSpeed)} km/h` 
+                    : '--';
+            
+            // Wind direction with arrow and degrees
+            if (data.windDirection !== undefined && data.windDirection !== null) {
+                const arrow = getWindArrow(data.windDirection);
+                document.getElementById('wxWindDir').innerHTML = `${Math.round(data.windDirection)}° ${arrow}`;
+            } else {
+                document.getElementById('wxWindDir').innerHTML = '--';
+            }
+            
+            document.getElementById('wxGust').textContent = 
+                (data.windGust !== undefined && data.windGust !== null) 
+                    ? `${Math.round(data.windGust)} km/h` 
+                    : '--';
+            
+            document.getElementById('wxHumidity').textContent = 
+                (data.humidity !== undefined && data.humidity !== null) 
+                    ? `${Math.round(data.humidity)}%` 
+                    : '--';
+            
+            document.getElementById('wxPressure').textContent = 
+                (data.pressure !== undefined && data.pressure !== null) 
+                    ? `${Math.round(data.pressure)} hPa` 
+                    : '--';
+            
+            // Cloud base estimation
+            if (data.cloudBase !== undefined && data.cloudBase !== null) {
+                const cloudBaseFt = Math.round(data.cloudBase * 3.28084); // Convert meters to feet
+                const cloudBaseM = Math.round(data.cloudBase);
+                document.getElementById('wxCloudBase').textContent = `${cloudBaseFt} ft (${cloudBaseM} m)`;
+            } else {
+                document.getElementById('wxCloudBase').textContent = '--';
+            }
+            
+            // Show when data was fetched
+            const time = data.lastUpdated 
+                ? new Date(data.lastUpdated).toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit' }) 
+                : '--';
+            document.getElementById('wxLastUpdated').textContent = `Windy Stations @ ${time}`;
+        }
+        
+        function removeWeatherMarkers() {
+            // Just hide the markers instead of removing them
+            if (map.getLayer('weather-markers')) {
+                map.setLayoutProperty('weather-markers', 'visibility', 'none');
+            }
+        }
+        
+        function toggleWeather() {
+            const btn = document.getElementById('weatherBtn');
+            
+            if (weatherEnabled) {
+                // Disable - hide markers
+                weatherEnabled = false;
+                btn.classList.remove('active');
+                if (map.getLayer('weather-markers')) {
+                    map.setLayoutProperty('weather-markers', 'visibility', 'none');
+                }
+                localStorage.removeItem('weatherEnabled');
+            } else {
+                // Enable - show markers
+                weatherEnabled = true;
+                btn.classList.add('active');
+                // Ensure markers exist
+                createWeatherMarkersIfNeeded();
+                if (map.getLayer('weather-markers')) {
+                    map.setLayoutProperty('weather-markers', 'visibility', 'visible');
+                }
+                localStorage.setItem('weatherEnabled', 'true');
+                
+                // Start pre-loading weather data in background
+                preloadWeatherData();
+            }
+        }
+        
+        document.getElementById('weatherBtn').addEventListener('click', toggleWeather);
+        
+        document.getElementById('closeWeather').addEventListener('click', () => {
+            document.getElementById('weatherPopup').classList.remove('active');
+        });
+        
+        // Close weather popup on map click
+        document.getElementById('map').addEventListener('click', () => {
+            document.getElementById('weatherPopup').classList.remove('active');
+            document.getElementById('webcamPopup').classList.remove('active');
+        }, true);
+        
+        // =====================================================
+        // WEBCAM MARKERS - Using pre-fetched data from Windy API
+        // =====================================================
+        
+        let webcamsEnabled = false;
+        let currentWebcam = null;
+        let webcamAutoRefreshInterval = null;
+        
+        function getWebcamsFromConfig() {
+            // Use pre-fetched webcams from site generation
+            if (!webcamsConfig.enabled || !webcamsConfig.cameras) {
+                console.log('No webcams configured');
+                return [];
+            }
+            
+            const cameras = webcamsConfig.cameras;
+            const webcams = Object.entries(cameras).map(([id, cam]) => ({
+                id: id,
+                title: cam.name,
+                name: cam.name,
+                lat: cam.lat,
+                lon: cam.lon,
+                type: cam.type,
+                image: cam.image,
+                thumbnail: cam.thumbnail,
+                windy_id: cam.windy_id || id,
+                city: cam.city
+            })).filter(cam => cam.lat && cam.lon);
+            
+            console.log('Loaded webcams from config:', webcams.length);
+            return webcams;
+        }
+        
+        function addWebcamMarkers() {
+            if (!map || !webcamsConfig.enabled) return;
+            
+            const btn = document.getElementById('webcamBtn');
+            const webcams = getWebcamsFromConfig();
+            
+            console.log('Adding webcam markers for', webcams.length, 'webcams');
+            
+            // Remove existing markers
+            if (map.getLayer('webcam-markers')) {
+                map.removeLayer('webcam-markers');
+            }
+            if (map.getLayer('webcam-labels')) {
+                map.removeLayer('webcam-labels');
+            }
+            if (map.getSource('webcam-sites')) {
+                map.removeSource('webcam-sites');
+            }
+            
+            // Create GeoJSON for webcams
+            const webcamGeoJSON = {
+                type: 'FeatureCollection',
+                features: webcams.map((cam) => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [cam.lon, cam.lat]
+                    },
+                    properties: {
+                        id: cam.id,
+                        name: cam.name,
+                        title: cam.title,
+                        image: cam.image,
+                        thumbnail: cam.thumbnail,
+                        windy_id: cam.windy_id,
+                        city: cam.city
+                    }
+                }))
+            };
+            
+            // Create custom webcam icon (camera - same style as skew-T)
+            const iconSize = 48;
+            const canvas = document.createElement('canvas');
+            canvas.width = iconSize;
+            canvas.height = iconSize;
+            const ctx = canvas.getContext('2d');
+            
+            // Helper function for rounded rectangle
+            function drawRoundedRect2(ctx, x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.arcTo(x + width, y, x + width, y + radius, radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+                ctx.lineTo(x + radius, y + height);
+                ctx.arcTo(x, y + height, x, y + height - radius, radius);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+            }
+            
+            // Draw background (same as skew-T)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            drawRoundedRect2(ctx, 4, 4, iconSize - 8, iconSize - 8, 4);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw camera body (centered in the icon)
+            ctx.fillStyle = '#3b82f6';
+            drawRoundedRect2(ctx, 8, 12, iconSize - 16, iconSize - 20, 3);
+            ctx.fill();
+            
+            // Draw viewfinder bump
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(iconSize/2 - 5, 8, 10, 6);
+            
+            // Draw lens outer
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(iconSize/2, iconSize/2 + 2, 9, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw lens inner
+            ctx.fillStyle = '#93c5fd';
+            ctx.beginPath();
+            ctx.arc(iconSize/2, iconSize/2 + 2, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw lens highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(iconSize/2 - 2, iconSize/2, 2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            const imageData = ctx.getImageData(0, 0, iconSize, iconSize);
+            
+            if (!map.hasImage('webcam-icon')) {
+                map.addImage('webcam-icon', imageData, { pixelRatio: 2 });
+            }
+            
+            // Add source
+            map.addSource('webcam-sites', {
+                type: 'geojson',
+                data: webcamGeoJSON
+            });
+            
+            // Add symbol layer for markers
+            map.addLayer({
+                id: 'webcam-markers',
+                type: 'symbol',
+                source: 'webcam-sites',
+                layout: {
+                    'icon-image': 'webcam-icon',
+                    'icon-size': 1.0,
+                    'icon-allow-overlap': false,
+                    'icon-ignore-placement': false,
+                    'icon-pitch-alignment': 'viewport',
+                    'icon-rotation-alignment': 'viewport'
+                }
+            });
+            
+            // Add click handler for markers
+            map.on('click', 'webcam-markers', (e) => {
+                lastMarkerClickTime = Date.now();
+                e.preventDefault();
+                e.originalEvent?.preventDefault();
+                e.originalEvent?.stopPropagation();
+                if (e.features && e.features.length > 0) {
+                    const feature = e.features[0];
+                    const props = feature.properties;
+                    showWebcamPopup(props.id, props);
+                }
+            });
+            
+            // Change cursor on hover
+            map.on('mouseenter', 'webcam-markers', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            
+            map.on('mouseleave', 'webcam-markers', () => {
+                map.getCanvas().style.cursor = '';
+            });
+            
+            console.log('Webcam markers added using symbol layer:', webcamGeoJSON.features.length);
+        }
+        
+        function removeWebcamMarkers() {
+            if (map.getLayer('webcam-markers')) {
+                map.removeLayer('webcam-markers');
+            }
+            if (map.getSource('webcam-sites')) {
+                map.removeSource('webcam-sites');
+            }
+        }
+        
+        function showWebcamPopup(id, cam) {
+            const popup = document.getElementById('webcamPopup');
+            const title = document.getElementById('webcamPopupTitle');
+            const content = document.getElementById('webcamContent');
+            
+            currentWebcam = { ...cam };
+            
+            // Stop any existing auto-refresh
+            if (webcamAutoRefreshInterval) {
+                clearInterval(webcamAutoRefreshInterval);
+                webcamAutoRefreshInterval = null;
+            }
+            
+            const locationInfo = cam.city ? ` - ${cam.city}` : '';
+            title.innerHTML = `📷 ${cam.title || cam.name}${locationInfo}`;
+            
+            // Update footer Windy link
+            const windyLink = document.getElementById('webcamWindyLink');
+            if (windyLink) {
+                windyLink.href = `https://www.windy.com/webcams/${cam.windy_id || cam.id}`;
+            }
+            
+            // Show loading state
+            content.innerHTML = '<div class="webcam-loading">Loading webcam...</div>';
+            popup.classList.add('active');
+            
+            // Load the webcam content
+            loadWebcamContent(currentWebcam, content);
+            
+            // Start auto-refresh every 30 seconds
+            webcamAutoRefreshInterval = setInterval(() => {
+                if (currentWebcam && popup.classList.contains('active')) {
+                    loadWebcamContent(currentWebcam, content);
+                }
+            }, 30000);
+        }
+        
+        function loadWebcamContent(cam, container) {
+            // Show latest image from webcam (not video feed)
+            const imageUrl = cam.image || cam.thumbnail;
+            
+            if (imageUrl) {
+                // Add cache buster to get fresh image
+                const timestamp = Date.now();
+                const img = document.createElement('img');
+                img.className = 'webcam-image';
+                img.alt = cam.title || cam.name;
+                img.src = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + timestamp;
+                
+                img.onload = () => {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                    updateWebcamTimestamp();
+                };
+                
+                img.onerror = () => {
+                    container.innerHTML = '<div class="webcam-loading">⚠️ Image unavailable</div>';
+                    updateWebcamTimestamp();
+                };
+            } else {
+                container.innerHTML = '<div class="webcam-loading">⚠️ No image available</div>';
+                updateWebcamTimestamp();
+            }
+        }
+        
+        function updateWebcamTimestamp() {
+            const timestampEl = document.getElementById('webcamTimestamp');
+            if (timestampEl) {
+                const now = new Date();
+                timestampEl.textContent = 'Updated: ' + now.toLocaleTimeString();
+            }
+        }
+        
+        function closeWebcamPopup() {
+            const popup = document.getElementById('webcamPopup');
+            popup.classList.remove('active');
+            currentWebcam = null;
+            
+            // Stop auto-refresh when popup closes
+            if (webcamAutoRefreshInterval) {
+                clearInterval(webcamAutoRefreshInterval);
+                webcamAutoRefreshInterval = null;
+            }
+        }
+        
+        function toggleWebcams() {
+            const btn = document.getElementById('webcamBtn');
+            
+            if (webcamsEnabled) {
+                // Disable
+                webcamsEnabled = false;
+                btn.classList.remove('active');
+                removeWebcamMarkers();
+                localStorage.removeItem('webcamsEnabled');
+            } else {
+                // Enable
+                webcamsEnabled = true;
+                btn.classList.add('active');
+                addWebcamMarkers();
+                localStorage.setItem('webcamsEnabled', 'true');
+            }
+        }
+        
+        document.getElementById('webcamBtn').addEventListener('click', toggleWebcams);
+        
+        function toggleSounding() {
+            const btn = document.getElementById('soundingBtn');
+            
+            if (soundingsEnabled) {
+                // Disable - hide markers
+                soundingsEnabled = false;
+                btn.classList.remove('active');
+                if (map.getLayer('sounding-markers')) {
+                    map.setLayoutProperty('sounding-markers', 'visibility', 'none');
+                }
+                if (map.getLayer('sounding-labels')) {
+                    map.setLayoutProperty('sounding-labels', 'visibility', 'none');
+                }
+                localStorage.removeItem('soundingsEnabled');
+            } else {
+                // Enable - show markers
+                soundingsEnabled = true;
+                btn.classList.add('active');
+                // Ensure markers exist
+                if (!map.getLayer('sounding-markers')) {
+                    addSoundingMarkers();
+                } else {
+                    map.setLayoutProperty('sounding-markers', 'visibility', 'visible');
+                    map.setLayoutProperty('sounding-labels', 'visibility', 'visible');
+                }
+                localStorage.setItem('soundingsEnabled', 'true');
+            }
+        }
+        
+        document.getElementById('soundingBtn').addEventListener('click', toggleSounding);
+        
+        document.getElementById('closeWebcam').addEventListener('click', closeWebcamPopup);
+        
+        // Restore live data state on map load
+        async function restoreLiveDataState() {
+            // Small delay to ensure map is fully ready
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Create weather markers during initial load (but hidden)
+            if (weatherStationsConfig.enabled && weatherStationsConfig.station_locations) {
+                createWeatherMarkersIfNeeded();
+            }
+            
+            if (localStorage.getItem('weatherEnabled') === 'true') {
+                toggleWeather();
+            }
+            if (localStorage.getItem('webcamsEnabled') === 'true') {
+                toggleWebcams();
+            }
+            if (localStorage.getItem('soundingsEnabled') === 'true') {
+                toggleSounding();
+            }
+        }
+        
         // Initialize
         initMap();
         restoreLocationTracking();
+        
+        // Wait for map to be ready before restoring live data
+        if (map) {
+            map.on('load', restoreLiveDataState);
+        }
         
         // Restore UI state
         document.getElementById('expertMode').checked = expertMode;
