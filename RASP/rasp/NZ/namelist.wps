@@ -1,0 +1,39 @@
+&share
+ wrf_core             = 'ARW'
+ max_dom              = 2,
+ start_date           = '2025-08-13_12:00:00', '2025-08-13_12:00:00',
+ end_date             = '2025-08-14_12:00:00', '2025-08-14_12:00:00',
+ interval_seconds     = 10800,
+ io_form_geogrid      = 2,
+/
+
+&geogrid
+ parent_id            = 1,   1,
+ parent_grid_ratio    = 1,   3,
+ i_parent_start       = 1,   12,
+ j_parent_start       = 1,   38,
+ e_we                 = 80,  151,
+ e_sn                 = 100, 151,
+ geog_data_res        = 'gmted2010_30s+modis_30s_lake+default+default', 'gmted2010_30s+modis_30s_lake+default+default',
+ dx                   = 6000,
+ dy                   = 6000,
+ map_proj             = 'mercator',
+ ref_lat   = -38.50,
+ ref_lon   = 176.00,
+ truelat1  = -35.00,
+ truelat2  = -42.00,
+ stand_lon = 176.00,
+ geog_data_path       = '/root/rasp/WPS_GEOG'
+ opt_geogrid_tbl_path = '.'
+/
+
+&ungrib
+ out_format           = 'WPS',
+ prefix               = 'UNGRIB',
+/
+
+&metgrid
+ opt_metgrid_tbl_path = '.'
+ fg_name              = 'UNGRIB',
+ io_form_metgrid      = 2,
+/
