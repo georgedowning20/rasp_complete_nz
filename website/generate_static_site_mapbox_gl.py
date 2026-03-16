@@ -60,7 +60,7 @@ def generate_static_site():
     domain_objs = create_domains()
     domain_bounds = {
         'd1': domain_objs['d1'].get_domain_bounds(use_square_image=True),
-        'd2': domain_objs['d2'].get_domain_bounds(),
+        'd2': domain_objs['d2'].get_domain_bounds(use_square_image=True),
         'd3': domain_objs['d3'].get_domain_bounds(),
     }
 

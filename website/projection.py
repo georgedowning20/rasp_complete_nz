@@ -1,6 +1,8 @@
 """Projection utilities for the RASP static site generator."""
 
 import os
+import re
+from pathlib import Path
 
 try:
     import pyproj
@@ -9,7 +11,87 @@ except ImportError:  # pragma: no cover - runtime install if missing
     os.system("pip install pyproj")
     import pyproj
 
-from settings import WRF_CONFIG
+from settings import WRF_CONFIG, OUT_DIR
+
+
+HEADER_PATTERN = re.compile(
+    r"Grid=\s*(d\d)\s+Reskm=\s*([-\d.]+)\s+Indexs=\s*"
+    r"(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+Proj=\s*mercator\s+"
+    r"([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)",
+    re.IGNORECASE,
+)
+
+
+def _parse_domain_from_data_file(file_path):
+    """Parse a RASP .data file header and return domain projection metadata."""
+    try:
+        content = Path(file_path).read_text(errors='ignore')
+    except OSError:
+        return None
+
+    match = HEADER_PATTERN.search(content)
+    if not match:
+        return None
+
+    (
+        grid,
+        _reskm,
+        i_start,
+        i_end,
+        j_start,
+        j_end,
+        dx,
+        dy,
+        truelat1,
+        truelat2,
+        stand_lon,
+        ref_lat,
+        ref_lon,
+    ) = match.groups()
+
+    e_we = int(i_end) - int(i_start) + 1
+    e_sn = int(j_end) - int(j_start) + 1
+
+    return {
+        'grid': grid.lower(),
+        'dx': float(dx),
+        'dy': float(dy),
+        'e_we': e_we,
+        'e_sn': e_sn,
+        'truelat1': float(truelat1),
+        'truelat2': float(truelat2),
+        'stand_lon': float(stand_lon),
+        'ref_lat': float(ref_lat),
+        'ref_lon': float(ref_lon),
+    }
+
+
+def _load_runtime_domain_config():
+    """Load latest domain geometry from runtime .data files in OUT_DIR."""
+    out_path = Path(OUT_DIR)
+    if not out_path.exists():
+        return {}
+
+    dated_dirs = sorted(
+        [d for d in out_path.iterdir() if d.is_dir() and re.match(r"\d{4}-\d{2}-\d{2}", d.name)],
+        reverse=True,
+    )
+
+    domains = {}
+    for date_dir in dated_dirs:
+        for data_file in sorted(date_dir.glob('*.data')):
+            parsed = _parse_domain_from_data_file(data_file)
+            if not parsed:
+                continue
+            grid = parsed['grid']
+            if grid not in domains:
+                domains[grid] = parsed
+            if {'d1', 'd2', 'd3'}.issubset(domains.keys()):
+                return domains
+        if domains:
+            return domains
+
+    return domains
 
 
 class MercatorDomain:
@@ -146,49 +228,55 @@ class MercatorDomain:
 
 def create_domains():
     """Create domain objects with proper projection."""
+    runtime = _load_runtime_domain_config()
+
+    d1_cfg = runtime.get('d1')
+    d2_cfg = runtime.get('d2')
+    d3_cfg = runtime.get('d3')
+
     d1 = MercatorDomain(
-        ref_lat=WRF_CONFIG['ref_lat'],
-        ref_lon=WRF_CONFIG['ref_lon'],
-        truelat1=WRF_CONFIG['truelat1'],
-        truelat2=WRF_CONFIG['truelat2'],
-        stand_lon=WRF_CONFIG['stand_lon'],
-        dx=WRF_CONFIG['d1']['dx'],
-        dy=WRF_CONFIG['d1']['dy'],
-        e_we=WRF_CONFIG['d1']['e_we'],
-        e_sn=WRF_CONFIG['d1']['e_sn'],
+        ref_lat=d1_cfg['ref_lat'] if d1_cfg else WRF_CONFIG['ref_lat'],
+        ref_lon=d1_cfg['ref_lon'] if d1_cfg else WRF_CONFIG['ref_lon'],
+        truelat1=d1_cfg['truelat1'] if d1_cfg else WRF_CONFIG['truelat1'],
+        truelat2=d1_cfg['truelat2'] if d1_cfg else WRF_CONFIG['truelat2'],
+        stand_lon=d1_cfg['stand_lon'] if d1_cfg else WRF_CONFIG['stand_lon'],
+        dx=d1_cfg['dx'] if d1_cfg else WRF_CONFIG['d1']['dx'],
+        dy=d1_cfg['dy'] if d1_cfg else WRF_CONFIG['d1']['dy'],
+        e_we=d1_cfg['e_we'] if d1_cfg else WRF_CONFIG['d1']['e_we'],
+        e_sn=d1_cfg['e_sn'] if d1_cfg else WRF_CONFIG['d1']['e_sn'],
     )
 
     d2 = MercatorDomain(
-        ref_lat=WRF_CONFIG['ref_lat'],
-        ref_lon=WRF_CONFIG['ref_lon'],
-        truelat1=WRF_CONFIG['truelat1'],
-        truelat2=WRF_CONFIG['truelat2'],
-        stand_lon=WRF_CONFIG['stand_lon'],
-        dx=WRF_CONFIG['d2']['dx'],
-        dy=WRF_CONFIG['d2']['dy'],
-        e_we=WRF_CONFIG['d2']['e_we'],
-        e_sn=WRF_CONFIG['d2']['e_sn'],
-        parent=d1,
+        ref_lat=d2_cfg['ref_lat'] if d2_cfg else WRF_CONFIG['ref_lat'],
+        ref_lon=d2_cfg['ref_lon'] if d2_cfg else WRF_CONFIG['ref_lon'],
+        truelat1=d2_cfg['truelat1'] if d2_cfg else WRF_CONFIG['truelat1'],
+        truelat2=d2_cfg['truelat2'] if d2_cfg else WRF_CONFIG['truelat2'],
+        stand_lon=d2_cfg['stand_lon'] if d2_cfg else WRF_CONFIG['stand_lon'],
+        dx=d2_cfg['dx'] if d2_cfg else WRF_CONFIG['d2']['dx'],
+        dy=d2_cfg['dy'] if d2_cfg else WRF_CONFIG['d2']['dy'],
+        e_we=d2_cfg['e_we'] if d2_cfg else WRF_CONFIG['d2']['e_we'],
+        e_sn=d2_cfg['e_sn'] if d2_cfg else WRF_CONFIG['d2']['e_sn'],
+        parent=None if d2_cfg else d1,
         i_parent_start=WRF_CONFIG['d2']['i_parent_start'],
         j_parent_start=WRF_CONFIG['d2']['j_parent_start'],
         parent_grid_ratio=WRF_CONFIG['d2']['parent_grid_ratio'],
     )
 
     d3 = MercatorDomain(
-        ref_lat=WRF_CONFIG['d3'].get('ref_lat', WRF_CONFIG['ref_lat']),
-        ref_lon=WRF_CONFIG['d3'].get('ref_lon', WRF_CONFIG['ref_lon']),
-        truelat1=WRF_CONFIG['truelat1'],
-        truelat2=WRF_CONFIG['truelat2'],
-        stand_lon=WRF_CONFIG['stand_lon'],
-        dx=WRF_CONFIG['d3']['dx'],
-        dy=WRF_CONFIG['d3']['dy'],
-        e_we=WRF_CONFIG['d3']['e_we'],
-        e_sn=WRF_CONFIG['d3']['e_sn'],
-        parent=d2,
+        ref_lat=d3_cfg['ref_lat'] if d3_cfg else WRF_CONFIG['d3'].get('ref_lat', WRF_CONFIG['ref_lat']),
+        ref_lon=d3_cfg['ref_lon'] if d3_cfg else WRF_CONFIG['d3'].get('ref_lon', WRF_CONFIG['ref_lon']),
+        truelat1=d3_cfg['truelat1'] if d3_cfg else WRF_CONFIG['truelat1'],
+        truelat2=d3_cfg['truelat2'] if d3_cfg else WRF_CONFIG['truelat2'],
+        stand_lon=d3_cfg['stand_lon'] if d3_cfg else WRF_CONFIG['stand_lon'],
+        dx=d3_cfg['dx'] if d3_cfg else WRF_CONFIG['d3']['dx'],
+        dy=d3_cfg['dy'] if d3_cfg else WRF_CONFIG['d3']['dy'],
+        e_we=d3_cfg['e_we'] if d3_cfg else WRF_CONFIG['d3']['e_we'],
+        e_sn=d3_cfg['e_sn'] if d3_cfg else WRF_CONFIG['d3']['e_sn'],
+        parent=None if d3_cfg else d2,
         i_parent_start=WRF_CONFIG['d3']['i_parent_start'],
         j_parent_start=WRF_CONFIG['d3']['j_parent_start'],
         parent_grid_ratio=WRF_CONFIG['d3']['parent_grid_ratio'],
-        use_custom_center='ref_lat' in WRF_CONFIG['d3'],
+        use_custom_center=('ref_lat' in WRF_CONFIG['d3']) and not d3_cfg,
     )
 
     return {'d1': d1, 'd2': d2, 'd3': d3}

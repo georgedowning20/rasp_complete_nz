@@ -23,37 +23,25 @@ DOCS_DIR = '/Users/georgedowning/Desktop/Rasp_complete/docs'
 MAPBOX_ACCESS_TOKEN = os.getenv('MAPBOX_ACCESS_TOKEN', '')
 
 # WRF Domain configuration - Mercator projection
-#  ref_lat   = -44.50,
-#  ref_lon   = 170.00,
-#  truelat1  = -42.00,
-#  truelat2  = -47.00,
-#  stand_lon = 170.00,
 
 WRF_CONFIG = {
-    # 'ref_lat': -38.50,
-    # 'ref_lon': 176.00,
-    # 'truelat1': -35.00,
-    # 'truelat2': -42.00,
-    # 'stand_lon': 176.00,
-    'ref_lat': -44.50,
-    'ref_lon': 170.00,
-    'truelat1': -42.00,
-    'truelat2': -47.00,
-    'stand_lon': 170.00,
+    'ref_lat': 53.1,
+    'ref_lon': -1.4,
+    'truelat1': 53.1,
+    'truelat2': 53.1,
+    'stand_lon': 0.0,
 
     'd1': {
         'dx': 6000, 'dy': 6000,
-        'e_we': 80, 'e_sn': 100,
+        'e_we': 160, 'e_sn': 90,
     },
     'd2': {
         'dx': 2000, 'dy': 2000,
-        'e_we': 151, 'e_sn': 151,
-        'i_parent_start': 12, 'j_parent_start': 38,
+        'e_we': 352, 'e_sn': 220,
+        'i_parent_start': 22, 'j_parent_start': 5,
         'parent_grid_ratio': 3,
-        # 'ref_lat': -37.8239,
-        # 'ref_lon': 175.7604,
     },
-    'd3': {
+       'd3': {
         'dx': 500, 'dy': 500,
         'e_we': 81, 'e_sn': 81,
         'i_parent_start': 46, 'j_parent_start': 131,
